@@ -3,13 +3,828 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CANBUILDAI - Redirecting...</title>
-    <script>
-        // Redirect to hub page
-        window.location.href = 'hub.html';
-    </script>
+    <title>CANBUILDAI: Building Design Decision Maker</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- SheetJS library for Excel file generation -->
+    <script src="config.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Amazon Cognito Identity SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
 </head>
 <body>
-    <p>Redirecting to CANBUILDAI Hub...</p>
+    <div class="container">
+        <header>
+            <img src="Logo.jpg" alt="CANBUILDAI Logo" class="company-logo" onerror="this.style.display='none'">
+            <div class="header-content">
+                <img src="building-icon.svg" alt="Building Design" class="building-icon" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect x=%2210%22 y=%2220%22 width=%2244%22 height=%2240%22 fill=%22%232a5298%22 stroke=%22%23667eea%22 stroke-width=%222%22/%3E%3Crect x=%2216%22 y=%2226%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2228%22 y=%2226%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2240%22 y=%2226%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2216%22 y=%2238%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2228%22 y=%2238%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2240%22 y=%2238%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2224%22 y=%2250%22 width=%2216%22 height=%2210%22 fill=%22%23f8f9ff%22/%3E%3C/svg%3E'">
+                <h1>CANBUILDAI: Building Design Decision Maker</h1>
+                <p class="tagline">Advanced Energy Performance Analysis & Optimization</p>
+                <div class="header-badges">
+                    <span class="badge">AI-Powered</span>
+                    <span class="badge">Real-time Analysis</span>
+                    <span class="badge">NECB Compliant</span>
+                </div>
+            </div>
+            <div style="position: absolute; top: 20px; right: 20px;">
+                <span id="user-email" style="color: white; margin-right: 15px; font-size: 14px;"></span>
+                <button onclick="handleLogout()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;">
+                    🚪 Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Module Navigation Tabs -->
+        <nav class="module-tabs">
+            <button class="tab-button active" onclick="switchModule('buildingDesign')">
+                🏗️ Building Design
+            </button>
+            <button class="tab-button" onclick="switchModule('retrofitPlanner')">
+                📊 Retrofit Planner
+            </button>
+        </nav>
+
+        <div class="content">
+            <!-- Building Design Module (Existing) -->
+            <div id="buildingDesignModule" class="module-content active">
+            <form id="buildingForm">
+                <!-- HVAC System Configuration -->
+                <section class="form-section">
+                    <h2>🔧 HVAC System Configuration</h2>
+                    
+                    <div class="form-group">
+                        <label for="ecm_system_name">
+                            Dominant HVAC System
+                            <span class="tooltip" data-tooltip="The primary heating, ventilation, and air conditioning system for the building">ℹ️</span>
+                        </label>
+                        <select id="ecm_system_name" name="ecm_system_name" required>
+                            <option value="">Select HVAC System...</option>
+                            <option value="NECB_Default">NECB Default</option>
+                            <option value="HS08_CCASHP_VRF">HS08 - Cold Climate ASHP VRF</option>
+                            <option value="HS09_CCASHP_Baseboard">HS09 - Cold Climate ASHP Baseboard</option>
+                            <option value="HS11_ASHP_PTHP">HS11 - ASHP Packaged Terminal</option>
+                            <option value="HS12_ASHP_Baseboard">HS12 - ASHP Baseboard</option>
+                            <option value="HS13_ASHP_VRF">HS13 - ASHP VRF</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="primary_heating_fuel">
+                            Primary Heating Fuel
+                            <span class="tooltip" data-tooltip="The main energy source for heating">ℹ️</span>
+                        </label>
+                        <select id="primary_heating_fuel" name="primary_heating_fuel" required>
+                            <option value="">Select Heating Fuel...</option>
+                            <option value="Electricity">Electricity</option>
+                            <option value="ElectricityHPElecBackup">Electricity (Heat Pump with Electric Backup)</option>
+                            <option value="NaturalGas">Natural Gas</option>
+                            <option value="FuelOilNo2">Fuel Oil No.2</option>
+                            <option value="Heatpump">Heat Pump</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="boiler_eff">
+                            Boiler Efficiency
+                            <span class="tooltip" data-tooltip="The efficiency rating of the boiler system">ℹ️</span>
+                        </label>
+                        <select id="boiler_eff" name="boiler_eff" required>
+                            <option value="">Select Boiler Efficiency...</option>
+                            <option value="NECB_Default" selected>NECB Default</option>
+                            <option value="NECB 88% Efficient Condensing Boiler">NECB 88% Efficient Condensing Boiler</option>
+                            <option value="Viessmann Vitocrossal 300 CT3-17 96.2% Efficient Condensing Gas Boiler">96.2% Efficient Condensing Gas Boiler</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="furnace_eff">
+                            Furnace Efficiency
+                            <span class="tooltip" data-tooltip="The efficiency rating of the furnace">ℹ️</span>
+                        </label>
+                        <select id="furnace_eff" name="furnace_eff" required>
+                            <option value="">Select Furnace Efficiency...</option>
+                            <option value="NECB_Default" selected>NECB Default</option>
+                            <option value="NECB 85% Efficient Condensing Gas Furnace">NECB 85% Efficient Condensing Gas Furnace</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="shw_eff">
+                            Service Hot Water Efficiency
+                            <span class="tooltip" data-tooltip="The efficiency of the hot water heating system">ℹ️</span>
+                        </label>
+                        <select id="shw_eff" name="shw_eff" required>
+                            <option value="">Select SHW System...</option>
+                            <option value="NECB_Default" selected>NECB Default</option>
+                            <option value="Natural Gas Direct Vent with Electric Ignition">Natural Gas Direct Vent</option>
+                            <option value="Natural Gas Power Vent with Electric Ignition">Natural Gas Power Vent</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Ventilation Configuration -->
+                <section class="form-section">
+                    <h2>💨 Ventilation Configuration</h2>
+                    
+                    <div class="form-group">
+                        <label for="dcv_type">
+                            Demand Control Ventilation (DCV) Strategy
+                            <span class="tooltip" data-tooltip="Controls ventilation based on occupancy or CO2 levels">ℹ️</span>
+                        </label>
+                        <select id="dcv_type" name="dcv_type" required>
+                            <option value="">Select DCV Strategy...</option>
+                            <option value="No_DCV" selected>No DCV</option>
+                            <option value="Occupancy_based_DCV">Occupancy-Based DCV</option>
+                            <option value="CO2_based_DCV">CO2-Based DCV</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="erv_package">
+                            Energy Recovery Ventilator (ERV) Strategy
+                            <span class="tooltip" data-tooltip="Recovers energy from exhaust air to precondition incoming fresh air">ℹ️</span>
+                        </label>
+                        <select id="erv_package" name="erv_package" required>
+                            <option value="">Select ERV Strategy...</option>
+                            <option value="NECB_Default_All" selected>NECB Default (All)</option>
+                            <option value="Plate-All">Plate Heat Exchanger (All)</option>
+                            <option value="Plate-Existing">Plate Heat Exchanger (Existing Only)</option>
+                            <option value="Rotary-All">Rotary Heat Exchanger (All)</option>
+                            <option value="Rotary-Existing">Rotary Heat Exchanger (Existing Only)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="airloop_economizer_type">
+                            Economizer Type
+                            <span class="tooltip" data-tooltip="Uses outside air for free cooling when conditions are favorable">ℹ️</span>
+                        </label>
+                        <select id="airloop_economizer_type" name="airloop_economizer_type" required>
+                            <option value="">Select Economizer Type...</option>
+                            <option value="NECB_Default" selected>NECB Default</option>
+                            <option value="DifferentialDryBulb">Differential Dry Bulb</option>
+                            <option value="DifferentialEnthalpy">Differential Enthalpy</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nv_type">
+                            Natural Ventilation Strategy
+                            <span class="tooltip" data-tooltip="Allows natural airflow through operable windows">ℹ️</span>
+                        </label>
+                        <select id="nv_type" name="nv_type" required>
+                            <option value="">Select Natural Ventilation...</option>
+                            <option value="NECB_Default" selected>NECB Default (No Natural Ventilation)</option>
+                            <option value="add_nv">Add Natural Ventilation</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Building Envelope -->
+                <section class="form-section">
+                    <h2>🏠 Building Envelope</h2>
+                    
+                    <div class="form-group">
+                        <label for="ext_wall_cond">
+                            External Wall Thermal Conductance (W/m²·K)
+                            <span class="tooltip" data-tooltip="Lower values = better insulation. Range: 0.183 to 0.314">ℹ️</span>
+                        </label>
+                        <select id="ext_wall_cond" name="ext_wall_cond" required>
+                            <option value="">Select Wall Conductance...</option>
+                            <option value="0.183">0.183 (Best Insulation)</option>
+                            <option value="0.21">0.210</option>
+                            <option value="0.247">0.247</option>
+                            <option value="0.278">0.278</option>
+                            <option value="0.314">0.314 (Least Insulation)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ext_roof_cond">
+                            External Roof Thermal Conductance (W/m²·K)
+                            <span class="tooltip" data-tooltip="Lower values = better insulation. Range: 0.121 to 0.227">ℹ️</span>
+                        </label>
+                        <select id="ext_roof_cond" name="ext_roof_cond" required>
+                            <option value="">Select Roof Conductance...</option>
+                            <option value="0.121">0.121 (Best Insulation)</option>
+                            <option value="0.138">0.138</option>
+                            <option value="0.142">0.142</option>
+                            <option value="0.162">0.162</option>
+                            <option value="0.183">0.183</option>
+                            <option value="0.193">0.193</option>
+                            <option value="0.227">0.227 (Least Insulation)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fixed_window_cond">
+                            Window Thermal Conductance (W/m²·K)
+                            <span class="tooltip" data-tooltip="Lower values = better insulation. Typical range: 1.6 to 2.4">ℹ️</span>
+                        </label>
+                        <select id="fixed_window_cond" name="fixed_window_cond" required>
+                            <option value="">Select Window Conductance...</option>
+                            <option value="1.6">1.6 (Triple Glazed, Best)</option>
+                            <option value="2.2">2.2 (Double Glazed, Good)</option>
+                            <option value="2.4">2.4 (Double Glazed, Standard)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fixed_wind_solar_trans">
+                            Window Solar Heat Gain Coefficient (SHGC)
+                            <span class="tooltip" data-tooltip="Lower values block more solar heat. Range: 0.2 to 0.6">ℹ️</span>
+                        </label>
+                        <select id="fixed_wind_solar_trans" name="fixed_wind_solar_trans" required>
+                            <option value="">Select SHGC...</option>
+                            <option value="0.2">0.2 (Low Solar Gain)</option>
+                            <option value="0.3">0.3</option>
+                            <option value="0.4">0.4 (Moderate)</option>
+                            <option value="0.5">0.5</option>
+                            <option value="0.6">0.6 (High Solar Gain)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fdwr_set">
+                            Fenestration to Wall Ratio (FDWR)
+                            <span class="tooltip" data-tooltip="Percentage of wall area that is windows. Range: 0.1 to 0.69">ℹ️</span>
+                        </label>
+                        <select id="fdwr_set" name="fdwr_set" required>
+                            <option value="">Select FDWR...</option>
+                            <option value="0.1">0.1 (10% - Minimal Windows)</option>
+                            <option value="0.2">0.2 (20%)</option>
+                            <option value="0.3">0.3 (30%)</option>
+                            <option value="0.4">0.4 (40%)</option>
+                            <option value="0.5">0.5 (50%)</option>
+                            <option value="0.6">0.6 (60%)</option>
+                            <option value="0.69">0.69 (69% - Maximum Windows)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="srr_set">
+                            Skylight to Roof Ratio (SRR)
+                            <span class="tooltip" data-tooltip="Percentage of roof area that is skylights. Range: 0.03 to 0.1">ℹ️</span>
+                        </label>
+                        <select id="srr_set" name="srr_set" required>
+                            <option value="">Select SRR...</option>
+                            <option value="NECB_Default" selected>NECB Default (No Skylights)</option>
+                            <option value="0.03">0.03 (3%)</option>
+                            <option value="0.05">0.05 (5%)</option>
+                            <option value="0.08">0.08 (8%)</option>
+                            <option value="0.1">0.10 (10%)</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Building Configuration -->
+                <section class="form-section">
+                    <h2>📐 Building Configuration</h2>
+                    
+                    <div class="form-group">
+                        <label for="building_type">
+                            Building Type
+                            <span class="tooltip" data-tooltip="The type of building being modeled">ℹ️</span>
+                        </label>
+                        <select id="building_type" name="building_type" required>
+                            <option value="">Select Building Type...</option>
+                            <option value="MidriseApartment" selected>Midrise Apartment</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rotation_degrees">
+                            Building Rotation (degrees)
+                            <span class="tooltip" data-tooltip="Building orientation. 0° = North-facing, 90° = East-facing">ℹ️</span>
+                        </label>
+                        <select id="rotation_degrees" name="rotation_degrees" required>
+                            <option value="">Select Rotation...</option>
+                            <option value="0" selected>0° (North)</option>
+                            <option value="45">45° (Northeast)</option>
+                            <option value="90">90° (East)</option>
+                            <option value="180">180° (South)</option>
+                            <option value="270">270° (West)</option>
+                            <option value="359">359° (Almost North)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="epw_file">
+                            Weather Location (EPW File)
+                            <span class="tooltip" data-tooltip="The location's weather data for energy simulation">ℹ️</span>
+                        </label>
+                        <select id="epw_file" name="epw_file" required>
+                            <option value="">Select Location...</option>
+                            <option value="CAN_ON_Toronto.Pearson.Intl.AP.716240_CWEC2016.epw" selected>Toronto, ON - Pearson Int'l Airport</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pv_ground_type">
+                            Ground-Mounted PV Solar Panels
+                            <span class="tooltip" data-tooltip="Add photovoltaic solar panels on the ground">ℹ️</span>
+                        </label>
+                        <select id="pv_ground_type" name="pv_ground_type" required>
+                            <option value="">Select PV Configuration...</option>
+                            <option value="NECB_Default" selected>NECB Default (No PV Panels)</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Analysis Type Selection -->
+                <section class="form-section">
+                    <h2>📊 Analysis Type</h2>
+                    
+                    <div class="form-group">
+                        <label>
+                            Select Analysis Type
+                            <span class="tooltip" data-tooltip="Choose between single building prediction or alternative configuration analysis">ℹ️</span>
+                        </label>
+                        <div style="display: flex; gap: 20px; margin-top: 10px;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="analysisType" value="single" checked style="margin-right: 8px;">
+                                <span>Single Building Prediction</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="analysisType" value="alternative" style="margin-right: 8px;">
+                                <span>Alternative Configuration Analysis</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="parameterSelection" class="form-group" style="display: none; margin-top: 20px;">
+                        <label for="variableParameter">
+                            Select Parameter to Vary
+                            <span class="tooltip" data-tooltip="Choose which parameter to analyze across different values">ℹ️</span>
+                        </label>
+                        <select id="variableParameter" name="variableParameter">
+                            <option value="">Select parameter...</option>
+                            <option value="ext_wall_cond">External Wall Thermal Conductance (W/m²·K)</option>
+                            <option value="ext_roof_cond">External Roof Thermal Conductance (W/m²·K)</option>
+                            <option value="fixed_window_cond">Window Thermal Conductance (W/m²·K)</option>
+                            <option value="fixed_wind_solar_trans">Window Solar Heat Gain Coefficient</option>
+                            <option value="fdwr_set">Window-to-Wall Ratio (%)</option>
+                            <option value="srr_set">Skylight-to-Roof Ratio (%)</option>
+                            <option value="boiler_eff">Boiler Efficiency</option>
+                            <option value="furnace_eff">Furnace Efficiency</option>
+                            <option value="shw_eff">Service Hot Water Efficiency</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        🚀 Generate Prediction
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        🔄 Reset Form
+                    </button>
+                </div>
+            </form>
+
+            <!-- Results Section -->
+            <div id="results" class="results-section" style="display: none;">
+                <h2>📊 Prediction Results</h2>
+                <div id="resultsContent"></div>
+                <button class="btn btn-secondary" onclick="hideResults()">Close Results</button>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Generating predictions...</p>
+                    <p class="loading-subtext">This may take a few moments</p>
+                </div>
+            </div>
+            </div>
+            <!-- End Building Design Module -->
+
+            <!-- Retrofit Planner Module (New) -->
+            <div id="retrofitPlannerModule" class="module-content">
+                <div class="module-header">
+                    <h2>🏢 ComStock Retrofit Planner</h2>
+                    <p class="module-description">Upload building data to get AI-powered retrofit predictions and cost estimates</p>
+                </div>
+
+                <!-- Quick Info Section -->
+                <section class="info-section-compact">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-icon">✓</span>
+                            <span>Batch processing for multiple buildings</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">✓</span>
+                            <span>Energy savings predictions</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">✓</span>
+                            <span>Cost estimates & payback analysis</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">✓</span>
+                            <span>Based on 57,000+ Canadianized buildings</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Upload Section -->
+                <section class="retrofit-upload-section">
+                    <div class="upload-card-retrofit">
+                        <h3>📤 Upload Building Data</h3>
+                        <p class="instruction-retrofit">Upload an Excel file (.xlsx, .xls) or CSV file with building information</p>
+                        
+                        <div class="download-template-retrofit">
+                            <p>Don't have a file? Download our template:</p>
+                            <a href="#" id="downloadTemplateBtn" class="btn btn-secondary">
+                                📥 Download Excel Template
+                            </a>
+                        </div>
+
+                        <div class="upload-area-retrofit" id="uploadAreaRetrofit">
+                            <input type="file" id="fileInputRetrofit" accept=".xlsx,.xls,.csv" hidden>
+                            <div class="upload-content-retrofit">
+                                <span class="upload-icon-retrofit">📁</span>
+                                <p class="upload-text-retrofit">Click to browse or drag & drop file here</p>
+                                <p class="upload-hint-retrofit">Accepts .xlsx, .xls, or .csv files</p>
+                            </div>
+                        </div>
+
+                        <div class="file-info-retrofit" id="fileInfoRetrofit" style="display: none;">
+                            <div class="file-details-retrofit">
+                               <span class="file-icon-retrofit">📄</span>
+                                <div>
+                                    <p class="file-name-retrofit" id="fileNameRetrofit"></p>
+                                    <p class="file-size-retrofit" id="fileSizeRetrofit"></p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="predictBtnRetrofit" disabled>
+                                🚀 Get Predictions
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Loading Indicator -->
+                <div class="loading-indicator-retrofit" id="loadingIndicatorRetrofit" style="display: none;">
+                    <div class="spinner-retrofit"></div>
+                    <p>Processing your file...</p>
+                    <p class="loading-subtext-retrofit">This may take a few moments depending on file size</p>
+                </div>
+
+                <!-- Results Section -->
+                <section class="results-section-retrofit" id="resultsSectionRetrofit" style="display: none;">
+                    <h3>📊 Prediction Results</h3>
+                    
+                    <div class="summary-cards-retrofit">
+                        <div class="summary-card-retrofit">
+                            <div class="card-icon-retrofit">🏢</div>
+                            <div class="card-content-retrofit">
+                                <p class="card-label-retrofit">Total Buildings</p>
+                                <p class="card-value-retrofit" id="totalBuildingsRetrofit">0</p>
+                            </div>
+                        </div>
+                        <div class="summary-card-retrofit">
+                            <div class="card-icon-retrofit">✅</div>
+                            <div class="card-content-retrofit">
+                                <p class="card-label-retrofit">Success Rate</p>
+                                <p class="card-value-retrofit" id="successRateRetrofit">0%</p>
+                            </div>
+                        </div>
+                        <div class="summary-card-retrofit">
+                            <div class="card-icon-retrofit">⏱️</div>
+                            <div class="card-content-retrofit">
+                                <p class="card-label-retrofit">Avg Processing Time</p>
+                                <p class="card-value-retrofit" id="avgProcessingTimeRetrofit">0ms</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-table-container-retrofit" id="resultsTableRetrofit"></div>
+
+                    <div class="results-actions-retrofit">
+                        <button type="button" class="btn btn-primary" id="downloadResultsBtnRetrofit">
+                            💾 Download Results (CSV)
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="newPredictionBtnRetrofit">
+                            📤 New Prediction
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Error Section -->
+                <section class="error-section-retrofit" id="errorSectionRetrofit" style="display: none;">
+                    <div class="error-content-retrofit">
+                        <span class="error-icon-retrofit">⚠️</span>
+                        <div>
+                            <h4>Error</h4>
+                            <p id="errorMessageRetrofit"></p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="tryAgainBtnRetrofit">
+                        🔄 Try Again
+                    </button>
+                </section>
+            </div>
+            <!-- End Retrofit Planner Module -->
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Module Switching
+        function switchModule(moduleName) {
+            // Hide all modules
+            document.querySelectorAll('.module-content').forEach(module => {
+                module.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-button').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected module
+            if (moduleName === 'buildingDesign') {
+                document.getElementById('buildingDesignModule').classList.add('active');
+                document.querySelectorAll('.tab-button')[0].classList.add('active');
+            } else if (moduleName === 'retrofitPlanner') {
+                document.getElementById('retrofitPlannerModule').classList.add('active');
+                document.querySelectorAll('.tab-button')[1].classList.add('active');
+            }
+        }
+
+        // Handle analysis type radio button change
+        document.querySelectorAll('input[name="analysisType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const parameterSelection = document.getElementById('parameterSelection');
+                if (this.value === 'alternative') {
+                    parameterSelection.style.display = 'block';
+                } else {
+                    parameterSelection.style.display = 'none';
+                }
+            });
+        });
+
+        // Handle form reset
+        document.getElementById('buildingForm').addEventListener('reset', function() {
+            setTimeout(() => {
+                document.getElementById('parameterSelection').style.display = 'none';
+            }, 0);
+        });
+        
+        function hideResults() {
+            document.getElementById('results').style.display = 'none';
+        }
+    </script>
+
+    <!-- Retrofit Planner Module Script -->
+    <script>
+        // Retrofit Planner API Configuration
+        const RETROFIT_API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : window.location.origin;
+
+        // Retrofit Planner Module - DOM Elements
+        const uploadAreaRetrofit = document.getElementById('uploadAreaRetrofit');
+        const fileInputRetrofit = document.getElementById('fileInputRetrofit');
+        const fileInfoRetrofit = document.getElementById('fileInfoRetrofit');
+        const fileNameRetrofit = document.getElementById('fileNameRetrofit');
+        const fileSizeRetrofit = document.getElementById('fileSizeRetrofit');
+        const predictBtnRetrofit = document.getElementById('predictBtnRetrofit');
+        const loadingIndicatorRetrofit = document.getElementById('loadingIndicatorRetrofit');
+        const resultsSectionRetrofit = document.getElementById('resultsSectionRetrofit');
+        const errorSectionRetrofit = document.getElementById('errorSectionRetrofit');
+        const errorMessageRetrofit = document.getElementById('errorMessageRetrofit');
+        const downloadResultsBtnRetrofit = document.getElementById('downloadResultsBtnRetrofit');
+        const newPredictionBtnRetrofit = document.getElementById('newPredictionBtnRetrofit');
+        const tryAgainBtnRetrofit = document.getElementById('tryAgainBtnRetrofit');
+        const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+
+        let selectedFileRetrofit = null;
+        let predictionsDataRetrofit = null;
+
+        // Initialize Retrofit Planner Events
+        uploadAreaRetrofit.addEventListener('click', () => fileInputRetrofit.click());
+        fileInputRetrofit.addEventListener('change', handleFileSelectRetrofit);
+        predictBtnRetrofit.addEventListener('click', handlePredictionRetrofit);
+        downloadResultsBtnRetrofit.addEventListener('click', downloadResultsRetrofit);
+        newPredictionBtnRetrofit.addEventListener('click', resetFormRetrofit);
+        tryAgainBtnRetrofit.addEventListener('click', resetFormRetrofit);
+
+        // Drag and drop events
+        uploadAreaRetrofit.addEventListener('dragover', handleDragOverRetrofit);
+        uploadAreaRetrofit.addEventListener('dragleave', handleDragLeaveRetrofit);
+        uploadAreaRetrofit.addEventListener('drop', handleDropRetrofit);
+
+        // Download template
+        downloadTemplateBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                const response = await fetch(`${RETROFIT_API_URL}/api/v1/predict/template/download`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'building_data_template.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    alert('Failed to download template');
+                }
+            } catch (error) {
+                console.error('Error downloading template:', error);
+                alert('Failed to download template');
+            }
+        });
+
+        function handleFileSelectRetrofit(event) {
+            const file = event.target.files[0];
+            if (file) {
+                validateAndDisplayFileRetrofit(file);
+            }
+        }
+
+        function handleDragOverRetrofit(event) {
+            event.preventDefault();
+            uploadAreaRetrofit.classList.add('dragover');
+        }
+
+        function handleDragLeaveRetrofit(event) {
+            event.preventDefault();
+            uploadAreaRetrofit.classList.remove('dragover');
+        }
+
+        function handleDropRetrofit(event) {
+            event.preventDefault();
+            uploadAreaRetrofit.classList.remove('dragover');
+            
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                validateAndDisplayFileRetrofit(file);
+            }
+        }
+
+        function validateAndDisplayFileRetrofit(file) {
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            
+            if (fileExtension !== 'xlsx' && fileExtension !== 'xls' && fileExtension !== 'csv') {
+                alert('Please upload an Excel file (.xlsx, .xls) or CSV file (.csv)');
+                return;
+            }
+
+            selectedFileRetrofit = file;
+            
+            fileNameRetrofit.textContent = file.name;
+            fileSizeRetrofit.textContent = formatFileSizeRetrofit(file.size);
+            fileInfoRetrofit.style.display = 'flex';
+            
+            predictBtnRetrofit.disabled = false;
+            errorSectionRetrofit.style.display = 'none';
+        }
+
+        function formatFileSizeRetrofit(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        async function handlePredictionRetrofit() {
+            if (!selectedFileRetrofit) {
+                alert('Please select a file first');
+                return;
+            }
+
+            loadingIndicatorRetrofit.style.display = 'block';
+            predictBtnRetrofit.disabled = true;
+            resultsSectionRetrofit.style.display = 'none';
+            errorSectionRetrofit.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFileRetrofit);
+
+                const response = await fetch(`${RETROFIT_API_URL}/api/v1/predict/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResultsRetrofit(data);
+                } else {
+                    showErrorRetrofit(data.detail || 'An error occurred during prediction');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorRetrofit('Failed to connect to the API. Make sure the server is running.');
+            } finally {
+                loadingIndicatorRetrofit.style.display = 'none';
+                predictBtnRetrofit.disabled = false;
+            }
+        }
+
+        function displayResultsRetrofit(data) {
+            predictionsDataRetrofit = data;
+            
+            document.getElementById('totalBuildingsRetrofit').textContent = data.total_buildings || 0;
+            
+            const successRate = data.total_buildings > 0 
+                ? ((data.successful_predictions / data.total_buildings) * 100).toFixed(1) 
+                : 0;
+            document.getElementById('successRateRetrofit').textContent = successRate + '%';
+            
+            document.getElementById('avgProcessingTimeRetrofit').textContent = 
+                (data.total_processing_time_ms / data.total_buildings).toFixed(2) + 'ms';
+
+            const resultsTable = document.getElementById('resultsTableRetrofit');
+            
+            if (data.predictions && data.predictions.length > 0) {
+                let tableHTML = '<table class="retrofit-results-table"><thead><tr>';
+                tableHTML += '<th>Building #</th>';
+                tableHTML += '<th>Model Used</th>';
+                tableHTML += '<th>Energy Savings (%)</th>';
+                tableHTML += '<th>Cost Estimate (USD)</th>';
+                tableHTML += '<th>Payback (years)</th>';
+                tableHTML += '<th>Processing Time (ms)</th>';
+                tableHTML += '</tr></thead><tbody>';
+
+                data.predictions.forEach((pred, index) => {
+                    tableHTML += '<tr>';
+                    tableHTML += `<td>${index + 1}</td>`;
+                    tableHTML += `<td>${pred.model_used}</td>`;
+                    tableHTML += `<td>${pred.predicted_values.energy_savings_percent?.toFixed(2) || 'N/A'}</td>`;
+                    tableHTML += `<td>$${pred.predicted_values.cost_estimate_usd?.toLocaleString() || 'N/A'}</td>`;
+                    tableHTML += `<td>${pred.predicted_values.payback_years?.toFixed(1) || 'N/A'}</td>`;
+                    tableHTML += `<td>${pred.processing_time_ms.toFixed(2)}</td>`;
+                    tableHTML += '</tr>';
+                });
+
+                tableHTML += '</tbody></table>';
+                resultsTable.innerHTML = tableHTML;
+            } else {
+                resultsTable.innerHTML = '<p style="text-align: center; color: #666;">No predictions available.</p>';
+            }
+
+            resultsSectionRetrofit.style.display = 'block';
+            resultsSectionRetrofit.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function showErrorRetrofit(message) {
+            errorMessageRetrofit.textContent = message;
+            errorSectionRetrofit.style.display = 'flex';
+            errorSectionRetrofit.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function downloadResultsRetrofit() {
+            if (!predictionsDataRetrofit || !predictionsDataRetrofit.predictions) {
+                alert('No results to download');
+                return;
+            }
+
+            let csv = 'Building #,Model Used,Energy Savings (%),Cost Estimate (USD),Payback (years),Processing Time (ms),Confidence\n';
+            
+            predictionsDataRetrofit.predictions.forEach((pred, index) => {
+                csv += `${index + 1},`;
+                csv += `${pred.model_used},`;
+                csv += `${pred.predicted_values.energy_savings_percent?.toFixed(2) || 'N/A'},`;
+                csv += `${pred.predicted_values.cost_estimate_usd || 'N/A'},`;
+                csv += `${pred.predicted_values.payback_years?.toFixed(1) || 'N/A'},`;
+                csv += `${pred.processing_time_ms.toFixed(2)},`;
+                csv += `${pred.confidence_scores?.overall?.toFixed(2) || 'N/A'}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `comstock_predictions_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function resetFormRetrofit() {
+            selectedFileRetrofit = null;
+            fileInputRetrofit.value = '';
+            fileInfoRetrofit.style.display = 'none';
+            predictBtnRetrofit.disabled = true;
+            resultsSectionRetrofit.style.display = 'none';
+            errorSectionRetrofit.style.display = 'none';
+            loadingIndicatorRetrofit.style.display = 'none';
+            
+            uploadAreaRetrofit.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
 </body>
 </html>
