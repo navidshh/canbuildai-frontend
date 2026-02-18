@@ -626,3 +626,416 @@ header h1 {
         display: block !important;
     }
 }
+
+/* ===========================================
+   MODULE TAB NAVIGATION
+   =========================================== */
+.module-tabs {
+    display: flex;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 15px 15px 0 0;
+    margin-bottom: 0;
+    backdrop-filter: blur(10px);
+}
+
+.tab-button {
+    flex: 1;
+    padding: 15px 25px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.tab-button.active {
+    background: white;
+    color: #2a5298;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* Module Content */
+.module-content {
+    display: none;
+}
+
+.module-content.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.module-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.module-header h2 {
+    color: #2a5298;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.module-description {
+    color: #666;
+    font-size: 16px;
+}
+
+/* ===========================================
+   RETROFIT PLANNER MODULE STYLES
+   =========================================== */
+.info-section-compact {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    border-radius: 8px;
+    border-left: 3px solid #667eea;
+}
+
+.info-icon {
+    font-size: 20px;
+    color: #667eea;
+    font-weight: bold;
+}
+
+.retrofit-upload-section {
+    margin-bottom: 30px;
+}
+
+.upload-card-retrofit {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.upload-card-retrofit h3 {
+    color: #2a5298;
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+.instruction-retrofit {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.download-template-retrofit {
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    text-align: center;
+    border: 2px dashed #667eea;
+}
+
+.download-template-retrofit p {
+    margin-bottom: 15px;
+    color: #666;
+}
+
+.upload-area-retrofit {
+    border: 3px dashed #667eea;
+    border-radius: 15px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+}
+
+.upload-area-retrofit:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+}
+
+.upload-area-retrofit:hover .upload-icon-retrofit {
+    transform: scale(1.2);
+}
+
+.upload-area-retrofit:hover .upload-text-retrofit,
+.upload-area-retrofit:hover .upload-hint-retrofit {
+    color: white;
+}
+
+.upload-area-retrofit.dragover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+}
+
+.upload-icon-retrofit {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.upload-text-retrofit {
+    font-size: 18px;
+    color: #2a5298;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.upload-hint-retrofit {
+    font-size: 14px;
+    color: #999;
+}
+
+.file-info-retrofit {
+    margin-top: 25px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 3px 15px rgba(102, 126, 234, 0.3);
+}
+
+.file-details-retrofit {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: white;
+}
+
+.file-icon-retrofit {
+    font-size: 36px;
+}
+
+.file-name-retrofit {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.file-size-retrofit {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.loading-indicator-retrofit {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.spinner-retrofit {
+    width: 60px;
+    height: 60px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-indicator-retrofit p {
+    color: #2a5298;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.loading-subtext-retrofit {
+    color: #999;
+    font-size: 14px;
+}
+
+.results-section-retrofit {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.results-section-retrofit h3 {
+    color: #2a5298;
+    font-size: 24px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.summary-cards-retrofit {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.summary-card-retrofit {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 25px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 3px 15px rgba(102, 126, 234, 0.2);
+    color: white;
+}
+
+.card-icon-retrofit {
+    font-size: 32px;
+    opacity: 0.9;
+}
+
+.card-content-retrofit {
+    flex: 1;
+}
+
+.card-label-retrofit {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.card-value-retrofit {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.results-table-container-retrofit {
+    margin-bottom: 25px;
+    overflow-x: auto;
+}
+
+.retrofit-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.retrofit-results-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.retrofit-results-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.retrofit-results-table tr:hover {
+    background: #f8f9ff;
+}
+
+.results-actions-retrofit {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.error-section-retrofit {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+    margin-bottom: 30px;
+}
+
+.error-content-retrofit {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.error-icon-retrofit {
+    font-size: 36px;
+}
+
+.error-content-retrofit h4 {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.error-content-retrofit p {
+    font-size: 14px;
+    opacity: 0.95;
+}
+
+/* Responsive for tabs */
+@media (max-width: 768px) {
+    .module-tabs {
+        flex-direction: column;
+    }
+    
+    .summary-cards-retrofit {
+        grid-template-columns: 1fr;
+    }
+    
+    .results-actions-retrofit {
+        flex-direction: column;
+    }
+    
+    .results-actions-retrofit .btn {
+        width: 100%;
+    }
+    
+    .file-info-retrofit {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
