@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CANBUILDAI: Retrofit Planner</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- SheetJS library for Excel file generation -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- Amazon Cognito Identity SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <style>
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+        
+        .upload-zone:hover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f1ff 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+        
+        .upload-zone.drag-over {
+            background: linear-gradient(135deg, #e8ebff 0%, #f0f1ff 100%);
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .results-container {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .results-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .results-table tr:hover {
+            background-color: #f8f9ff;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .progress-container {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .file-info {
+            display: none;
+            margin: 15px 0;
+            padding: 15px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            border-radius: 4px;
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+        
+        .btn-download:hover {
+            background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="Logo.jpg" alt="CANBUILDAI Logo" class="company-logo" onerror="this.style.display='none'">
+            <div class="header-content">
+                <h1>🏢 ComStock Retrofit Planner</h1>
+                <p class="tagline">AI-Powered Building Retrofit Analysis for Commercial Buildings</p>
+                <div class="header-badges">
+                    <span class="badge">ComStock Data</span>
+                    <span class="badge">Energy Analysis</span>
+                    <span class="badge">GHG Emissions</span>
+                </div>
+            </div>
+            <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
+                <span id="user-email" style="color: white; margin-right: 5px; font-size: 14px;"></span>
+                <button onclick="window.location.href='hub.html'" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;">
+                    🏠 Back to Hub
+                </button>
+                <button onclick="handleLogout()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;">
+                    🚪 Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Instructions Section -->
+            <section class="form-section">
+                <h2>📋 How to Use</h2>
+                <ol style="line-height: 2; color: #4a5568;">
+                    <li><strong>Download Template:</strong> Click the button below to download the input CSV template</li>
+                    <li><strong>Fill Data:</strong> Open the CSV file and fill in your building data (all 48 input columns)</li>
+                    <li><strong>Upload File:</strong> Drop your completed CSV file in the upload zone or click to browse</li>
+                    <li><strong>Get Results:</strong> View energy use intensity and GHG emissions predictions for your buildings</li>
+                </ol>
+            </section>
+
+            <!-- Download Template Section -->
+            <section class="form-section">
+                <h2>📥 Step 1: Download Template</h2>
+                <p style="color: #4a5568; margin-bottom: 15px;">
+                    Download the Excel template with all required columns. The template includes sample data to guide you.
+                </p>
+                <button onclick="downloadTemplate()" class="btn btn-download">
+                    📄 Download Input Template (Excel)
+                </button>
+                <div style="margin-top: 15px; padding: 12px; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
+                    <strong>ℹ️ Template Info:</strong> The CSV contains 50 columns total:
+                    <ul style="margin: 8px 0 0 20px; color: #1565c0;">
+                        <li>48 input columns (building characteristics)</li>
+                        <li>2 output columns (will be predicted by the model)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Upload Section -->
+            <section class="form-section">
+                <h2>📤 Step 2: Upload Your Data</h2>
+                <p style="color: #4a5568; margin-bottom: 15px;">
+                    Upload your completed CSV file with building data. The model will predict energy use intensity and GHG emissions.
+                </p>
+                
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <h3>Drop your Excel/CSV file here or click to browse</h3>
+                    <p style="color: #718096; margin-top: 10px;">Supported formats: Excel (.xlsx, .xls) or CSV (up to 1000 buildings)</p>
+                    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display: none;" onchange="handleFileSelect(event)">
+                </div>
+                
+                <div class="file-info" id="fileInfo">
+                    <strong>📎 Selected File:</strong> <span id="fileName"></span><br>
+                    <strong>📊 Buildings:</strong> <span id="buildingCount"></span>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button id="predictBtn" class="btn btn-primary" onclick="submitPrediction()" style="display: none;">
+                        🔮 Run Prediction
+                    </button>
+                </div>
+                
+                <div class="progress-container" id="progressContainer">
+                    <h3 style="margin-bottom: 15px;">⚙️ Processing...</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill">0%</div>
+                    </div>
+                    <p id="progressText" style="text-align: center; margin-top: 10px; color: #4a5568;"></p>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <div class="results-container" id="resultsContainer">
+                <h2>📊 Step 3: Prediction Results</h2>
+                
+                <div class="stats-grid" id="statsGrid">
+                    <!-- Stats will be populated here -->
+                </div>
+                
+                <div style="margin: 20px 0; text-align: center;">
+                    <button onclick="downloadResults()" class="btn btn-download">
+                        💾 Download Results (Excel)
+                    </button>
+                    <button onclick="resetForm()" class="btn btn-secondary">
+                        🔄 Start Over
+                    </button>
+                </div>
+                
+                <h3 style="margin-top: 30px;">Building-by-Building Results</h3>
+                <div style="overflow-x: auto;">
+                    <table class="results-table" id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Building Type</th>
+                                <th>Floor Area (sqft)</th>
+                                <th>Climate Zone</th>
+                                <th>Energy Use Intensity<br>(kBtu/sqft/yr)</th>
+                                <th>GHG Emissions<br>(kg CO2e)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <!-- Results will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer style="text-align: center; padding: 30px; color: #718096; margin-top: 50px; border-top: 1px solid #e2e8f0;">
+            <p>© 2026 CANBUILDAI - ComStock Retrofit Planner</p>
+            <p style="font-size: 12px; margin-top: 5px;">Powered by Machine Learning Ensemble Models</p>
+        </footer>
+    </div>
+
+    <script>
+        // API Configuration - Update with your actual API URL
+        const API_BASE_URL = 'https://08879hja2c.execute-api.ca-central-1.amazonaws.com'; // Production API Gateway URL
+        
+        let uploadedData = null;
+        let predictionResults = null;
+
+        // Authentication check
+        window.onload = async function() {
+            try {
+                const userEmail = sessionStorage.getItem('userEmail');
+                if (userEmail) {
+                    document.getElementById('user-email').textContent = userEmail;
+                } else {
+                    // Redirect to login if not authenticated
+                    window.location.href = 'auth.html';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        };
+
+        function handleLogout() {
+            sessionStorage.removeItem('userEmail');
+            sessionStorage.removeItem('idToken');
+            window.location.href = 'auth.html';
+        }
+
+        // Download template CSV
+        async function downloadTemplate() {
+            try {
+                showProgress('Downloading template...', 50);
+                
+                // Fetch template from backend
+                const response = await fetch(`${API_BASE_URL}/retrofit/template/download`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to download template');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'comstock_input_template.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                hideProgress();
+                alert('✅ Template downloaded successfully! Fill it out and upload to get predictions.');
+                
+            } catch (error) {
+                console.error('Error downloading template:', error);
+                hideProgress();
+                alert('❌ Error downloading template. The model may not be fully deployed yet. You can create a CSV with ComStock building data manually.');
+            }
+        }
+
+        // Handle drag and drop
+        const uploadZone = document.getElementById('uploadZone');
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+        
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('drag-over');
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+            const isCSV = file.name.endsWith('.csv');
+            
+            if (!isExcel && !isCSV) {
+                alert('❌ Please upload an Excel (.xlsx, .xls) or CSV file');
+                return;
+            }
+            
+            if (isExcel) {
+                // Handle Excel files
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const csvData = XLSX.utils.sheet_to_csv(firstSheet);
+                        
+                        const lines = csvData.split('\n').filter(line => line.trim());
+                        const buildingCount = lines.length - 1; // Subtract header
+                        
+                        if (buildingCount > 1000) {
+                            alert('❌ Maximum 1000 buildings allowed. Your file has ' + buildingCount + ' buildings.');
+                            return;
+                        }
+                        
+                        uploadedData = file; // Store the actual file for upload
+                        
+                        // Show file info
+                        document.getElementById('fileName').textContent = file.name;
+                        document.getElementById('buildingCount').textContent = buildingCount;
+                        document.getElementById('fileInfo').style.display = 'block';
+                        document.getElementById('predictBtn').style.display = 'inline-block';
+                        
+                    } catch (error) {
+                        alert('❌ Error reading Excel file: ' + error.message);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                // Handle CSV files
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const text = e.target.result;
+                        const lines = text.split('\n').filter(line => line.trim());
+                        const buildingCount = lines.length - 1; // Subtract header
+                        
+                        if (buildingCount > 1000) {
+                            alert('❌ Maximum 1000 buildings allowed. Your file has ' + buildingCount + ' buildings.');
+                            return;
+                        }
+                        
+                        uploadedData = file; // Store the actual file for upload
+                        
+                        // Show file info
+                        document.getElementById('fileName').textContent = file.name;
+                        document.getElementById('buildingCount').textContent = buildingCount;
+                        document.getElementById('fileInfo').style.display = 'block';
+                        document.getElementById('predictBtn').style.display = 'inline-block';
+                        
+                    } catch (error) {
+                        alert('❌ Error reading CSV file: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        async function submitPrediction() {
+            if (!uploadedData) {
+                alert('❌ Please upload a file first');
+                return;
+            }
+            
+            try {
+                showProgress('Uploading file and running predictions...', 20);
+                
+                // Create FormData with the uploaded file
+                const formData = new FormData();
+                formData.append('file', uploadedData);
+                
+                showProgress('Processing predictions...', 50);
+                
+                // Call backend API
+                const response = await fetch(`${API_BASE_URL}/retrofit/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Prediction failed');
+                }
+                
+                showProgress('Finalizing results...', 80);
+                
+                const results = await response.json();
+                predictionResults = results;
+                
+                showProgress('Complete!', 100);
+                setTimeout(() => {
+                    hideProgress();
+                    displayResults(results);
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error running prediction:', error);
+                hideProgress();
+                alert('❌ Error: ' + error.message + '\n\nThe model may not be fully deployed yet. Please check the backend is running.');
+            }
+        }
+
+        function displayResults(results) {
+            const predictions = results.predictions;
+            
+            // Calculate statistics
+            let totalEUI = 0;
+            let totalGHG = 0;
+            
+            predictions.forEach(pred => {
+                totalEUI += pred.predicted_values.energy_use_intensity_kbtu_sqft || 0;
+                totalGHG += pred.predicted_values.ghg_emissions_kg_co2e || 0;
+            });
+            
+            const avgEUI = (totalEUI / predictions.length).toFixed(2);
+            const avgGHG = (totalGHG / predictions.length).toFixed(0);
+            
+            // Display statistics
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Total Buildings Analyzed</div>
+                    <div class="stat-value">${results.total_buildings}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Energy Use Intensity</div>
+                    <div class="stat-value">${avgEUI}</div>
+                    <div class="stat-label">kBtu/sqft/yr</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg GHG Emissions</div>
+                    <div class="stat-value">${avgGHG}</div>
+                    <div class="stat-label">kg CO2e</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Processing Time</div>
+                    <div class="stat-value">${(results.total_processing_time_ms / 1000).toFixed(2)}s</div>
+                </div>
+            `;
+            
+            // Display table
+            const tbody = document.getElementById('resultsTableBody');
+            tbody.innerHTML = '';
+            
+            predictions.forEach((pred, index) => {
+                const buildingType = pred.predicted_values.building_type || 'Commercial';
+                const floorArea = pred.predicted_values.floor_area_sqft || '-';
+                const climateZone = pred.predicted_values.climate_zone || '-';
+                const eui = pred.predicted_values.energy_use_intensity_kbtu_sqft?.toFixed(2) || 'N/A';
+                const ghg = (pred.predicted_values.ghg_emissions_kg_co2e || 0).toLocaleString();
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${buildingType}</td>
+                    <td>${floorArea !== '-' ? parseFloat(floorArea).toLocaleString() : '-'}</td>
+                    <td>${climateZone}</td>
+                    <td><strong style="color: #667eea;">${eui}</strong></td>
+                    <td><strong style="color: #764ba2;">${ghg}</strong></td>
+                `;
+            });
+            
+            // Show results container
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function downloadResults() {
+            if (!predictionResults) {
+                alert('❌ No results to download');
+                return;
+            }
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Prepare data for Excel
+            const data = predictionResults.predictions.map((pred, index) => ({
+                'Building #': index + 1,
+                'Building Type': pred.predicted_values.building_type || 'Commercial',
+                'Floor Area (sqft)': pred.predicted_values.floor_area_sqft || 0,
+                'Climate Zone': pred.predicted_values.climate_zone || 'Unknown',
+                'Energy Use Intensity (kBtu/sqft/yr)': pred.predicted_values.energy_use_intensity_kbtu_sqft?.toFixed(2) || 'N/A',
+                'GHG Emissions (kg CO2e)': pred.predicted_values.ghg_emissions_kg_co2e || 0,
+                'ComStock ID': pred.matched_comstock_id,
+                'Model Used': pred.model_used,
+                'Processing Time (ms)': pred.processing_time_ms.toFixed(2)
+            }));
+            
+            const ws = XLSX.utils.json_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, 'Predictions');
+            
+            // Download
+            XLSX.writeFile(wb, 'retrofit_planner_results.xlsx');
+        }
+
+        function resetForm() {
+            uploadedData = null;
+            predictionResults = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('predictBtn').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showProgress(message, percent) {
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressFill').textContent = percent + '%';
+            document.getElementById('progressText').textContent = message;
+        }
+
+        function hideProgress() {
+            document.getElementById('progressContainer').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
