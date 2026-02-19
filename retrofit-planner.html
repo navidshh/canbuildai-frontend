@@ -174,9 +174,10 @@
             <section class="form-section">
                 <h2>📋 How to Use</h2>
                 <ol style="line-height: 2; color: #4a5568;">
-                    <li><strong>Download Template:</strong> Click the button below to download the input CSV template</li>
-                    <li><strong>Fill Data:</strong> Open the CSV file and fill in your building data (all 48 input columns)</li>
-                    <li><strong>Upload File:</strong> Drop your completed CSV file in the upload zone or click to browse</li>
+                    <li><strong>Download Template:</strong> Click the button below to download the input Excel template with all available options</li>
+                    <li><strong>Review Options:</strong> Check the "Column_Options" sheet to see all valid options for each input column</li>
+                    <li><strong>Fill Data:</strong> Use the "Input_Data" sheet to enter your building data - select from the available options or enter custom values</li>
+                    <li><strong>Upload File:</strong> Drop your completed file in the upload zone or click to browse</li>
                     <li><strong>Get Results:</strong> View energy use intensity and GHG emissions predictions for your buildings</li>
                 </ol>
             </section>
@@ -185,17 +186,28 @@
             <section class="form-section">
                 <h2>📥 Step 1: Download Template</h2>
                 <p style="color: #4a5568; margin-bottom: 15px;">
-                    Download the Excel template with all required columns. The template includes sample data to guide you.
+                    Download the Excel template with <strong>real dropdown menus</strong>! This template was generated using Python/openpyxl with actual Excel data validation, making it super easy to fill in your building data.
                 </p>
-                <button onclick="downloadTemplate()" class="btn btn-download">
-                    📄 Download Input Template (Excel)
-                </button>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button onclick="downloadTemplate()" class="btn btn-download" style="flex: 1;">
+                        📄 Download Template with Dropdown Menus (Excel)
+                    </button>
+                    <button onclick="window.open('column-explorer.html', '_blank')" class="btn btn-secondary" style="flex: 0 0 auto;">
+                        🔍 Explore Column Options
+                    </button>
+                </div>
                 <div style="margin-top: 15px; padding: 12px; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
-                    <strong>ℹ️ Template Info:</strong> The CSV contains 50 columns total:
+                    <strong>✨ Real Dropdown Menus!</strong> This Excel file contains:
                     <ul style="margin: 8px 0 0 20px; color: #1565c0;">
-                        <li>48 input columns (building characteristics)</li>
-                        <li>2 output columns (will be predicted by the model)</li>
+                        <li><strong>64 columns with automatic dropdown menus</strong> - just click the arrow in each cell!</li>
+                        <li><strong>20 empty rows</strong> ready for your building data (add more as needed)</li>
+                        <li><strong>Instructions sheet</strong> with complete guide</li>
+                        <li><strong>Options_Lists sheet</strong> (hidden) with all dropdown values</li>
+                        <li><strong>Columns with 1000+ options</strong> have cell comments with sample values</li>
                     </ul>
+                    <div style="margin-top: 10px; padding: 8px; background: #d4edda; border-radius: 4px;">
+                        <strong>💡 How it works:</strong> Open the file in Excel or Google Sheets, click on any cell, and you'll see a dropdown arrow appear. Click it to select from the available options! For columns with too many options to fit in a dropdown (like ZIP codes), you'll see a cell comment with sample values.
+                    </div>
                 </div>
             </section>
 
@@ -305,13 +317,29 @@
             window.location.href = 'auth.html';
         }
 
-        // Download template CSV
+        // Load column options
+        let columnOptions = null;
+        
+        async function loadColumnOptions() {
+            try {
+                const response = await fetch('column_options.json');
+                columnOptions = await response.json();
+                console.log('Column options loaded:', Object.keys(columnOptions).length, 'columns');
+            } catch (error) {
+                console.error('Error loading column options:', error);
+            }
+        }
+        
+        // Call this on page load
+        loadColumnOptions();
+
+        // Download the pre-generated Excel template with real dropdown menus
         async function downloadTemplate() {
             try {
-                showProgress('Downloading template...', 50);
+                showProgress('Downloading template with dropdown menus...', 50);
                 
-                // Fetch template from backend
-                const response = await fetch(`${API_BASE_URL}/retrofit/template/download`);
+                // Download the pre-generated Excel file with real dropdowns
+                const response = await fetch('comstock_input_template_with_dropdowns.xlsx');
                 
                 if (!response.ok) {
                     throw new Error('Failed to download template');
@@ -321,19 +349,27 @@
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'comstock_input_template.xlsx';
+                a.download = 'comstock_input_template_with_dropdowns.xlsx';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
                 
                 hideProgress();
-                alert('✅ Template downloaded successfully! Fill it out and upload to get predictions.');
+                alert('✅ Template downloaded successfully!\n\n' +
+                      '📋 This Excel file has REAL dropdown menus!\n\n' +
+                      '✨ Features:\n' +
+                      '• 64 columns with automatic dropdown menus\n' +
+                      '• Just click the dropdown arrow in each cell\n' +
+                      '• 20 empty rows ready for your data\n' +
+                      '• Instructions sheet with full guide\n\n' +
+                      '💡 Tip: Open the file in Excel or Google Sheets and look for the dropdown arrows in the cells. ' +
+                      'Columns with many options (>1000) have cell comments instead.');
                 
             } catch (error) {
                 console.error('Error downloading template:', error);
                 hideProgress();
-                alert('❌ Error downloading template. The model may not be fully deployed yet. You can create a CSV with ComStock building data manually.');
+                alert('❌ Error downloading template: ' + error.message);
             }
         }
 
