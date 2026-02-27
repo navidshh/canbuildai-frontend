@@ -1,6 +1,6 @@
 // Configuration
-const API_BASE_URL = 'https://08879hja2c.execute-api.ca-central-1.amazonaws.com/surrogate_model';
-const BUCKET_NAME = 'btap-app-test3-dev-tgw-3-btap-v1-uploads';
+const API_BASE_URL = 'https://h3v7vtb0ee.execute-api.ca-central-1.amazonaws.com';  // Production API Gateway
+const BUCKET_NAME = 'surrogate-api-dev-tgw-3-btap-v1-uploads';
 const AWS_REGION = 'ca-central-1';
 
 // Global storage for input parameters (for PDF reports)
@@ -660,7 +660,7 @@ async function uploadAndPredict(fileBlob) {
     // Upload file
     let uploadResponse;
     try {
-        uploadResponse = await fetch(`${API_BASE_URL}/upload`, {
+        uploadResponse = await fetch(`${API_BASE_URL}/surrogate_model/upload`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${getAuthToken()}`
@@ -686,7 +686,7 @@ async function uploadAndPredict(fileBlob) {
     predictFormData.append('email', uniqueEmail);
     // No need to send config_file - backend auto-selects based on building data
     
-    const predictResponse = await fetch(`${API_BASE_URL}/run-model-s3`, {
+    const predictResponse = await fetch(`${API_BASE_URL}/surrogate_model/run-model-s3`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${getAuthToken()}`
@@ -716,7 +716,7 @@ async function uploadAndPredict(fileBlob) {
         
         try {
             // Download output.json
-            const downloadResponse = await fetch(`${API_BASE_URL}/download-result`, {
+            const downloadResponse = await fetch(`${API_BASE_URL}/surrogate_model/download-result`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${getAuthToken()}`

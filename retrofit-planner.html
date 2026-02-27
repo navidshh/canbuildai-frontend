@@ -290,8 +290,8 @@
     </div>
 
     <script>
-        // API Configuration - Update with your actual API URL
-        const API_BASE_URL = 'https://08879hja2c.execute-api.ca-central-1.amazonaws.com'; // Production API Gateway URL
+        // API Configuration
+        const API_BASE_URL = 'https://r5v9vscw74.execute-api.ca-central-1.amazonaws.com';  // Production API Gateway
         
         let uploadedData = null;
         let predictionResults = null;
@@ -480,16 +480,32 @@
             try {
                 showProgress('Uploading file and running predictions...', 20);
                 
-                // Create FormData with the uploaded file
-                const formData = new FormData();
-                formData.append('file', uploadedData);
+                // Convert file to base64 for better API Gateway compatibility
+                const reader = new FileReader();
+                const fileContentPromise = new Promise((resolve, reject) => {
+                    reader.onload = () => {
+                        // Get base64 content (remove data:...;base64, prefix)
+                        const base64Content = reader.result.split(',')[1];
+                        resolve(base64Content);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(uploadedData);
+                });
+                
+                const base64Content = await fileContentPromise;
                 
                 showProgress('Processing predictions...', 50);
                 
-                // Call backend API
-                const response = await fetch(`${API_BASE_URL}/retrofit/upload`, {
+                // Call backend API with base64-encoded file
+                const response = await fetch(`${API_BASE_URL}/retrofit/upload-base64`, {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: uploadedData.name,
+                        content: base64Content
+                    })
                 });
                 
                 if (!response.ok) {
@@ -511,7 +527,7 @@
             } catch (error) {
                 console.error('Error running prediction:', error);
                 hideProgress();
-                alert('❌ Error: ' + error.message + '\n\nThe model may not be fully deployed yet. Please check the backend is running.');
+                alert('❌ Error: ' + error.message + '\n\nCould not read excel file. Please ensure it\'s valid excel format. The model may not be fully deployed yet. Please check the backend is running.');
             }
         }
 
