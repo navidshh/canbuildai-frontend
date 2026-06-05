@@ -405,7 +405,7 @@
             <!-- Retrofit Planner Module (New) -->
             <div id="retrofitPlannerModule" class="module-content">
                 <div class="module-header">
-                    <h2>🏢 ComStock Retrofit Planner</h2>
+                    <h2>🏢 Retrofit Planner</h2>
                     <p class="module-description">Upload building data to get AI-powered retrofit predictions and cost estimates</p>
                 </div>
 
@@ -805,7 +805,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `comstock_predictions_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `retrofit_predictions_${new Date().toISOString().split('T')[0]}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
