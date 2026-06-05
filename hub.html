@@ -106,13 +106,15 @@
         }
 
         .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 30px;
             padding: 20px;
         }
 
         .module-card {
+            flex: 0 1 380px;
             background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
             border-radius: 20px;
             padding: 30px;
@@ -224,7 +226,10 @@
 
         @media (max-width: 768px) {
             .modules-grid {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+            .module-card {
+                flex: 1 1 100%;
             }
             
             .hub-header h1 {
@@ -308,19 +313,19 @@
             </div>
 
             <div class="module-card inactive">
-                <span class="module-icon">&#129302;</span>
-                <h3 class="module-title">Building Energy Code & Standards Assistant</h3>
+                <span class="module-icon">&#127968;</span>
+                <h3 class="module-title">Automated Residential Energy Model Generator</h3>
                 <p class="module-description">
-                    A conversational AI advisor grounded in the National Energy Code for Buildings (NECB) and related Canadian standards. Ask plain-language questions and receive code-referenced guidance on energy compliance, envelope performance, mechanical systems, and design best practices.
+                    Instantly generates a ready-to-run HOT2000 energy model for any Canadian home using machine learning. By matching the dwelling to the closest representative profile from over 2 million EnerGuide audits, it replaces hours of manual input preparation with a fully parameterised simulation file delivered in under a second.
                 </p>
                 <span class="module-status coming-soon">Coming Soon</span>
             </div>
 
             <div class="module-card inactive">
-                <span class="module-icon">&#127968;</span>
-                <h3 class="module-title">Automated Residential Energy Model Generator</h3>
+                <span class="module-icon">&#129302;</span>
+                <h3 class="module-title">Building Energy Code & Standards Assistant</h3>
                 <p class="module-description">
-                    Instantly generates a ready-to-run HOT2000 energy model for any Canadian home using machine learning. By matching the dwelling to the closest representative profile from over 2 million EnerGuide audits, it replaces hours of manual input preparation with a fully parameterised simulation file delivered in under a second.
+                    A conversational AI advisor grounded in the National Energy Code for Buildings (NECB) and related Canadian standards. Ask plain-language questions and receive code-referenced guidance on energy compliance, envelope performance, mechanical systems, and design best practices.
                 </p>
                 <span class="module-status coming-soon">Coming Soon</span>
             </div>
