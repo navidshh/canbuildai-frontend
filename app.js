@@ -1833,7 +1833,7 @@ async function downloadCostAnalysisPDFReport() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('CANBUILDAI', pageWidth / 2, 20, { align: 'center' });
+    doc.text('CanBuildAI', pageWidth / 2, 20, { align: 'center' });
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
@@ -1971,7 +1971,7 @@ async function downloadCostAnalysisPDFReport() {
     doc.setFontSize(9);
     doc.setTextColor(128, 128, 128);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 15, pageHeight - 15);
-    doc.text('CANBUILDAI - Energy Surrogate Model', pageWidth / 2, pageHeight - 15, { align: 'center' });
+    doc.text('CanBuildAI - Energy Surrogate Model', pageWidth / 2, pageHeight - 15, { align: 'center' });
     
     // Save
     doc.save('cost_analysis_report.pdf');
@@ -1997,7 +1997,7 @@ async function downloadSinglePDFReport() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('CANBUILDAI', pageWidth / 2, 20, { align: 'center' });
+    doc.text('CanBuildAI', pageWidth / 2, 20, { align: 'center' });
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
@@ -2182,10 +2182,10 @@ async function downloadSinglePDFReport() {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(128, 128, 128);
     doc.text('Page 1 of 1', pageWidth / 2, pageHeight - 10, { align: 'center' });
-    doc.text('CANBUILDAI - Building Design Decision Maker', pageWidth / 2, pageHeight - 6, { align: 'center' });
+    doc.text('CanBuildAI - Building Design Decision Maker', pageWidth / 2, pageHeight - 6, { align: 'center' });
     
     // Save the PDF
-    const fileName = `CANBUILDAI_Single_Prediction_${new Date().toISOString().split('T')[0]}.pdf`;
+    const fileName = `CanBuildAI_Single_Prediction_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
 }
 
@@ -2209,7 +2209,7 @@ async function downloadPDFReport() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('CANBUILDAI', pageWidth / 2, 20, { align: 'center' });
+    doc.text('CanBuildAI', pageWidth / 2, 20, { align: 'center' });
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
@@ -2410,11 +2410,11 @@ async function downloadPDFReport() {
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(128, 128, 128);
         doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-        doc.text('CANBUILDAI - Building Design Decision Maker', pageWidth / 2, pageHeight - 6, { align: 'center' });
+        doc.text('CanBuildAI - Building Design Decision Maker', pageWidth / 2, pageHeight - 6, { align: 'center' });
     }
     
     // Save the PDF
-    const fileName = `CANBUILDAI_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+    const fileName = `CanBuildAI_Report_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
 }
 
