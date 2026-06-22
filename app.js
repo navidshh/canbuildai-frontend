@@ -6,6 +6,64 @@ const AWS_REGION = 'ca-central-1';
 // Global storage for input parameters (for PDF reports)
 let globalInputConfig = null;
 
+// Per-archetype geometry overrides. The default values in
+// defaults_from_excel.json describe a MidriseApartment, so without these
+// overrides every prediction would be run with MidRise geometry no matter
+// which archetype the user picked. The numbers below are approximate
+// NECB / DOE prototype values (floor area in m^2, exterior area in m^2,
+// :building_type name = the DOE prototype name expected by the backend).
+const ARCHETYPE_GEOMETRY = {
+    HighRise: {
+        bldg_name: 'HighriseApartment',
+        bldg_standards_building_type: 'HighriseApartment',
+        bldg_conditioned_floor_area_m_sq: 7831.0,
+        bldg_exterior_area_m_sq: 4870.0
+    },
+    MidRise: {
+        bldg_name: 'MidriseApartment',
+        bldg_standards_building_type: 'MidriseApartment',
+        bldg_conditioned_floor_area_m_sq: 3134.61,
+        bldg_exterior_area_m_sq: 2325.69
+    },
+    LowRise: {
+        bldg_name: 'LowriseApartment',
+        bldg_standards_building_type: 'LowriseApartment',
+        bldg_conditioned_floor_area_m_sq: 1080.0,
+        bldg_exterior_area_m_sq: 1190.0
+    },
+    LargeOffice: {
+        bldg_name: 'LargeOffice',
+        bldg_standards_building_type: 'LargeOffice',
+        bldg_conditioned_floor_area_m_sq: 46320.0,
+        bldg_exterior_area_m_sq: 17760.0
+    },
+    MediumOffice: {
+        bldg_name: 'MediumOffice',
+        bldg_standards_building_type: 'MediumOffice',
+        bldg_conditioned_floor_area_m_sq: 4982.19,
+        bldg_exterior_area_m_sq: 3920.0
+    },
+    SmallOffice: {
+        bldg_name: 'SmallOffice',
+        bldg_standards_building_type: 'SmallOffice',
+        bldg_conditioned_floor_area_m_sq: 511.0,
+        bldg_exterior_area_m_sq: 836.0
+    }
+};
+
+// Apply the per-archetype geometry overrides to an Excel row. Mutates `row`.
+function applyArchetypeGeometry(row, buildingType) {
+    if (!buildingType) return;
+    const geom = ARCHETYPE_GEOMETRY[buildingType];
+    if (!geom) {
+        console.warn('No geometry mapping for archetype:', buildingType);
+        return;
+    }
+    Object.keys(geom).forEach((k) => {
+        row[k] = geom[k];
+    });
+}
+
 // Cognito Configuration
 const poolData = {
     UserPoolId: 'ca-central-1_NHVo7D7Kw',
@@ -278,6 +336,11 @@ async function generateExcelFile(config) {
         row['bldg_standards_building_type'] = config[':building_type'];
     }
 
+    // Inject per-archetype geometry (floor area, exterior area, bldg_name) so
+    // the surrogate model receives the right geometry for the chosen archetype
+    // instead of the MidRise defaults baked into defaults_from_excel.json.
+    applyArchetypeGeometry(row, config[':building_type']);
+
     console.log(`Updated ${updatedCount} out of ${userParams.length} user parameters`);
     console.log('Final values:', userParams.map(p => ':' + p + '=' + row[':' + p]));
     
@@ -396,6 +459,10 @@ async function generateMultiConfigExcelFile(config, variableParameter, customRan
         if (config[':building_type'] !== undefined) {
             row['bldg_standards_building_type'] = config[':building_type'];
         }
+
+        // Inject per-archetype geometry so the surrogate model receives
+        // the right geometry for the chosen archetype.
+        applyArchetypeGeometry(row, config[':building_type']);
 
         // Override the variable parameter with the specific variation value
         const variableKey = ':' + variableParameter;
