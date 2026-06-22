@@ -21,56 +21,71 @@
     'use strict';
 
     // --- Canonical NECB / DOE-prototype building dimensions ------------------
-    // (Approximate; tuned for visualisation, not for thermal calcs.)
-    // width / depth in metres, floorHeight in metres.
+    // Source: ASHRAE 90.1 Prototype Building Models / U.S. DOE Commercial
+    // Reference Buildings — these are the official prototypes the NECB
+    // archetypes are derived from.  Values rounded to 2 decimals.
+    // LowriseApartment is NECB-specific (no DOE/90.1 prototype); footprint is
+    // a typical Canadian 3-storey walk-up approximation.
+    //
+    // Floor count is intentionally also tracked in app.js
+    // (ARCHETYPE_GEOMETRY.*.bldg_standards_number_of_above_ground_stories) so
+    // the same number is sent to the backend. createBuildingViewer() prefers
+    // window.ARCHETYPE_GEOMETRY at runtime so the viewer never disagrees with
+    // what the model is actually being fed.
     const ARCHETYPE_DIMENSIONS = {
         HighRise: {
             label: 'High Rise Apartment',
             stories: 10,
-            width: 28.0,
-            depth: 28.0,
-            floorHeight: 3.0,
-            perimeterDepth: 4.5
+            width: 47.24,    // ASHRAE 90.1 HighRiseApartment
+            depth: 14.94,
+            floorHeight: 3.05,
+            perimeterDepth: 4.57,
+            source: 'ASHRAE 90.1 HighRiseApartment prototype'
         },
         MidRise: {
             label: 'Mid Rise Apartment',
             stories: 4,
-            width: 46.0,
-            depth: 17.0,
-            floorHeight: 3.0,
-            perimeterDepth: 4.5
+            width: 46.32,    // ASHRAE 90.1 / DOE MidriseApartment
+            depth: 16.46,
+            floorHeight: 3.05,
+            perimeterDepth: 4.57,
+            source: 'ASHRAE 90.1 / DOE MidriseApartment prototype'
         },
         LowRise: {
             label: 'Low Rise Apartment',
             stories: 3,
-            width: 30.0,
-            depth: 12.0,
-            floorHeight: 3.0,
-            perimeterDepth: 3.5
+            width: 32.0,
+            depth: 13.0,
+            floorHeight: 3.05,
+            perimeterDepth: 3.5,
+            source: 'NECB LowriseApartment (approx. Canadian 3-storey walk-up)'
         },
         LargeOffice: {
             label: 'Large Office',
             stories: 12,
-            width: 73.1,
-            depth: 48.8,
-            floorHeight: 3.6,
-            perimeterDepth: 4.57
+            width: 73.13,    // DOE LargeOffice (excludes basement)
+            depth: 48.77,
+            floorHeight: 3.96,
+            perimeterDepth: 4.57,
+            source: 'ASHRAE 90.1 / DOE LargeOffice prototype (above grade)'
         },
         MediumOffice: {
             label: 'Medium Office',
             stories: 3,
-            width: 49.9,
-            depth: 33.3,
-            floorHeight: 3.6,
-            perimeterDepth: 4.57
+            width: 49.91,    // DOE MediumOffice
+            depth: 33.27,
+            floorHeight: 3.96,
+            perimeterDepth: 4.57,
+            source: 'ASHRAE 90.1 / DOE MediumOffice prototype'
         },
         SmallOffice: {
             label: 'Small Office',
             stories: 1,
-            width: 27.7,
-            depth: 18.5,
-            floorHeight: 3.0,
-            perimeterDepth: 4.57
+            width: 27.69,    // DOE SmallOffice
+            depth: 18.46,
+            floorHeight: 3.05,
+            perimeterDepth: 4.57,
+            source: 'ASHRAE 90.1 / DOE SmallOffice prototype'
         }
     };
 
@@ -84,7 +99,65 @@
     };
 
     function getArchetypeDimensions(archetype) {
-        return ARCHETYPE_DIMENSIONS[archetype] || ARCHETYPE_DIMENSIONS.MidRise;
+        const base =
+            ARCHETYPE_DIMENSIONS[archetype] || ARCHETYPE_DIMENSIONS.MidRise;
+        // Prefer the stories count from app.js's ARCHETYPE_GEOMETRY (the same
+        // value the backend gets), so the viewer can never disagree with the
+        // model. Falls back to the canonical table above.
+        const backend =
+            (global.ARCHETYPE_GEOMETRY && global.ARCHETYPE_GEOMETRY[archetype]) ||
+            null;
+        const stories =
+            (backend && backend.bldg_standards_number_of_above_ground_stories) ||
+            base.stories;
+        return Object.assign({}, base, { stories });
+    }
+
+    /**
+     * Make a small text "sticker" sprite (e.g. "F3") that always faces the
+     * camera.  Returns a THREE.Sprite ready to position.
+     */
+    function makeFloorLabel(text, THREE) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        // Pill background
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        const r = 18;
+        ctx.beginPath();
+        ctx.moveTo(r, 0);
+        ctx.lineTo(canvas.width - r, 0);
+        ctx.quadraticCurveTo(canvas.width, 0, canvas.width, r);
+        ctx.lineTo(canvas.width, canvas.height - r);
+        ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - r, canvas.height);
+        ctx.lineTo(r, canvas.height);
+        ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - r);
+        ctx.lineTo(0, r);
+        ctx.quadraticCurveTo(0, 0, r, 0);
+        ctx.closePath();
+        ctx.fill();
+        // Label text
+        ctx.fillStyle = '#fafafa';
+        ctx.font = 'bold 40px system-ui, -apple-system, Segoe UI, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 2);
+
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.minFilter = THREE.LinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        const mat = new THREE.SpriteMaterial({
+            map: tex,
+            transparent: true,
+            depthTest: false,  // always render in front so labels stay readable
+            depthWrite: false
+        });
+        const sprite = new THREE.Sprite(mat);
+        // World-space size: ~3m wide × 1.5m tall (readable but unobtrusive)
+        sprite.scale.set(3.2, 1.6, 1);
+        sprite.renderOrder = 999;
+        return sprite;
     }
 
     /**
@@ -103,8 +176,10 @@
 
         // Slightly inset edges so neighbouring boxes don't z-fight on shared faces.
         const e = 0.02;
-        const h = floorHeight - 0.05;
-        const yMid = yBase + h / 2;
+        // Reserve room at the bottom of each floor for a visible slab/band.
+        const slabHeight = 0.22;
+        const h = floorHeight - slabHeight - 0.05;
+        const yMid = yBase + slabHeight + h / 2;
 
         const mat = (color) =>
             new THREE.MeshStandardMaterial({
@@ -156,14 +231,29 @@
             group.add(core);
         }
 
-        // Thin floor-slab line as an edge highlight for readability.
-        const slabHeight = 0.04;
+        // Inter-floor band: thicker than before and overhanging the wall on
+        // every side so each floor reads as a distinct stack rather than a
+        // continuous column.
+        const overhang = 0.5;
         const slab = new THREE.Mesh(
-            new THREE.BoxGeometry(width + 0.01, slabHeight, depth + 0.01),
-            new THREE.MeshStandardMaterial({ color: 0x2a3340, roughness: 1.0 })
+            new THREE.BoxGeometry(width + overhang, slabHeight, depth + overhang),
+            new THREE.MeshStandardMaterial({
+                color: 0x1f2937,
+                roughness: 0.95,
+                metalness: 0.0
+            })
         );
         slab.position.set(0, yBase + slabHeight / 2, 0);
         group.add(slab);
+
+        // Floor-number label at the SW corner just above the slab.
+        const label = makeFloorLabel(`F${floorIndex + 1}`, THREE);
+        label.position.set(
+            -(width / 2) - 2.0,
+            yBase + slabHeight + 0.9,
+            (depth / 2) + 2.0
+        );
+        group.add(label);
 
         return group;
     }

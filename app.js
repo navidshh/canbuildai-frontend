@@ -9,47 +9,67 @@ let globalInputConfig = null;
 // Per-archetype geometry overrides. The default values in
 // defaults_from_excel.json describe a MidriseApartment, so without these
 // overrides every prediction would be run with MidRise geometry no matter
-// which archetype the user picked. The numbers below are approximate
-// NECB / DOE prototype values (floor area in m^2, exterior area in m^2,
-// :building_type name = the DOE prototype name expected by the backend).
+// which archetype the user picked. The numbers below come from the
+// ASHRAE 90.1 Prototype Building Models / U.S. DOE Commercial Reference
+// Buildings (the same prototypes the NECB archetypes are derived from);
+// LowriseApartment is a NECB-specific 3-storey walk-up approximation.
+//
+// surrogate-geometry.js reads from window.ARCHETYPE_GEOMETRY at runtime so
+// the 3D viewer never disagrees with what the model is actually being fed.
 const ARCHETYPE_GEOMETRY = {
     HighRise: {
         bldg_name: 'HighriseApartment',
         bldg_standards_building_type: 'HighriseApartment',
-        bldg_conditioned_floor_area_m_sq: 7831.0,
-        bldg_exterior_area_m_sq: 4870.0
+        bldg_conditioned_floor_area_m_sq: 7058.0,   // 47.24 × 14.94 × 10
+        bldg_exterior_area_m_sq: 4870.0,
+        bldg_standards_number_of_above_ground_stories: 10,
+        bldg_standards_number_of_stories: 10
     },
     MidRise: {
         bldg_name: 'MidriseApartment',
         bldg_standards_building_type: 'MidriseApartment',
         bldg_conditioned_floor_area_m_sq: 3134.61,
-        bldg_exterior_area_m_sq: 2325.69
+        bldg_exterior_area_m_sq: 2325.69,
+        bldg_standards_number_of_above_ground_stories: 4,
+        bldg_standards_number_of_stories: 4
     },
     LowRise: {
         bldg_name: 'LowriseApartment',
         bldg_standards_building_type: 'LowriseApartment',
-        bldg_conditioned_floor_area_m_sq: 1080.0,
-        bldg_exterior_area_m_sq: 1190.0
+        bldg_conditioned_floor_area_m_sq: 1248.0,   // 32.0 × 13.0 × 3
+        bldg_exterior_area_m_sq: 1190.0,
+        bldg_standards_number_of_above_ground_stories: 3,
+        bldg_standards_number_of_stories: 3
     },
     LargeOffice: {
         bldg_name: 'LargeOffice',
         bldg_standards_building_type: 'LargeOffice',
         bldg_conditioned_floor_area_m_sq: 46320.0,
-        bldg_exterior_area_m_sq: 17760.0
+        bldg_exterior_area_m_sq: 17760.0,
+        bldg_standards_number_of_above_ground_stories: 12,
+        bldg_standards_number_of_stories: 12
     },
     MediumOffice: {
         bldg_name: 'MediumOffice',
         bldg_standards_building_type: 'MediumOffice',
         bldg_conditioned_floor_area_m_sq: 4982.19,
-        bldg_exterior_area_m_sq: 3920.0
+        bldg_exterior_area_m_sq: 3920.0,
+        bldg_standards_number_of_above_ground_stories: 3,
+        bldg_standards_number_of_stories: 3
     },
     SmallOffice: {
         bldg_name: 'SmallOffice',
         bldg_standards_building_type: 'SmallOffice',
         bldg_conditioned_floor_area_m_sq: 511.0,
-        bldg_exterior_area_m_sq: 836.0
+        bldg_exterior_area_m_sq: 836.0,
+        bldg_standards_number_of_above_ground_stories: 1,
+        bldg_standards_number_of_stories: 1
     }
 };
+
+// Expose so surrogate-geometry.js (loaded after app.js) can pull the
+// stories count from the same single source of truth.
+window.ARCHETYPE_GEOMETRY = ARCHETYPE_GEOMETRY;
 
 // Apply the per-archetype geometry overrides to an Excel row. Mutates `row`.
 function applyArchetypeGeometry(row, buildingType) {
