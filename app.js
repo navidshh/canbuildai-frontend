@@ -271,7 +271,13 @@ async function generateExcelFile(config) {
             updatedCount++;
         }
     });
-    
+
+    // Keep the legacy ComStock column in sync with the user's selection so the
+    // backend's auto config selection doesn't pick the stale default value.
+    if (config[':building_type'] !== undefined) {
+        row['bldg_standards_building_type'] = config[':building_type'];
+    }
+
     console.log(`Updated ${updatedCount} out of ${userParams.length} user parameters`);
     console.log('Final values:', userParams.map(p => ':' + p + '=' + row[':' + p]));
     
@@ -384,7 +390,13 @@ async function generateMultiConfigExcelFile(config, variableParameter, customRan
                 row[key] = config[key];
             }
         });
-        
+
+        // Keep the legacy ComStock column in sync with the user's selection so the
+        // backend's auto config selection doesn't pick the stale default value.
+        if (config[':building_type'] !== undefined) {
+            row['bldg_standards_building_type'] = config[':building_type'];
+        }
+
         // Override the variable parameter with the specific variation value
         const variableKey = ':' + variableParameter;
         row[variableKey] = variations[i];
