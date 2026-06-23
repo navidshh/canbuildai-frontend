@@ -348,17 +348,14 @@
                     <input type="hidden" id="ecm_system_name" name="ecm_system_name">
 
                     <div class="form-group">
-                        <label for="primary_heating_fuel">
+                        <label for="primary_heating_fuel" id="primaryHeatingFuelLabel">
                             Primary Heating Fuel
                             <span class="tooltip" data-tooltip="The main energy source for heating">ℹ️</span>
                         </label>
                         <select id="primary_heating_fuel" name="primary_heating_fuel" required>
                             <option value="">Select Heating Fuel...</option>
                             <option value="Electricity">Electricity</option>
-                            <option value="ElectricityHPElecBackup">Electricity (Heat Pump with Electric Backup)</option>
                             <option value="NaturalGas">Natural Gas</option>
-                            <option value="FuelOilNo2">Fuel Oil No.2</option>
-                            <option value="Heatpump">Heat Pump</option>
                         </select>
                     </div>
 
@@ -398,6 +395,27 @@
                             <option value="Natural Gas Direct Vent with Electric Ignition">Natural Gas Direct Vent</option>
                             <option value="Natural Gas Power Vent with Electric Ignition">Natural Gas Power Vent</option>
                         </select>
+                    </div>
+
+                    <!-- Live system summary + animated layout diagram.
+                         Populated and updated by renderHvacSummary() in app.js. -->
+                    <div class="hvac-summary-wrap" id="hvacSummaryWrap">
+                        <div class="hvac-summary-card" id="hvacSummaryCard">
+                            <h4>🧭 What the model will simulate</h4>
+                            <dl>
+                                <dt>Primary heating</dt><dd id="hvacSummaryPrimary">—</dd>
+                                <dt>Distribution</dt><dd id="hvacSummaryDistribution">—</dd>
+                                <dt>Backup heating</dt><dd id="hvacSummaryBackup">—</dd>
+                                <dt>Service hot water</dt><dd id="hvacSummarySHW">—</dd>
+                            </dl>
+                            <details class="hvac-summary-backend">
+                                <summary>Backend values</summary>
+                                <div><code>ecm_system_name = <span id="hvacSummaryEcm">—</span></code></div>
+                                <div><code>primary_heating_fuel → <span id="hvacSummaryFuel">—</span></code></div>
+                                <p class="hvac-summary-note" id="hvacSummaryNote"></p>
+                            </details>
+                        </div>
+                        <div class="hvac-diagram" id="hvacDiagram" aria-hidden="true"></div>
                     </div>
                 </section>
 

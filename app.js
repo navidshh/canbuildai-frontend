@@ -129,13 +129,23 @@ function setupHvacCascade(familyId, typeId, hiddenId) {
     const hidden = document.getElementById(hiddenId);
     if (!familySel || !typeSel || !hidden) return;
 
+    // The main HVAC picker drives the live System Summary card; cost-analysis
+    // pickers don't, so we only refresh the summary for the main picker.
+    const isMainPicker = hiddenId === 'ecm_system_name';
+
     function syncHidden() {
         const family = familySel.value;
-        if (!family) { hidden.value = ''; return; }
-        if (family === 'NECB_Default') { hidden.value = 'NECB_Default'; return; }
-        const type = typeSel.value;
-        if (!type) { hidden.value = ''; return; }
-        hidden.value = HVAC_SYSTEM_OPTIONS.backendValue[`${family}|${type}`] || '';
+        if (!family) {
+            hidden.value = '';
+        } else if (family === 'NECB_Default') {
+            hidden.value = 'NECB_Default';
+        } else {
+            const type = typeSel.value;
+            hidden.value = type
+                ? (HVAC_SYSTEM_OPTIONS.backendValue[`${family}|${type}`] || '')
+                : '';
+        }
+        if (isMainPicker) renderHvacSummary();
     }
 
     function rebuildTypes() {
@@ -166,12 +176,298 @@ function setupHvacCascade(familyId, typeId, hiddenId) {
     rebuildTypes();
 }
 
+// ---------------------------------------------------------------------------
+// HVAC system summary card + animated layout diagram
+// ---------------------------------------------------------------------------
+// The summary card translates the raw form inputs into plain-English
+// statements about what the simulation will model. It also exposes the
+// "auto-derived" backend value for `primary_heating_fuel` — e.g. selecting
+// `HS13_ASHP_VRF` + `NaturalGas` is silently rewritten by BTAP to
+// `NaturalGasHPGasBackup` (heat pump primary, NG backup), and the summary
+// makes that transformation visible to the user.
+//
+// The layout diagram is a small SVG with all elements present at all times;
+// CSS classes on the parent container toggle which ones are visible and
+// drive the animations (fan spin, refrigerant flow, flame pulse, etc.).
+const HVAC_DIAGRAM_SVG = `
+<svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="HVAC system layout diagram">
+    <!-- Sky / background -->
+    <rect x="0" y="0" width="320" height="200" fill="#f5f9ff" />
+    <text x="14" y="22" font-size="14">❄️</text>
+    <text x="295" y="22" font-size="14">☀️</text>
+
+    <!-- Empty / not configured prompt -->
+    <g class="empty-state">
+        <text x="160" y="100" text-anchor="middle" font-size="13" fill="#8092b8">
+            Pick a system to see the layout
+        </text>
+    </g>
+
+    <!-- Outdoor heat pump unit (visible in mode-hp) -->
+    <g class="hp-unit">
+        <rect x="20" y="80" width="70" height="55" rx="6"
+              fill="#fff" stroke="#2a5298" stroke-width="2"/>
+        <circle cx="55" cy="107" r="18"
+                fill="#e6f0ff" stroke="#2a5298" stroke-width="1.5"/>
+        <g class="hp-fan">
+            <path d="M55,89 L55,125 M37,107 L73,107
+                     M42.5,94.5 L67.5,119.5 M67.5,94.5 L42.5,119.5"
+                  stroke="#2a5298" stroke-width="2" stroke-linecap="round"
+                  fill="none"/>
+            <circle cx="55" cy="107" r="3" fill="#2a5298"/>
+        </g>
+        <text x="55" y="150" text-anchor="middle"
+              font-size="9" fill="#2a5298" font-weight="600">Heat Pump</text>
+    </g>
+
+    <!-- Refrigerant lines (visible in mode-hp) -->
+    <g class="hp-lines">
+        <path d="M95,98 L195,98" stroke="#e74c3c" stroke-width="2.5"
+              stroke-dasharray="6 4" fill="none"
+              class="refrig-line refrig-supply"/>
+        <path d="M95,118 L195,118" stroke="#3498db" stroke-width="2.5"
+              stroke-dasharray="6 4" fill="none"
+              class="refrig-line refrig-return"/>
+        <text x="145" y="90" text-anchor="middle"
+              font-size="8" fill="#666">refrigerant loop</text>
+    </g>
+
+    <!-- Building -->
+    <g class="building">
+        <polygon points="195,40 247,18 300,40" fill="#2a5298"/>
+        <rect x="195" y="40" width="105" height="135"
+              fill="#fff" stroke="#2a5298" stroke-width="2"/>
+        <!-- Windows -->
+        <rect x="205" y="55" width="18" height="18"
+              fill="#e6f0ff" stroke="#2a5298"/>
+        <rect x="238" y="55" width="18" height="18"
+              fill="#e6f0ff" stroke="#2a5298"/>
+        <rect x="271" y="55" width="18" height="18"
+              fill="#e6f0ff" stroke="#2a5298"/>
+        <rect x="205" y="85" width="18" height="18"
+              fill="#e6f0ff" stroke="#2a5298"/>
+        <rect x="238" y="85" width="18" height="18"
+              fill="#e6f0ff" stroke="#2a5298"/>
+        <rect x="271" y="85" width="18" height="18"
+              fill="#e6f0ff" stroke="#2a5298"/>
+        <!-- Door -->
+        <rect x="238" y="143" width="18" height="32" fill="#2a5298"/>
+    </g>
+
+    <!-- Distribution: VRF cassettes (ceiling) -->
+    <g class="dist-vrf-vis">
+        <rect x="203" y="118" width="14" height="5" rx="1" fill="#f39c12"/>
+        <rect x="236" y="118" width="14" height="5" rx="1" fill="#f39c12"/>
+        <rect x="269" y="118" width="14" height="5" rx="1" fill="#f39c12"/>
+        <text x="247" y="135" text-anchor="middle"
+              font-size="8" fill="#a06000">VRF cassettes</text>
+    </g>
+
+    <!-- Distribution: Baseboards (floor) -->
+    <g class="dist-baseboard-vis">
+        <rect x="200" y="168" width="95" height="5" rx="1" fill="#f39c12"/>
+        <text x="247" y="138" text-anchor="middle"
+              font-size="8" fill="#a06000">Baseboards</text>
+    </g>
+
+    <!-- Distribution: PTHP units (in windows) -->
+    <g class="dist-pthp-vis">
+        <rect x="205" y="68" width="18" height="6" fill="#f39c12"/>
+        <rect x="271" y="68" width="18" height="6" fill="#f39c12"/>
+        <text x="247" y="138" text-anchor="middle"
+              font-size="8" fill="#a06000">PTHP units</text>
+    </g>
+
+    <!-- Distribution: NECB-default radiator -->
+    <g class="dist-necb-vis">
+        <rect x="217" y="118" width="60" height="14"
+              fill="none" stroke="#f39c12" stroke-width="1.5"/>
+        <line x1="227" y1="118" x2="227" y2="132" stroke="#f39c12"/>
+        <line x1="237" y1="118" x2="237" y2="132" stroke="#f39c12"/>
+        <line x1="247" y1="118" x2="247" y2="132" stroke="#f39c12"/>
+        <line x1="257" y1="118" x2="257" y2="132" stroke="#f39c12"/>
+        <line x1="267" y1="118" x2="267" y2="132" stroke="#f39c12"/>
+        <text x="247" y="143" text-anchor="middle"
+              font-size="8" fill="#a06000">Radiator / coil</text>
+    </g>
+
+    <!-- Backup heating (visible in mode-hp + matching fuel) -->
+    <g class="backup-gas">
+        <rect x="105" y="155" width="60" height="35" rx="4"
+              fill="#fff" stroke="#a06000" stroke-width="1.5"/>
+        <text x="135" y="180" text-anchor="middle" font-size="20"
+              class="flame-anim">🔥</text>
+        <text x="135" y="151" text-anchor="middle"
+              font-size="9" fill="#a06000">NG backup boiler</text>
+    </g>
+    <g class="backup-elec">
+        <rect x="105" y="155" width="60" height="35" rx="4"
+              fill="#fff" stroke="#7a4ec9" stroke-width="1.5"/>
+        <text x="135" y="180" text-anchor="middle" font-size="20"
+              class="elec-anim">⚡</text>
+        <text x="135" y="151" text-anchor="middle"
+              font-size="9" fill="#7a4ec9">Electric backup</text>
+    </g>
+
+    <!-- Primary fuel source (visible in mode-necb) -->
+    <g class="primary-gas">
+        <rect x="40" y="100" width="90" height="55" rx="4"
+              fill="#fff" stroke="#a06000" stroke-width="2"/>
+        <text x="85" y="135" text-anchor="middle" font-size="28"
+              class="flame-anim">🔥</text>
+        <text x="85" y="95" text-anchor="middle"
+              font-size="9" fill="#a06000" font-weight="600">NG Boiler / Furnace</text>
+    </g>
+    <g class="primary-elec">
+        <rect x="40" y="100" width="90" height="55" rx="4"
+              fill="#fff" stroke="#7a4ec9" stroke-width="2"/>
+        <text x="85" y="135" text-anchor="middle" font-size="28"
+              class="elec-anim">⚡</text>
+        <text x="85" y="95" text-anchor="middle"
+              font-size="9" fill="#7a4ec9" font-weight="600">Electric heating</text>
+    </g>
+</svg>
+`;
+
+function mountHvacDiagram() {
+    const host = document.getElementById('hvacDiagram');
+    if (host && !host.firstElementChild) {
+        host.innerHTML = HVAC_DIAGRAM_SVG;
+    }
+}
+
+function renderHvacSummary() {
+    const familySel = document.getElementById('ecm_system_family');
+    const typeSel   = document.getElementById('ecm_system_type');
+    const fuelSel   = document.getElementById('primary_heating_fuel');
+    const shwSel    = document.getElementById('shw_eff');
+    const ecmHidden = document.getElementById('ecm_system_name');
+    const card      = document.getElementById('hvacSummaryCard');
+    if (!card) return;
+
+    const family = familySel ? familySel.value : '';
+    const type   = typeSel   ? typeSel.value   : '';
+    const fuel   = fuelSel   ? fuelSel.value   : '';
+    const shw    = shwSel    ? shwSel.value    : '';
+    const isHP   = family === 'CCASHP' || family === 'ASHP';
+
+    // ---- Primary heating ----
+    let primary = '—';
+    if (family === 'CCASHP')           primary = 'Cold Climate Air Source Heat Pump (electric refrigerant cycle)';
+    else if (family === 'ASHP')        primary = 'Air Source Heat Pump (electric refrigerant cycle)';
+    else if (family === 'NECB_Default') {
+        if (fuel === 'NaturalGas')     primary = 'Natural Gas boiler / furnace (NECB default)';
+        else if (fuel === 'Electricity') primary = 'Electric heating (NECB default)';
+        else                            primary = 'NECB default (pick a fuel)';
+    }
+
+    // ---- Distribution ----
+    const typeLabels = {
+        VRF:       'Variable Refrigerant Flow (VRF)',
+        Baseboard: 'Hydronic / electric baseboards',
+        PTHP:      'Packaged Terminal Heat Pump (PTHP)'
+    };
+    let distribution = '—';
+    if (isHP && type)                  distribution = typeLabels[type] || type;
+    else if (family === 'NECB_Default') distribution = 'NECB default zoning (radiator / coil)';
+
+    // ---- Backup heating + derived fuel value ----
+    let backup       = '—';
+    let derivedFuel  = '—';
+    let note         = '';
+    if (fuel === 'NaturalGas') {
+        if (isHP) {
+            backup      = 'Natural Gas — boiler / furnace loop (used during very cold hours)';
+            derivedFuel = 'NaturalGasHPGasBackup (auto-derived)';
+            note        = 'The heat pump remains the primary heating source. Natural gas is the supplementary backup, used when the heat pump cannot meet load.';
+        } else {
+            backup      = 'N/A — natural gas is the primary heat source';
+            derivedFuel = 'NaturalGas';
+        }
+    } else if (fuel === 'Electricity') {
+        if (isHP) {
+            backup      = 'Electric resistance — supplementary heating during very cold hours';
+            derivedFuel = 'ElectricityHPElecBackup (auto-derived)';
+            note        = 'The heat pump remains the primary heating source. Electric resistance is the supplementary backup.';
+        } else {
+            backup      = 'N/A — electricity is the primary heat source';
+            derivedFuel = 'Electricity';
+        }
+    }
+
+    // ---- Service hot water ----
+    const shwLabels = {
+        'NECB_Default':                                        'NECB Default',
+        'Natural Gas Direct Vent with Electric Ignition':      'Natural Gas Direct Vent',
+        'Natural Gas Power Vent with Electric Ignition':       'Natural Gas Power Vent'
+    };
+    const shwDisplay = shw ? (shwLabels[shw] || shw) : '—';
+
+    // ---- Write to the DOM ----
+    const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+    set('hvacSummaryPrimary',      primary);
+    set('hvacSummaryDistribution', distribution);
+    set('hvacSummaryBackup',       backup);
+    set('hvacSummarySHW',          shwDisplay);
+    set('hvacSummaryEcm',          (ecmHidden && ecmHidden.value) || '—');
+    set('hvacSummaryFuel',         derivedFuel);
+    set('hvacSummaryNote',         note);
+
+    // ---- Update the diagram via CSS classes on the host ----
+    const diagram = document.getElementById('hvacDiagram');
+    if (diagram) {
+        const classes = ['hvac-diagram'];
+        if (family === 'NECB_Default')      classes.push('mode-necb');
+        else if (isHP)                      classes.push('mode-hp');
+        else                                classes.push('mode-empty');
+
+        if (fuel === 'NaturalGas')          classes.push('fuel-gas');
+        else if (fuel === 'Electricity')    classes.push('fuel-elec');
+
+        if (type === 'VRF')                 classes.push('dist-vrf');
+        else if (type === 'Baseboard')      classes.push('dist-baseboard');
+        else if (type === 'PTHP')           classes.push('dist-pthp');
+
+        diagram.className = classes.join(' ');
+    }
+
+    // ---- Reframe the "Primary Heating Fuel" label when in heat-pump mode ----
+    const fuelLabel = document.getElementById('primaryHeatingFuelLabel');
+    if (fuelLabel) {
+        if (isHP) {
+            fuelLabel.innerHTML =
+                'Backup / Supplementary Heating Fuel ' +
+                '<span class="tooltip" data-tooltip="The heat pump is the primary heating source (electric). ' +
+                'This fuel powers the supplementary boiler / furnace loop used during very cold hours ' +
+                'and for ancillary heating loads.">ℹ️</span>';
+        } else {
+            fuelLabel.innerHTML =
+                'Primary Heating Fuel ' +
+                '<span class="tooltip" data-tooltip="The main energy source for heating (boiler / furnace loop).">ℹ️</span>';
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Main HVAC picker (present on both index.html and surrogate-model.html).
     setupHvacCascade('ecm_system_family', 'ecm_system_type', 'ecm_system_name');
     // Cost-analysis baseline / improved pickers (surrogate-model.html only).
     setupHvacCascade('baselineValue_family', 'baselineValue_type', 'baselineValueSelect');
     setupHvacCascade('improvedValue_family', 'improvedValue_type', 'improvedValueSelect');
+
+    // Mount the animated layout diagram and render the first summary.
+    mountHvacDiagram();
+    renderHvacSummary();
+
+    // Re-render the summary whenever any contributing field changes.
+    ['primary_heating_fuel', 'shw_eff'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', renderHvacSummary);
+    });
 
     // Form reset doesn't trigger 'change' on selects, so re-run the cascade
     // initialisers on reset to keep the type select in sync with the family.
@@ -185,6 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const sel = document.getElementById(id);
                     if (sel) sel.dispatchEvent(new Event('change'));
                 });
+                renderHvacSummary();
             }, 0);
         });
     }
