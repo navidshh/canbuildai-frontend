@@ -315,22 +315,37 @@
                 <!-- HVAC System Configuration -->
                 <section class="wizard-step form-section" data-step="3">
                     <h2 class="step-title">🔧 HVAC System Configuration</h2>
-                    
+
+                    <!-- Dominant HVAC System is split into two cascading selects:
+                         (1) the HVAC system family and (2) its delivery type.
+                         A hidden input named ecm_system_name is populated by
+                         JS (setupHvacCascade in app.js) with the original
+                         backend value (e.g. HS08_CCASHP_VRF) that the
+                         surrogate model expects. -->
                     <div class="form-group">
-                        <label for="ecm_system_name">
+                        <label for="ecm_system_family">
                             Dominant HVAC System
                             <span class="tooltip" data-tooltip="The primary heating, ventilation, and air conditioning system for the building">ℹ️</span>
                         </label>
-                        <select id="ecm_system_name" name="ecm_system_name" required>
+                        <select id="ecm_system_family" required>
                             <option value="">Select HVAC System...</option>
                             <option value="NECB_Default">NECB Default</option>
-                            <option value="HS08_CCASHP_VRF">Cold Climate Air Source Heat Pump with VRF</option>
-                            <option value="HS09_CCASHP_Baseboard">Cold Climate Air Source Heat Pump with Baseboard</option>
-                            <option value="HS11_ASHP_PTHP">Air Source Heat Pump (Packaged Terminal)</option>
-                            <option value="HS12_ASHP_Baseboard">Air Source Heat Pump with Baseboard</option>
-                            <option value="HS13_ASHP_VRF">Air Source Heat Pump with VRF</option>
+                            <option value="CCASHP">Cold Climate Air Source Heat Pump</option>
+                            <option value="ASHP">Air Source Heat Pump</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                        <label for="ecm_system_type">
+                            HVAC System Type
+                            <span class="tooltip" data-tooltip="The specific delivery type for the selected HVAC system (e.g. VRF or Baseboard)">ℹ️</span>
+                        </label>
+                        <select id="ecm_system_type">
+                            <option value="">Select system first...</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" id="ecm_system_name" name="ecm_system_name">
 
                     <div class="form-group">
                         <label for="primary_heating_fuel">
@@ -555,15 +570,21 @@
                                     <span class="tooltip" data-tooltip="The current parameter value before retrofit">ℹ️</span>
                                 </label>
                                 <input type="number" id="baselineValue" name="baselineValue" step="any" placeholder="e.g., 2.4" style="display: block;">
-                                <select id="baselineValueSelect" name="baselineValueSelect" style="display: none;">
-                                    <option value="">Select current system...</option>
-                                    <option value="NECB_Default">NECB Default</option>
-                                    <option value="HS08_CCASHP_VRF">Cold Climate Air Source Heat Pump with VRF</option>
-                                    <option value="HS09_CCASHP_Baseboard">Cold Climate Air Source Heat Pump with Baseboard</option>
-                                    <option value="HS11_ASHP_PTHP">Air Source Heat Pump (Packaged Terminal)</option>
-                                    <option value="HS12_ASHP_Baseboard">Air Source Heat Pump with Baseboard</option>
-                                    <option value="HS13_ASHP_VRF">Air Source Heat Pump with VRF</option>
-                                </select>
+                                <!-- Cascading HVAC selects (shown only when cost parameter is ecm_system_name).
+                                     A hidden input named baselineValueSelect is populated by setupHvacCascade
+                                     in app.js with the original backend ecm_system_name value. -->
+                                <div id="baselineValueHvacGroup" style="display: none;">
+                                    <select id="baselineValue_family" style="margin-bottom: 8px;">
+                                        <option value="">Select current system...</option>
+                                        <option value="NECB_Default">NECB Default</option>
+                                        <option value="CCASHP">Cold Climate Air Source Heat Pump</option>
+                                        <option value="ASHP">Air Source Heat Pump</option>
+                                    </select>
+                                    <select id="baselineValue_type">
+                                        <option value="">Select system first...</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" id="baselineValueSelect" name="baselineValueSelect">
                             </div>
                             <div class="form-group">
                                 <label for="improvedValue">
@@ -571,15 +592,18 @@
                                     <span class="tooltip" data-tooltip="The parameter value after retrofit">ℹ️</span>
                                 </label>
                                 <input type="number" id="improvedValue" name="improvedValue" step="any" placeholder="e.g., 1.6" style="display: block;">
-                                <select id="improvedValueSelect" name="improvedValueSelect" style="display: none;">
-                                    <option value="">Select improved system...</option>
-                                    <option value="NECB_Default">NECB Default</option>
-                                    <option value="HS08_CCASHP_VRF">Cold Climate Air Source Heat Pump with VRF</option>
-                                    <option value="HS09_CCASHP_Baseboard">Cold Climate Air Source Heat Pump with Baseboard</option>
-                                    <option value="HS11_ASHP_PTHP">Air Source Heat Pump (Packaged Terminal)</option>
-                                    <option value="HS12_ASHP_Baseboard">Air Source Heat Pump with Baseboard</option>
-                                    <option value="HS13_ASHP_VRF">Air Source Heat Pump with VRF</option>
-                                </select>
+                                <div id="improvedValueHvacGroup" style="display: none;">
+                                    <select id="improvedValue_family" style="margin-bottom: 8px;">
+                                        <option value="">Select improved system...</option>
+                                        <option value="NECB_Default">NECB Default</option>
+                                        <option value="CCASHP">Cold Climate Air Source Heat Pump</option>
+                                        <option value="ASHP">Air Source Heat Pump</option>
+                                    </select>
+                                    <select id="improvedValue_type">
+                                        <option value="">Select system first...</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" id="improvedValueSelect" name="improvedValueSelect">
                             </div>
                         </div>
 
@@ -855,29 +879,36 @@
         document.getElementById('costParameter').addEventListener('change', function() {
             const baselineValueInput = document.getElementById('baselineValue');
             const improvedValueInput = document.getElementById('improvedValue');
-            const baselineValueSelect = document.getElementById('baselineValueSelect');
-            const improvedValueSelect = document.getElementById('improvedValueSelect');
-            
+            const baselineHvacGroup = document.getElementById('baselineValueHvacGroup');
+            const improvedHvacGroup = document.getElementById('improvedValueHvacGroup');
+            const baselineHidden = document.getElementById('baselineValueSelect');
+            const improvedHidden = document.getElementById('improvedValueSelect');
+
             if (this.value === 'ecm_system_name') {
-                // Show dropdowns, hide numeric inputs
+                // Show cascading HVAC dropdowns, hide numeric inputs
                 baselineValueInput.style.display = 'none';
                 improvedValueInput.style.display = 'none';
-                baselineValueSelect.style.display = 'block';
-                improvedValueSelect.style.display = 'block';
-                
+                baselineHvacGroup.style.display = 'block';
+                improvedHvacGroup.style.display = 'block';
+
                 // Clear numeric values
                 baselineValueInput.value = '';
                 improvedValueInput.value = '';
             } else {
-                // Show numeric inputs, hide dropdowns
+                // Show numeric inputs, hide cascading dropdowns
                 baselineValueInput.style.display = 'block';
                 improvedValueInput.style.display = 'block';
-                baselineValueSelect.style.display = 'none';
-                improvedValueSelect.style.display = 'none';
-                
-                // Clear dropdown values
-                baselineValueSelect.value = '';
-                improvedValueSelect.value = '';
+                baselineHvacGroup.style.display = 'none';
+                improvedHvacGroup.style.display = 'none';
+
+                // Clear cascading values + hidden backend value
+                ['baselineValue_family', 'baselineValue_type',
+                 'improvedValue_family', 'improvedValue_type'].forEach((id) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+                if (baselineHidden) baselineHidden.value = '';
+                if (improvedHidden) improvedHidden.value = '';
             }
         });
 

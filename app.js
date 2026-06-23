@@ -84,6 +84,112 @@ function applyArchetypeGeometry(row, buildingType) {
     });
 }
 
+// ---------------------------------------------------------------------------
+// HVAC system cascading dropdowns
+// ---------------------------------------------------------------------------
+// The "Dominant HVAC System" picker is split in the UI into two cascading
+// selects: a system family (e.g. Cold Climate Air Source Heat Pump) and a
+// delivery type (e.g. VRF, Baseboard). The backend surrogate model still
+// expects the original code names (HS08_CCASHP_VRF, HS12_ASHP_Baseboard, …)
+// so a hidden input is populated with the mapped backend value whenever
+// either select changes. The mapping below is the single source of truth.
+const HVAC_SYSTEM_OPTIONS = {
+    families: [
+        { value: 'NECB_Default', label: 'NECB Default' },
+        { value: 'CCASHP',       label: 'Cold Climate Air Source Heat Pump' },
+        { value: 'ASHP',         label: 'Air Source Heat Pump' }
+    ],
+    typesByFamily: {
+        NECB_Default: [],
+        CCASHP: [
+            { value: 'VRF',       label: 'VRF (Variable Refrigerant Flow)' },
+            { value: 'Baseboard', label: 'Baseboard' }
+        ],
+        ASHP: [
+            { value: 'PTHP',      label: 'Packaged Terminal Heat Pump (PTHP)' },
+            { value: 'Baseboard', label: 'Baseboard' },
+            { value: 'VRF',       label: 'VRF (Variable Refrigerant Flow)' }
+        ]
+    },
+    // (family|type) -> backend ecm_system_name value expected by the model.
+    // For NECB_Default the type is empty.
+    backendValue: {
+        'NECB_Default|':    'NECB_Default',
+        'CCASHP|VRF':       'HS08_CCASHP_VRF',
+        'CCASHP|Baseboard': 'HS09_CCASHP_Baseboard',
+        'ASHP|PTHP':        'HS11_ASHP_PTHP',
+        'ASHP|Baseboard':   'HS12_ASHP_Baseboard',
+        'ASHP|VRF':         'HS13_ASHP_VRF'
+    }
+};
+
+function setupHvacCascade(familyId, typeId, hiddenId) {
+    const familySel = document.getElementById(familyId);
+    const typeSel = document.getElementById(typeId);
+    const hidden = document.getElementById(hiddenId);
+    if (!familySel || !typeSel || !hidden) return;
+
+    function syncHidden() {
+        const family = familySel.value;
+        if (!family) { hidden.value = ''; return; }
+        if (family === 'NECB_Default') { hidden.value = 'NECB_Default'; return; }
+        const type = typeSel.value;
+        if (!type) { hidden.value = ''; return; }
+        hidden.value = HVAC_SYSTEM_OPTIONS.backendValue[`${family}|${type}`] || '';
+    }
+
+    function rebuildTypes() {
+        const family = familySel.value;
+        // Clear existing options
+        typeSel.innerHTML = '';
+        if (!family) {
+            typeSel.appendChild(new Option('Select system first...', ''));
+            typeSel.disabled = true;
+            typeSel.required = false;
+        } else if (family === 'NECB_Default') {
+            typeSel.appendChild(new Option('Not applicable', ''));
+            typeSel.disabled = true;
+            typeSel.required = false;
+        } else {
+            typeSel.appendChild(new Option('Select Type...', ''));
+            (HVAC_SYSTEM_OPTIONS.typesByFamily[family] || []).forEach((o) => {
+                typeSel.appendChild(new Option(o.label, o.value));
+            });
+            typeSel.disabled = false;
+            typeSel.required = true;
+        }
+        syncHidden();
+    }
+
+    familySel.addEventListener('change', rebuildTypes);
+    typeSel.addEventListener('change', syncHidden);
+    rebuildTypes();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Main HVAC picker (present on both index.html and surrogate-model.html).
+    setupHvacCascade('ecm_system_family', 'ecm_system_type', 'ecm_system_name');
+    // Cost-analysis baseline / improved pickers (surrogate-model.html only).
+    setupHvacCascade('baselineValue_family', 'baselineValue_type', 'baselineValueSelect');
+    setupHvacCascade('improvedValue_family', 'improvedValue_type', 'improvedValueSelect');
+
+    // Form reset doesn't trigger 'change' on selects, so re-run the cascade
+    // initialisers on reset to keep the type select in sync with the family.
+    const buildingForm = document.getElementById('buildingForm');
+    if (buildingForm) {
+        buildingForm.addEventListener('reset', () => {
+            setTimeout(() => {
+                ['ecm_system_family',
+                 'baselineValue_family',
+                 'improvedValue_family'].forEach((id) => {
+                    const sel = document.getElementById(id);
+                    if (sel) sel.dispatchEvent(new Event('change'));
+                });
+            }, 0);
+        });
+    }
+});
+
 // Cognito Configuration
 const poolData = {
     UserPoolId: 'ca-central-1_NHVo7D7Kw',

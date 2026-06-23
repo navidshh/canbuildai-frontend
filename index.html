@@ -53,21 +53,36 @@
                 <section class="form-section">
                     <h2>🔧 HVAC System Configuration</h2>
                     
+                    <!-- Dominant HVAC System is split into two cascading selects:
+                         (1) the HVAC system family and (2) its delivery type.
+                         A hidden input named ecm_system_name is populated by
+                         setupHvacCascade in app.js with the original backend
+                         value (e.g. HS08_CCASHP_VRF) that the surrogate model
+                         expects. -->
                     <div class="form-group">
-                        <label for="ecm_system_name">
+                        <label for="ecm_system_family">
                             Dominant HVAC System
                             <span class="tooltip" data-tooltip="The primary heating, ventilation, and air conditioning system for the building">ℹ️</span>
                         </label>
-                        <select id="ecm_system_name" name="ecm_system_name" required>
+                        <select id="ecm_system_family" required>
                             <option value="">Select HVAC System...</option>
                             <option value="NECB_Default">NECB Default</option>
-                            <option value="HS08_CCASHP_VRF">HS08 - Cold Climate ASHP VRF</option>
-                            <option value="HS09_CCASHP_Baseboard">HS09 - Cold Climate ASHP Baseboard</option>
-                            <option value="HS11_ASHP_PTHP">HS11 - ASHP Packaged Terminal</option>
-                            <option value="HS12_ASHP_Baseboard">HS12 - ASHP Baseboard</option>
-                            <option value="HS13_ASHP_VRF">HS13 - ASHP VRF</option>
+                            <option value="CCASHP">Cold Climate Air Source Heat Pump</option>
+                            <option value="ASHP">Air Source Heat Pump</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                        <label for="ecm_system_type">
+                            HVAC System Type
+                            <span class="tooltip" data-tooltip="The specific delivery type for the selected HVAC system (e.g. VRF or Baseboard)">ℹ️</span>
+                        </label>
+                        <select id="ecm_system_type">
+                            <option value="">Select system first...</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" id="ecm_system_name" name="ecm_system_name">
 
                     <div class="form-group">
                         <label for="primary_heating_fuel">
