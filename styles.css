@@ -1139,6 +1139,7 @@ header h1 {
 .hvac-diagram .sys-necb-1,
 .hvac-diagram .sys-necb-3,
 .hvac-diagram .sys-necb-6,
+.hvac-diagram .sys-necb-mixed,
 .hvac-diagram .backup-gas,
 .hvac-diagram .backup-elec,
 .hvac-diagram .primary-gas,
@@ -1153,18 +1154,22 @@ header h1 {
 .hvac-diagram.mode-hp.dist-baseboard .dist-baseboard-vis { display: inline; }
 .hvac-diagram.mode-hp.dist-pthp .dist-pthp-vis { display: inline; }
 
-/* NECB sub-system layouts (selected via archetype) */
-.hvac-diagram.mode-necb.necb-sys-1 .sys-necb-1 { display: inline; }
+/* NECB sub-system layouts (selected via archetype).
+   Mixed mode (apartments) uses a dedicated combined schematic. */
+.hvac-diagram.mode-necb.necb-sys-1:not(.necb-mixed) .sys-necb-1 { display: inline; }
 .hvac-diagram.mode-necb.necb-sys-3 .sys-necb-3 { display: inline; }
-.hvac-diagram.mode-necb.necb-sys-6 .sys-necb-6 { display: inline; }
+.hvac-diagram.mode-necb.necb-sys-6:not(.necb-mixed) .sys-necb-6 { display: inline; }
+.hvac-diagram.mode-necb.necb-mixed .sys-necb-mixed { display: inline; }
 
 /* Backup heater appears in HP mode + matching fuel */
 .hvac-diagram.mode-hp.fuel-gas  .backup-gas  { display: inline; }
 .hvac-diagram.mode-hp.fuel-elec .backup-elec { display: inline; }
 
-/* Primary heating source appears in NECB mode + matching fuel */
-.hvac-diagram.mode-necb.fuel-gas  .primary-gas  { display: inline; }
-.hvac-diagram.mode-necb.fuel-elec .primary-elec { display: inline; }
+/* Primary heating source appears in NECB mode + matching fuel.
+   Suppress for mixed apartments (plant boiler is already shown inside
+   the mixed schematic) and for Sys 6 standalone (same reason). */
+.hvac-diagram.mode-necb.fuel-gas:not(.necb-mixed):not(.necb-sys-6)  .primary-gas  { display: inline; }
+.hvac-diagram.mode-necb.fuel-elec:not(.necb-mixed):not(.necb-sys-6) .primary-elec { display: inline; }
 
 /* Empty / not-yet-configured */
 .hvac-diagram.mode-empty .empty-state { display: inline; }

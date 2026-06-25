@@ -252,7 +252,7 @@ const HVAC_DIAGRAM_SVG = `
         </marker>
     </defs>
 
-    <!-- Schematic background grid -->
+    <!-- Schematic background -->
     <rect x="0" y="0" width="360" height="230" fill="#f7fafd"/>
     <rect x="0" y="0" width="360" height="230" fill="url(#hvac-grid)"/>
 
@@ -260,44 +260,37 @@ const HVAC_DIAGRAM_SVG = `
     <rect x="0" y="0" width="360" height="16" fill="#1a3a6c"/>
     <text x="6" y="12" font-size="9" fill="#fff" font-family="Consolas, monospace"
           font-weight="600" id="hvacDiagramTitle">HVAC Schematic</text>
-    <text x="354" y="12" text-anchor="end" font-size="8" fill="#cfd8e3"
-          font-family="Consolas, monospace">Building section view</text>
 
-    <!-- Ground -->
+    <!-- Inline flow legend (always visible) -->
+    <g font-family="Consolas, monospace" font-size="6.5" fill="#cfd8e3">
+        <line x1="200" y1="9" x2="214" y2="9" stroke="#e74c3c" stroke-width="2"/>
+        <text x="216" y="11">supply / hot</text>
+        <line x1="262" y1="9" x2="276" y2="9" stroke="#3498db" stroke-width="2" stroke-dasharray="3 2"/>
+        <text x="278" y="11">return / cold</text>
+        <rect x="332" y="6" width="10" height="3" fill="#f39c12"/>
+        <text x="344" y="11">BB</text>
+    </g>
+
+    <!-- Grade line -->
     <rect x="0" y="200" width="360" height="30" fill="#dde3ec"/>
     <line x1="0" y1="200" x2="360" y2="200" stroke="#7a8ba0" stroke-width="1.5"/>
-    <g font-family="Consolas, monospace" font-size="6" fill="#7a8ba0">
-        <text x="6" y="212">GRADE</text>
-        <line x1="10" y1="216" x2="60" y2="216" stroke="#7a8ba0" stroke-width="0.6"/>
-        <line x1="14" y1="216" x2="10" y2="220" stroke="#7a8ba0" stroke-width="0.6"/>
-        <line x1="22" y1="216" x2="18" y2="220" stroke="#7a8ba0" stroke-width="0.6"/>
-        <line x1="30" y1="216" x2="26" y2="220" stroke="#7a8ba0" stroke-width="0.6"/>
-        <line x1="38" y1="216" x2="34" y2="220" stroke="#7a8ba0" stroke-width="0.6"/>
-        <line x1="46" y1="216" x2="42" y2="220" stroke="#7a8ba0" stroke-width="0.6"/>
-        <line x1="54" y1="216" x2="50" y2="220" stroke="#7a8ba0" stroke-width="0.6"/>
-    </g>
 
     <!-- Building shell — 3 storey cross section -->
     <g class="building-shell">
-        <!-- Roof slab + parapet -->
         <rect x="190" y="40" width="160" height="5" fill="#7a8ba0"/>
         <rect x="188" y="34" width="4" height="11" fill="#5a6a80"/>
         <rect x="346" y="34" width="4" height="11" fill="#5a6a80"/>
-        <!-- Floor 3 -->
         <rect x="190" y="45" width="160" height="48" fill="#fafcff" stroke="#2a5298" stroke-width="1"/>
         <line x1="190" y1="93" x2="350" y2="93" stroke="#7a8ba0" stroke-width="2.5"/>
-        <!-- Floor 2 -->
         <rect x="190" y="93" width="160" height="48" fill="#fafcff" stroke="#2a5298" stroke-width="1"/>
         <line x1="190" y1="141" x2="350" y2="141" stroke="#7a8ba0" stroke-width="2.5"/>
-        <!-- Floor 1 -->
         <rect x="190" y="141" width="160" height="59" fill="#fafcff" stroke="#2a5298" stroke-width="1"/>
-        <!-- Storey labels -->
         <g font-family="Consolas, monospace" font-size="6.5" fill="#5a6a80">
             <text x="194" y="56">L3</text>
             <text x="194" y="104">L2</text>
             <text x="194" y="153">L1</text>
         </g>
-        <!-- Windows (3 per floor on east facade) -->
+        <!-- Windows -->
         <g fill="#cfe2ff" stroke="#2a5298" stroke-width="0.6">
             <rect x="266" y="62" width="20" height="22"/>
             <rect x="294" y="62" width="20" height="22"/>
@@ -315,204 +308,271 @@ const HVAC_DIAGRAM_SVG = `
     <g class="empty-state">
         <rect x="40" y="80" width="280" height="60" fill="#fff" stroke="#cfd8e3"
               stroke-width="1" stroke-dasharray="4 3" rx="3"/>
-        <text x="180" y="108" text-anchor="middle" font-size="11" fill="#7a8ba0"
+        <text x="180" y="115" text-anchor="middle" font-size="11" fill="#7a8ba0"
               font-family="Consolas, monospace">Select an HVAC system to view its schematic</text>
-        <text x="180" y="124" text-anchor="middle" font-size="8" fill="#9aa7b8"
-              font-family="Consolas, monospace">family + fuel + (for NECB) building archetype</text>
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 3 — PSZ-AC (rooftop unit, single-zone CV)         -->
+    <!-- NECB SYSTEM 3 — PSZ-AC rooftop unit (single-zone CV)          -->
     <!-- ============================================================ -->
     <g class="sys-necb-3">
-        <!-- Rooftop unit -->
-        <rect x="230" y="22" width="90" height="18" rx="2" fill="#fff"
-              stroke="#1a3a6c" stroke-width="1.2"/>
-        <rect x="234" y="26" width="14" height="10" fill="#e6f0ff" stroke="#1a3a6c" stroke-width="0.6"/>
+        <!-- Rooftop unit on roof -->
+        <rect x="240" y="22" width="70" height="18" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.2"/>
+        <rect x="244" y="26" width="12" height="10" fill="#e6f0ff" stroke="#1a3a6c" stroke-width="0.6"/>
         <g class="rtu-fan">
-            <line x1="241" y1="27" x2="241" y2="35" stroke="#1a3a6c" stroke-width="1"/>
-            <line x1="237" y1="31" x2="245" y2="31" stroke="#1a3a6c" stroke-width="1"/>
+            <line x1="250" y1="27" x2="250" y2="35" stroke="#1a3a6c" stroke-width="1"/>
+            <line x1="246" y1="31" x2="254" y2="31" stroke="#1a3a6c" stroke-width="1"/>
         </g>
-        <rect x="252" y="26" width="20" height="10" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
-        <text x="262" y="33" text-anchor="middle" font-size="5" fill="#a06000">DX+HC</text>
-        <rect x="276" y="26" width="40" height="10" fill="#fff" stroke="#1a3a6c" stroke-width="0.5"/>
-        <text x="296" y="33" text-anchor="middle" font-size="5.5" fill="#1a3a6c" font-weight="600">PSZ-AC RTU</text>
-
-        <!-- Supply duct (red) — vertical riser + horizontal trunk per floor -->
-        <rect x="218" y="45" width="10" height="155" fill="#e74c3c" opacity="0.18"/>
-        <line x1="218" y1="45" x2="218" y2="200" stroke="#c0392b" stroke-width="0.8"/>
-        <line x1="228" y1="45" x2="228" y2="200" stroke="#c0392b" stroke-width="0.8"/>
-        <!-- Supply diffusers (ceiling, each floor) -->
-        <g class="duct-supply">
-            <rect x="228" y="50" width="116" height="4" fill="#e74c3c" opacity="0.55"/>
-            <rect x="228" y="98" width="116" height="4" fill="#e74c3c" opacity="0.55"/>
-            <rect x="228" y="146" width="116" height="4" fill="#e74c3c" opacity="0.55"/>
+        <text x="287" y="34" text-anchor="middle" font-size="7" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">RTU</text>
+        <!-- Supply riser (red) + diffusers per floor -->
+        <line x1="222" y1="40" x2="222" y2="200" stroke="#c0392b" stroke-width="2.5"/>
+        <g fill="#c0392b">
+            <rect x="222" y="58" width="118" height="3"/>
+            <rect x="222" y="106" width="118" height="3"/>
+            <rect x="222" y="154" width="118" height="3"/>
             <!-- Diffuser tabs -->
-            <rect x="260" y="54" width="6" height="3" fill="#c0392b"/>
-            <rect x="295" y="54" width="6" height="3" fill="#c0392b"/>
-            <rect x="325" y="54" width="6" height="3" fill="#c0392b"/>
-            <rect x="260" y="102" width="6" height="3" fill="#c0392b"/>
-            <rect x="295" y="102" width="6" height="3" fill="#c0392b"/>
-            <rect x="325" y="102" width="6" height="3" fill="#c0392b"/>
-            <rect x="260" y="150" width="6" height="3" fill="#c0392b"/>
-            <rect x="295" y="150" width="6" height="3" fill="#c0392b"/>
-            <rect x="325" y="150" width="6" height="3" fill="#c0392b"/>
+            <polygon points="262,61 268,61 265,67"/>
+            <polygon points="297,61 303,61 300,67"/>
+            <polygon points="327,61 333,61 330,67"/>
+            <polygon points="262,109 268,109 265,115"/>
+            <polygon points="297,109 303,109 300,115"/>
+            <polygon points="327,109 333,109 330,115"/>
+            <polygon points="262,157 268,157 265,163"/>
+            <polygon points="297,157 303,157 300,163"/>
+            <polygon points="327,157 333,157 330,163"/>
         </g>
-        <!-- Return duct (blue) — second riser -->
-        <line x1="232" y1="45" x2="232" y2="200" stroke="#2e6da6" stroke-width="1.5" stroke-dasharray="3 2"/>
-        <text x="232" y="195" font-size="5.5" fill="#2e6da6" transform="rotate(-90 232 195)">RA</text>
-
-        <!-- Baseboards (perimeter, each floor) -->
+        <!-- Return riser (blue dashed) -->
+        <line x1="228" y1="40" x2="228" y2="200" stroke="#2e6da6" stroke-width="1.8" stroke-dasharray="3 2"/>
+        <!-- Baseboards -->
         <rect x="262" y="88" width="80" height="3" fill="#f39c12"/>
         <rect x="262" y="136" width="80" height="3" fill="#f39c12"/>
         <rect x="262" y="194" width="80" height="3" fill="#f39c12"/>
-
-        <!-- Annotation callouts -->
-        <g font-family="Consolas, monospace" font-size="6" fill="#5a6a80">
-            <text x="234" y="68">SA duct</text>
-            <text x="262" y="68" fill="#a06000">Perimeter BB</text>
-        </g>
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 6 — Built-up VAV with reheat                      -->
+    <!-- NECB SYSTEM 6 — Built-up VAV w/ reheat + plant                -->
     <!-- ============================================================ -->
     <g class="sys-necb-6">
-        <!-- Penthouse AHU -->
-        <rect x="200" y="20" width="140" height="20" rx="2" fill="#fff"
-              stroke="#1a3a6c" stroke-width="1.2"/>
-        <rect x="204" y="24" width="18" height="12" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.6"/>
-        <text x="213" y="32" text-anchor="middle" font-size="4.5" fill="#2e6da6">CHW</text>
-        <rect x="224" y="24" width="18" height="12" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
-        <text x="233" y="32" text-anchor="middle" font-size="4.5" fill="#a06000">HW</text>
-        <rect x="244" y="24" width="14" height="12" fill="#fff" stroke="#1a3a6c" stroke-width="0.6"/>
+        <!-- Penthouse AHU with coil bank + fan -->
+        <rect x="210" y="22" width="130" height="18" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.2"/>
+        <rect x="214" y="26" width="14" height="10" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.6"/>
+        <rect x="230" y="26" width="14" height="10" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
+        <rect x="246" y="26" width="12" height="10" fill="#fff" stroke="#1a3a6c" stroke-width="0.5"/>
         <g class="ahu-fan">
-            <line x1="251" y1="25" x2="251" y2="35" stroke="#1a3a6c" stroke-width="1"/>
-            <line x1="247" y1="30" x2="255" y2="30" stroke="#1a3a6c" stroke-width="1"/>
+            <line x1="252" y1="27" x2="252" y2="35" stroke="#1a3a6c" stroke-width="1"/>
+            <line x1="248" y1="31" x2="256" y2="31" stroke="#1a3a6c" stroke-width="1"/>
         </g>
-        <text x="298" y="34" text-anchor="middle" font-size="6.5" fill="#1a3a6c" font-weight="600">Built-up VAV AHU</text>
+        <text x="298" y="34" text-anchor="middle" font-size="7" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">AHU</text>
 
         <!-- Supply riser (red) -->
-        <rect x="217" y="40" width="8" height="160" fill="#e74c3c" opacity="0.18"/>
-        <line x1="217" y1="40" x2="217" y2="200" stroke="#c0392b" stroke-width="0.8"/>
-        <line x1="225" y1="40" x2="225" y2="200" stroke="#c0392b" stroke-width="0.8"/>
+        <line x1="220" y1="40" x2="220" y2="200" stroke="#c0392b" stroke-width="2.5"/>
+        <!-- VAV boxes per floor with reheat coil -->
+        <g class="vav-boxes">
+            <rect x="222" y="60" width="22" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
+            <rect x="240" y="62" width="3" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
+            <text x="232" y="69" text-anchor="middle" font-size="5.5" fill="#a06000"
+                  font-weight="700" font-family="Consolas, monospace">VAV</text>
+            <rect x="244" y="64" width="98" height="3" fill="#c0392b"/>
 
-        <!-- VAV boxes + reheat coil per floor -->
-        <g class="vav-box">
-            <rect x="225" y="60" width="26" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.8"/>
-            <rect x="244" y="62" width="5" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.5"/>
-            <text x="238" y="68" text-anchor="middle" font-size="4.5" fill="#a06000" font-weight="600">VAV+RH</text>
-            <rect x="251" y="63" width="93" height="3" fill="#e74c3c" opacity="0.55"/>
-            <rect x="280" y="66" width="5" height="3" fill="#c0392b"/>
-            <rect x="310" y="66" width="5" height="3" fill="#c0392b"/>
-            <rect x="335" y="66" width="5" height="3" fill="#c0392b"/>
-        </g>
-        <g class="vav-box">
-            <rect x="225" y="108" width="26" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.8"/>
-            <rect x="244" y="110" width="5" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.5"/>
-            <text x="238" y="116" text-anchor="middle" font-size="4.5" fill="#a06000" font-weight="600">VAV+RH</text>
-            <rect x="251" y="111" width="93" height="3" fill="#e74c3c" opacity="0.55"/>
-            <rect x="280" y="114" width="5" height="3" fill="#c0392b"/>
-            <rect x="310" y="114" width="5" height="3" fill="#c0392b"/>
-            <rect x="335" y="114" width="5" height="3" fill="#c0392b"/>
-        </g>
-        <g class="vav-box">
-            <rect x="225" y="156" width="26" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.8"/>
-            <rect x="244" y="158" width="5" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.5"/>
-            <text x="238" y="164" text-anchor="middle" font-size="4.5" fill="#a06000" font-weight="600">VAV+RH</text>
-            <rect x="251" y="159" width="93" height="3" fill="#e74c3c" opacity="0.55"/>
-            <rect x="280" y="162" width="5" height="3" fill="#c0392b"/>
-            <rect x="310" y="162" width="5" height="3" fill="#c0392b"/>
-            <rect x="335" y="162" width="5" height="3" fill="#c0392b"/>
-        </g>
+            <rect x="222" y="108" width="22" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
+            <rect x="240" y="110" width="3" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
+            <text x="232" y="117" text-anchor="middle" font-size="5.5" fill="#a06000"
+                  font-weight="700" font-family="Consolas, monospace">VAV</text>
+            <rect x="244" y="112" width="98" height="3" fill="#c0392b"/>
 
-        <!-- Return riser (dashed blue) -->
-        <line x1="232" y1="40" x2="232" y2="200" stroke="#2e6da6" stroke-width="1.5" stroke-dasharray="3 2"/>
-
+            <rect x="222" y="156" width="22" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
+            <rect x="240" y="158" width="3" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
+            <text x="232" y="165" text-anchor="middle" font-size="5.5" fill="#a06000"
+                  font-weight="700" font-family="Consolas, monospace">VAV</text>
+            <rect x="244" y="160" width="98" height="3" fill="#c0392b"/>
+        </g>
+        <!-- Return riser (blue dashed) -->
+        <line x1="226" y1="40" x2="226" y2="200" stroke="#2e6da6" stroke-width="1.8" stroke-dasharray="3 2"/>
         <!-- Baseboards -->
         <rect x="262" y="88" width="80" height="3" fill="#f39c12"/>
         <rect x="262" y="136" width="80" height="3" fill="#f39c12"/>
         <rect x="262" y="194" width="80" height="3" fill="#f39c12"/>
 
-        <!-- Plant equipment: cooling tower + chiller + boiler -->
-        <g class="plant-equip">
-            <!-- Cooling tower (outdoor) -->
-            <rect x="44" y="80" width="38" height="48" rx="2" fill="#fff"
-                  stroke="#1a3a6c" stroke-width="1.2"/>
-            <line x1="44" y1="92" x2="82" y2="92" stroke="#1a3a6c" stroke-width="0.6"/>
+        <!-- Plant: cooling tower + chiller + boiler -->
+        <g class="plant-equip-sys6">
+            <!-- Cooling tower -->
+            <rect x="14" y="76" width="38" height="46" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.2"/>
+            <line x1="14" y1="86" x2="52" y2="86" stroke="#1a3a6c" stroke-width="0.6"/>
             <g class="ct-fan">
-                <circle cx="63" cy="105" r="9" fill="none" stroke="#1a3a6c" stroke-width="0.8"/>
-                <line x1="54" y1="105" x2="72" y2="105" stroke="#1a3a6c" stroke-width="1"/>
-                <line x1="63" y1="96" x2="63" y2="114" stroke="#1a3a6c" stroke-width="1"/>
-                <line x1="57" y1="99" x2="69" y2="111" stroke="#1a3a6c" stroke-width="1"/>
-                <line x1="69" y1="99" x2="57" y2="111" stroke="#1a3a6c" stroke-width="1"/>
+                <circle cx="33" cy="100" r="8" fill="none" stroke="#1a3a6c" stroke-width="0.8"/>
+                <line x1="25" y1="100" x2="41" y2="100" stroke="#1a3a6c" stroke-width="1"/>
+                <line x1="33" y1="92" x2="33" y2="108" stroke="#1a3a6c" stroke-width="1"/>
+                <line x1="27" y1="94" x2="39" y2="106" stroke="#1a3a6c" stroke-width="1"/>
+                <line x1="39" y1="94" x2="27" y2="106" stroke="#1a3a6c" stroke-width="1"/>
             </g>
-            <text x="63" y="142" text-anchor="middle" font-size="6.5" fill="#1a3a6c" font-weight="600">Cooling tower</text>
+            <text x="33" y="135" text-anchor="middle" font-size="6" fill="#1a3a6c"
+                  font-weight="700" font-family="Consolas, monospace">CT</text>
             <!-- Chiller -->
-            <rect x="90" y="155" width="50" height="32" rx="2" fill="#fff"
-                  stroke="#2e6da6" stroke-width="1.2"/>
-            <circle cx="105" cy="170" r="6" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.6"/>
-            <text x="105" y="173" text-anchor="middle" font-size="5" fill="#2e6da6">CHW</text>
-            <text x="128" y="170" text-anchor="middle" font-size="5.5" fill="#2e6da6">chiller</text>
-            <text x="115" y="183" text-anchor="middle" font-size="5.5" fill="#1a3a6c" font-weight="600">Chiller (CHW)</text>
+            <rect x="62" y="155" width="44" height="32" rx="2" fill="#fff" stroke="#2e6da6" stroke-width="1.2"/>
+            <circle cx="78" cy="171" r="6" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.6"/>
+            <text x="92" y="174" text-anchor="middle" font-size="6.5" fill="#2e6da6"
+                  font-weight="700" font-family="Consolas, monospace">Chiller</text>
             <!-- Boiler -->
-            <rect x="148" y="155" width="34" height="32" rx="2" fill="#fff"
-                  stroke="#a06000" stroke-width="1.2"/>
-            <circle cx="165" cy="170" r="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
-            <text x="165" y="173" text-anchor="middle" font-size="5" fill="#a06000">HW</text>
-            <text x="165" y="183" text-anchor="middle" font-size="5.5" fill="#1a3a6c" font-weight="600">Boiler</text>
+            <rect x="116" y="155" width="40" height="32" rx="2" fill="#fff" stroke="#a06000" stroke-width="1.2"/>
+            <circle cx="130" cy="171" r="6" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
+            <path d="M128,177 L128,167 L132,171 L132,177 Z M128,167 L132,162 L132,171 Z"
+                  fill="#e67e22" class="flame-shape"/>
+            <text x="145" y="174" text-anchor="middle" font-size="6.5" fill="#a06000"
+                  font-weight="700" font-family="Consolas, monospace">Boiler</text>
 
-            <!-- Condenser-water loop (cooling tower ↔ chiller) -->
-            <path d="M82,115 Q92,115 92,140 Q92,155 100,155" stroke="#9aa7b8"
-                  stroke-width="1.2" fill="none" stroke-dasharray="2 2"/>
-            <!-- CHW loop (chiller → AHU) -->
-            <path d="M125,155 Q125,140 200,40" stroke="#2e6da6" stroke-width="0.8"
-                  fill="none" stroke-dasharray="4 2"/>
-            <!-- HW loop (boiler → AHU + baseboards) -->
-            <path d="M165,155 Q165,135 200,40" stroke="#a06000" stroke-width="0.8"
-                  fill="none" stroke-dasharray="4 2"/>
+            <!-- Loops: CT↔Chiller (condenser), Chiller→AHU (CHW), Boiler→AHU (HW) -->
+            <path d="M52,107 Q72,107 78,155" stroke="#7a8ba0" stroke-width="1" fill="none" stroke-dasharray="3 2"/>
+            <path d="M95,155 Q140,90 210,40" stroke="#2e6da6" stroke-width="0.9" fill="none" stroke-dasharray="4 2"/>
+            <path d="M140,155 Q170,90 210,40" stroke="#a06000" stroke-width="0.9" fill="none" stroke-dasharray="4 2"/>
         </g>
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 1 — PTAC + baseboards (dwelling units)            -->
+    <!-- NECB SYSTEM 1 — PTAC + baseboards (dwelling, all floors)      -->
     <!-- ============================================================ -->
     <g class="sys-necb-1">
-        <!-- Optional MAU on roof -->
-        <rect x="250" y="24" width="60" height="14" rx="2" fill="#fff"
-              stroke="#1a3a6c" stroke-width="1"/>
-        <text x="280" y="34" text-anchor="middle" font-size="5.5" fill="#1a3a6c" font-weight="600">Optional MAU</text>
-
-        <!-- PTAC unit below each window -->
-        <g class="ptac-units">
-            <rect x="266" y="82" width="20" height="5" rx="0.5" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
-            <rect x="294" y="82" width="20" height="5" rx="0.5" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
-            <rect x="322" y="82" width="20" height="5" rx="0.5" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
-            <rect x="266" y="130" width="20" height="5" rx="0.5" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
-            <rect x="294" y="130" width="20" height="5" rx="0.5" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
-            <rect x="322" y="130" width="20" height="5" rx="0.5" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
-            <rect x="266" y="178" width="20" height="5" rx="0.5" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
-            <rect x="294" y="178" width="20" height="5" rx="0.5" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
-            <rect x="322" y="178" width="20" height="5" rx="0.5" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
-            <!-- Cooling fins (small slots) on each PTAC -->
-            <g stroke="#1a3a6c" stroke-width="0.4" opacity="0.6">
-                <line x1="270" y1="84" x2="270" y2="86"/><line x1="274" y1="84" x2="274" y2="86"/><line x1="278" y1="84" x2="278" y2="86"/><line x1="282" y1="84" x2="282" y2="86"/>
-                <line x1="298" y1="84" x2="298" y2="86"/><line x1="302" y1="84" x2="302" y2="86"/><line x1="306" y1="84" x2="306" y2="86"/><line x1="310" y1="84" x2="310" y2="86"/>
-            </g>
+        <g class="ptac-units" fill="#fff" stroke="#1a3a6c" stroke-width="1">
+            <rect x="266" y="82" width="20" height="5" rx="0.5"/>
+            <rect x="294" y="82" width="20" height="5" rx="0.5"/>
+            <rect x="322" y="82" width="20" height="5" rx="0.5"/>
+            <rect x="266" y="130" width="20" height="5" rx="0.5"/>
+            <rect x="294" y="130" width="20" height="5" rx="0.5"/>
+            <rect x="322" y="130" width="20" height="5" rx="0.5"/>
+            <rect x="266" y="178" width="20" height="5" rx="0.5"/>
+            <rect x="294" y="178" width="20" height="5" rx="0.5"/>
+            <rect x="322" y="178" width="20" height="5" rx="0.5"/>
         </g>
-
-        <!-- Perimeter baseboards -->
+        <!-- Fin marks for visual cue (cooling coil) -->
+        <g stroke="#1a3a6c" stroke-width="0.4" opacity="0.6">
+            <line x1="270" y1="84" x2="270" y2="86"/><line x1="274" y1="84" x2="274" y2="86"/>
+            <line x1="278" y1="84" x2="278" y2="86"/><line x1="282" y1="84" x2="282" y2="86"/>
+            <line x1="298" y1="84" x2="298" y2="86"/><line x1="302" y1="84" x2="302" y2="86"/>
+            <line x1="306" y1="84" x2="306" y2="86"/><line x1="310" y1="84" x2="310" y2="86"/>
+            <line x1="270" y1="132" x2="270" y2="134"/><line x1="274" y1="132" x2="274" y2="134"/>
+            <line x1="278" y1="132" x2="278" y2="134"/><line x1="282" y1="132" x2="282" y2="134"/>
+            <line x1="270" y1="180" x2="270" y2="182"/><line x1="274" y1="180" x2="274" y2="182"/>
+            <line x1="278" y1="180" x2="278" y2="182"/><line x1="282" y1="180" x2="282" y2="182"/>
+        </g>
+        <!-- PTAC label (one only, for legend) -->
+        <text x="200" y="86" font-size="6.5" fill="#1a3a6c" font-weight="700"
+              font-family="Consolas, monospace">PTAC</text>
+        <line x1="220" y1="84" x2="265" y2="84" stroke="#1a3a6c" stroke-width="0.4" stroke-dasharray="2 2"/>
+        <!-- Baseboards -->
         <rect x="200" y="88" width="64" height="3" fill="#f39c12"/>
         <rect x="200" y="136" width="64" height="3" fill="#f39c12"/>
         <rect x="200" y="194" width="64" height="3" fill="#f39c12"/>
+    </g>
 
-        <!-- Annotation: secondary system (System 6) for common areas -->
-        <g class="necb-secondary-callout">
-            <line x1="194" y1="120" x2="180" y2="120" stroke="#7a8ba0" stroke-width="0.6" stroke-dasharray="2 2"/>
-            <rect x="100" y="105" width="80" height="30" rx="2" fill="#fffef5" stroke="#a06000" stroke-width="0.6"/>
-            <text x="140" y="116" text-anchor="middle" font-size="6" fill="#1a3a6c" font-weight="700">+ System 6 (VAV)</text>
-            <text x="140" y="125" text-anchor="middle" font-size="5.5" fill="#5a6a80">for corridors &amp;</text>
-            <text x="140" y="132" text-anchor="middle" font-size="5.5" fill="#5a6a80">common areas (≥3 storeys)</text>
+    <!-- ============================================================ -->
+    <!-- NECB MIXED (Sys 1 + Sys 6) — apartments: suites + common      -->
+    <!--   - Upper floors (L2, L3): PTAC + baseboards (suites)         -->
+    <!--   - Ground floor (L1):     VAV + reheat (lobby/common)        -->
+    <!--   - Outside: cooling tower + chiller + boiler                  -->
+    <!-- ============================================================ -->
+    <g class="sys-necb-mixed">
+        <!-- Suite divider lines for visual context -->
+        <g stroke="#cfd8e3" stroke-width="0.4" stroke-dasharray="2 2">
+            <line x1="232" y1="45" x2="232" y2="93"/>
+            <line x1="262" y1="45" x2="262" y2="93"/>
+            <line x1="292" y1="45" x2="292" y2="93"/>
+            <line x1="232" y1="93" x2="232" y2="141"/>
+            <line x1="262" y1="93" x2="262" y2="141"/>
+            <line x1="292" y1="93" x2="292" y2="141"/>
+        </g>
+
+        <!-- Suite annotations (very small) -->
+        <g font-family="Consolas, monospace" font-size="5.5" fill="#7a8ba0">
+            <text x="242" y="50">SUITE</text>
+            <text x="272" y="50">SUITE</text>
+            <text x="302" y="50">SUITE</text>
+            <text x="332" y="50">SUITE</text>
+            <text x="242" y="98">SUITE</text>
+            <text x="272" y="98">SUITE</text>
+            <text x="302" y="98">SUITE</text>
+            <text x="332" y="98">SUITE</text>
+            <text x="278" y="153" font-weight="700" fill="#1a3a6c">LOBBY / COMMON</text>
+        </g>
+
+        <!-- =========== L2 + L3: Sys 1 (PTAC + baseboards) =========== -->
+        <g class="ptac-units" fill="#fff" stroke="#1a3a6c" stroke-width="1">
+            <rect x="266" y="82" width="20" height="5" rx="0.5"/>
+            <rect x="294" y="82" width="20" height="5" rx="0.5"/>
+            <rect x="322" y="82" width="20" height="5" rx="0.5"/>
+            <rect x="266" y="130" width="20" height="5" rx="0.5"/>
+            <rect x="294" y="130" width="20" height="5" rx="0.5"/>
+            <rect x="322" y="130" width="20" height="5" rx="0.5"/>
+        </g>
+        <g stroke="#1a3a6c" stroke-width="0.4" opacity="0.6">
+            <line x1="270" y1="84" x2="270" y2="86"/><line x1="274" y1="84" x2="274" y2="86"/>
+            <line x1="278" y1="84" x2="278" y2="86"/><line x1="282" y1="84" x2="282" y2="86"/>
+            <line x1="270" y1="132" x2="270" y2="134"/><line x1="274" y1="132" x2="274" y2="134"/>
+            <line x1="278" y1="132" x2="278" y2="134"/><line x1="282" y1="132" x2="282" y2="134"/>
+        </g>
+        <!-- PTAC label -->
+        <text x="200" y="86" font-size="6.5" fill="#1a3a6c" font-weight="700"
+              font-family="Consolas, monospace">PTAC</text>
+        <line x1="220" y1="84" x2="265" y2="84" stroke="#1a3a6c" stroke-width="0.4" stroke-dasharray="2 2"/>
+        <!-- Baseboards on L2 + L3 (suites only) -->
+        <rect x="200" y="88" width="64" height="3" fill="#f39c12"/>
+        <rect x="200" y="136" width="64" height="3" fill="#f39c12"/>
+        <text x="172" y="139" font-size="6" fill="#a06000" font-weight="700"
+              text-anchor="end" font-family="Consolas, monospace">BB</text>
+
+        <!-- =========== L1: Sys 6 (VAV + reheat + plant) =========== -->
+        <!-- Penthouse AHU -->
+        <rect x="220" y="22" width="120" height="14" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
+        <rect x="224" y="24" width="10" height="10" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.5"/>
+        <rect x="236" y="24" width="10" height="10" fill="#fff7e6" stroke="#a06000" stroke-width="0.5"/>
+        <g class="ahu-fan">
+            <line x1="252" y1="25" x2="252" y2="33" stroke="#1a3a6c" stroke-width="1"/>
+            <line x1="248" y1="29" x2="256" y2="29" stroke="#1a3a6c" stroke-width="1"/>
+        </g>
+        <text x="298" y="32" text-anchor="middle" font-size="6.5" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">AHU</text>
+
+        <!-- Supply + return risers to L1 only -->
+        <line x1="220" y1="36" x2="220" y2="195" stroke="#c0392b" stroke-width="2"/>
+        <line x1="226" y1="36" x2="226" y2="195" stroke="#2e6da6" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+        <!-- L1 VAV + reheat coil + supply trunk -->
+        <rect x="222" y="170" width="22" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
+        <rect x="240" y="172" width="3" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
+        <text x="232" y="179" text-anchor="middle" font-size="5.5" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">VAV</text>
+        <rect x="244" y="174" width="98" height="3" fill="#c0392b"/>
+        <!-- L1 lobby baseboards -->
+        <rect x="262" y="194" width="80" height="3" fill="#f39c12"/>
+
+        <!-- Plant: cooling tower + chiller + boiler -->
+        <g class="plant-equip-mixed">
+            <rect x="14" y="86" width="34" height="40" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.1"/>
+            <line x1="14" y1="94" x2="48" y2="94" stroke="#1a3a6c" stroke-width="0.6"/>
+            <g class="ct-fan">
+                <circle cx="31" cy="107" r="7" fill="none" stroke="#1a3a6c" stroke-width="0.8"/>
+                <line x1="24" y1="107" x2="38" y2="107" stroke="#1a3a6c" stroke-width="1"/>
+                <line x1="31" y1="100" x2="31" y2="114" stroke="#1a3a6c" stroke-width="1"/>
+                <line x1="26" y1="102" x2="36" y2="112" stroke="#1a3a6c" stroke-width="1"/>
+                <line x1="36" y1="102" x2="26" y2="112" stroke="#1a3a6c" stroke-width="1"/>
+            </g>
+            <text x="31" y="138" text-anchor="middle" font-size="6" fill="#1a3a6c"
+                  font-weight="700" font-family="Consolas, monospace">CT</text>
+            <rect x="60" y="158" width="42" height="28" rx="2" fill="#fff" stroke="#2e6da6" stroke-width="1.1"/>
+            <circle cx="74" cy="172" r="5" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.6"/>
+            <text x="88" y="174" text-anchor="middle" font-size="6" fill="#2e6da6"
+                  font-weight="700" font-family="Consolas, monospace">Chiller</text>
+            <rect x="112" y="158" width="38" height="28" rx="2" fill="#fff" stroke="#a06000" stroke-width="1.1"/>
+            <circle cx="124" cy="172" r="5" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
+            <path d="M122,177 L122,168 L126,172 L126,177 Z M122,168 L126,164 L126,172 Z"
+                  fill="#e67e22" class="flame-shape"/>
+            <text x="139" y="174" text-anchor="middle" font-size="6" fill="#a06000"
+                  font-weight="700" font-family="Consolas, monospace">Boiler</text>
+
+            <!-- Loops -->
+            <path d="M48,112 Q66,112 74,158" stroke="#7a8ba0" stroke-width="0.9" fill="none" stroke-dasharray="3 2"/>
+            <path d="M90,158 Q140,80 220,30" stroke="#2e6da6" stroke-width="0.9" fill="none" stroke-dasharray="4 2"/>
+            <path d="M135,158 Q170,80 220,30" stroke="#a06000" stroke-width="0.9" fill="none" stroke-dasharray="4 2"/>
         </g>
     </g>
 
@@ -520,15 +580,10 @@ const HVAC_DIAGRAM_SVG = `
     <!-- HEAT PUMP SYSTEMS — outdoor unit + refrigerant lines          -->
     <!-- ============================================================ -->
     <g class="hp-unit">
-        <!-- Pad -->
         <rect x="42" y="186" width="100" height="6" fill="#9aa7b8"/>
-        <!-- Outdoor unit chassis -->
-        <rect x="50" y="120" width="80" height="66" rx="3" fill="#fff"
-              stroke="#1a3a6c" stroke-width="1.5"/>
-        <!-- Compressor symbol -->
+        <rect x="50" y="120" width="80" height="66" rx="3" fill="#fff" stroke="#1a3a6c" stroke-width="1.5"/>
         <circle cx="118" cy="170" r="6" fill="#e6f0ff" stroke="#1a3a6c" stroke-width="0.6"/>
         <text x="118" y="172" text-anchor="middle" font-size="5" fill="#1a3a6c" font-weight="700">C</text>
-        <!-- Fan grille -->
         <rect x="56" y="126" width="56" height="46" rx="2" fill="#f5f9ff" stroke="#1a3a6c" stroke-width="0.6"/>
         <g class="hp-fan">
             <circle cx="84" cy="149" r="20" fill="none" stroke="#1a3a6c" stroke-width="1"/>
@@ -538,25 +593,21 @@ const HVAC_DIAGRAM_SVG = `
             <line x1="98" y1="135" x2="70" y2="163" stroke="#1a3a6c" stroke-width="1.5"/>
             <circle cx="84" cy="149" r="2.5" fill="#1a3a6c"/>
         </g>
-        <!-- Service valves -->
         <rect x="128" y="135" width="6" height="3" fill="#c0392b"/>
         <rect x="128" y="142" width="6" height="3" fill="#2e6da6"/>
-        <text x="90" y="181" text-anchor="middle" font-size="6" fill="#1a3a6c" font-weight="600">Outdoor Heat Pump</text>
+        <text x="90" y="180" text-anchor="middle" font-size="7" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">HP</text>
 
-        <!-- Refrigerant lines (hot-gas / liquid red, suction blue) -->
+        <!-- Refrigerant lines -->
         <path d="M134,136 L190,136" stroke="#c0392b" stroke-width="2"
               stroke-dasharray="6 3" fill="none" class="refrig-line refrig-supply"
               marker-end="url(#hvac-arrow-red)"/>
         <path d="M190,143 L134,143" stroke="#2e6da6" stroke-width="2"
               stroke-dasharray="6 3" fill="none" class="refrig-line refrig-return"
               marker-end="url(#hvac-arrow-blue)"/>
-        <text x="162" y="132" text-anchor="middle" font-size="5.5" fill="#a02020"
-              font-family="Consolas, monospace">liquid / hot-gas</text>
-        <text x="162" y="155" text-anchor="middle" font-size="5.5" fill="#205aa0"
-              font-family="Consolas, monospace">suction</text>
     </g>
 
-    <!-- Heat pump distribution: VRF cassettes (one row per floor) -->
+    <!-- HP distribution: VRF cassettes -->
     <g class="dist-vrf-vis">
         <g fill="#f39c12">
             <rect x="200" y="50" width="140" height="4" rx="0.5" opacity="0.4"/>
@@ -575,78 +626,68 @@ const HVAC_DIAGRAM_SVG = `
             <rect x="280" y="146" width="12" height="6"/>
             <rect x="315" y="146" width="12" height="6"/>
         </g>
-        <text x="270" y="218" text-anchor="middle" font-size="6.5"
-              fill="#a06000" font-family="Consolas, monospace">VRF ceiling cassettes (per zone)</text>
+        <text x="200" y="218" font-size="6.5" fill="#a06000" font-weight="700"
+              font-family="Consolas, monospace">VRF</text>
     </g>
 
-    <!-- Heat pump distribution: Baseboards -->
+    <!-- HP distribution: Baseboards -->
     <g class="dist-baseboard-vis">
         <rect x="200" y="88" width="148" height="3" fill="#f39c12"/>
         <rect x="200" y="136" width="148" height="3" fill="#f39c12"/>
         <rect x="200" y="194" width="148" height="3" fill="#f39c12"/>
-        <text x="270" y="218" text-anchor="middle" font-size="6.5"
-              fill="#a06000" font-family="Consolas, monospace">Perimeter hydronic / electric baseboards</text>
+        <text x="200" y="218" font-size="6.5" fill="#a06000" font-weight="700"
+              font-family="Consolas, monospace">BB</text>
     </g>
 
-    <!-- Heat pump distribution: PTHP through-wall units -->
+    <!-- HP distribution: PTHP -->
     <g class="dist-pthp-vis">
         <g fill="#f39c12" stroke="#a06000" stroke-width="0.6">
             <rect x="266" y="82" width="20" height="5"/><rect x="294" y="82" width="20" height="5"/><rect x="322" y="82" width="20" height="5"/>
             <rect x="266" y="130" width="20" height="5"/><rect x="294" y="130" width="20" height="5"/><rect x="322" y="130" width="20" height="5"/>
             <rect x="266" y="178" width="20" height="5"/><rect x="294" y="178" width="20" height="5"/><rect x="322" y="178" width="20" height="5"/>
         </g>
-        <text x="270" y="218" text-anchor="middle" font-size="6.5"
-              fill="#a06000" font-family="Consolas, monospace">PTHP through-wall units (per zone)</text>
+        <text x="200" y="218" font-size="6.5" fill="#a06000" font-weight="700"
+              font-family="Consolas, monospace">PTHP</text>
     </g>
-
-    <!-- ============================================================ -->
-    <!-- HEATING SOURCES — engineering symbols (no emoji)              -->
-    <!-- ============================================================ -->
 
     <!-- HP backup: NG boiler -->
     <g class="backup-gas">
-        <rect x="148" y="115" width="44" height="34" rx="2" fill="#fff"
-              stroke="#a06000" stroke-width="1.2"/>
+        <rect x="148" y="115" width="44" height="34" rx="2" fill="#fff" stroke="#a06000" stroke-width="1.2"/>
         <circle cx="170" cy="132" r="9" fill="#fff7e6" stroke="#a06000" stroke-width="0.8"/>
         <path d="M168,138 L168,130 L172,134 L172,138 Z M168,130 L172,126 L172,134 Z"
               fill="#e67e22" class="flame-shape"/>
-        <text x="170" y="160" text-anchor="middle" font-size="6"
-              fill="#a06000" font-weight="700" font-family="Consolas, monospace">NG backup boiler</text>
+        <text x="170" y="160" text-anchor="middle" font-size="6.5" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">NG backup</text>
     </g>
 
-    <!-- HP backup: electric resistance -->
+    <!-- HP backup: electric -->
     <g class="backup-elec">
-        <rect x="148" y="115" width="44" height="34" rx="2" fill="#fff"
-              stroke="#7a4ec9" stroke-width="1.2"/>
+        <rect x="148" y="115" width="44" height="34" rx="2" fill="#fff" stroke="#7a4ec9" stroke-width="1.2"/>
         <rect x="155" y="122" width="30" height="20" fill="#f4efff" stroke="#7a4ec9" stroke-width="0.6"/>
         <path d="M157,132 L161,128 L165,132 L169,128 L173,132 L177,128 L181,132 L183,128"
               stroke="#7a4ec9" stroke-width="1.4" fill="none"/>
-        <text x="170" y="160" text-anchor="middle" font-size="6"
-              fill="#7a4ec9" font-weight="700" font-family="Consolas, monospace">Electric backup</text>
+        <text x="170" y="160" text-anchor="middle" font-size="6.5" fill="#7a4ec9"
+              font-weight="700" font-family="Consolas, monospace">Elec backup</text>
     </g>
 
-    <!-- NECB primary: NG boiler / furnace -->
+    <!-- NECB primary heat source: NG -->
     <g class="primary-gas">
-        <rect x="44" y="110" width="80" height="58" rx="3" fill="#fff"
-              stroke="#a06000" stroke-width="1.4"/>
-        <circle cx="84" cy="138" r="14" fill="#fff7e6" stroke="#a06000" stroke-width="0.8"/>
-        <path d="M81,148 L81,138 L86,143 L86,148 Z M81,138 L86,131 L86,143 Z"
+        <rect x="44" y="135" width="60" height="36" rx="3" fill="#fff" stroke="#a06000" stroke-width="1.2"/>
+        <circle cx="64" cy="153" r="9" fill="#fff7e6" stroke="#a06000" stroke-width="0.8"/>
+        <path d="M62,159 L62,151 L66,155 L66,159 Z M62,151 L66,147 L66,155 Z"
               fill="#e67e22" class="flame-shape"/>
-        <rect x="74" y="118" width="20" height="6" fill="#fff" stroke="#a06000" stroke-width="0.6"/>
-        <text x="84" y="123" text-anchor="middle" font-size="4.5" fill="#a06000">flue</text>
-        <text x="84" y="180" text-anchor="middle" font-size="7"
-              fill="#a06000" font-weight="700" font-family="Consolas, monospace">NG Boiler / Furnace</text>
+        <text x="86" y="156" text-anchor="middle" font-size="6.5" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">Boiler</text>
     </g>
 
-    <!-- NECB primary: electric -->
+    <!-- NECB primary heat source: electric -->
     <g class="primary-elec">
-        <rect x="44" y="110" width="80" height="58" rx="3" fill="#fff"
-              stroke="#7a4ec9" stroke-width="1.4"/>
-        <rect x="56" y="122" width="56" height="30" fill="#f4efff" stroke="#7a4ec9" stroke-width="0.6"/>
-        <path d="M58,138 L64,130 L70,138 L76,130 L82,138 L88,130 L94,138 L100,130 L106,138 L110,134"
-              stroke="#7a4ec9" stroke-width="1.6" fill="none"/>
-        <text x="84" y="180" text-anchor="middle" font-size="7"
-              fill="#7a4ec9" font-weight="700" font-family="Consolas, monospace">Electric heating</text>
+        <rect x="44" y="135" width="60" height="36" rx="3" fill="#fff" stroke="#7a4ec9" stroke-width="1.2"/>
+        <rect x="52" y="143" width="44" height="20" fill="#f4efff" stroke="#7a4ec9" stroke-width="0.6"/>
+        <path d="M54,156 L60,148 L66,156 L72,148 L78,156 L84,148 L90,156"
+              stroke="#7a4ec9" stroke-width="1.4" fill="none"/>
+        <text x="74" y="180" text-anchor="middle" font-size="6.5" fill="#7a4ec9"
+              font-weight="700" font-family="Consolas, monospace">Electric</text>
     </g>
 </svg>
 `;
@@ -801,6 +842,7 @@ function renderHvacSummary() {
         if (titleEl) {
             let title = 'HVAC Schematic';
             if (isHP)                       title = `${family} + ${typeLabels[type] || 'distribution'}`;
+            else if (isNECB && secondarySys) title = `NECB Default → System ${necbMapping.primary} (suites) + System ${necbMapping.secondary} (common)`;
             else if (isNECB && primarySys)  title = `NECB Default → ${primarySys.label}`;
             else if (isNECB)                title = 'NECB Default (pick an archetype)';
             titleEl.textContent = title;
