@@ -1118,7 +1118,7 @@ header h1 {
     border: 1px solid #c8d3f1;
     border-radius: 8px;
     overflow: hidden;
-    min-height: 200px;
+    min-height: 220px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1127,17 +1127,18 @@ header h1 {
 .hvac-diagram svg {
     width: 100%;
     height: auto;
-    max-height: 220px;
+    max-height: 260px;
     display: block;
 }
 
 /* Mode-based visibility (toggled via classes added to .hvac-diagram) */
 .hvac-diagram .hp-unit,
-.hvac-diagram .hp-lines,
 .hvac-diagram .dist-vrf-vis,
 .hvac-diagram .dist-baseboard-vis,
 .hvac-diagram .dist-pthp-vis,
-.hvac-diagram .dist-necb-vis,
+.hvac-diagram .sys-necb-1,
+.hvac-diagram .sys-necb-3,
+.hvac-diagram .sys-necb-6,
 .hvac-diagram .backup-gas,
 .hvac-diagram .backup-elec,
 .hvac-diagram .primary-gas,
@@ -1146,39 +1147,57 @@ header h1 {
     display: none;
 }
 
-.hvac-diagram.mode-hp .hp-unit,
-.hvac-diagram.mode-hp .hp-lines { display: inline; }
+/* Heat-pump mode */
+.hvac-diagram.mode-hp .hp-unit { display: inline; }
+.hvac-diagram.mode-hp.dist-vrf .dist-vrf-vis { display: inline; }
+.hvac-diagram.mode-hp.dist-baseboard .dist-baseboard-vis { display: inline; }
+.hvac-diagram.mode-hp.dist-pthp .dist-pthp-vis { display: inline; }
 
-.hvac-diagram.dist-vrf .dist-vrf-vis { display: inline; }
-.hvac-diagram.dist-baseboard .dist-baseboard-vis { display: inline; }
-.hvac-diagram.dist-pthp .dist-pthp-vis { display: inline; }
-.hvac-diagram.mode-necb .dist-necb-vis { display: inline; }
+/* NECB sub-system layouts (selected via archetype) */
+.hvac-diagram.mode-necb.necb-sys-1 .sys-necb-1 { display: inline; }
+.hvac-diagram.mode-necb.necb-sys-3 .sys-necb-3 { display: inline; }
+.hvac-diagram.mode-necb.necb-sys-6 .sys-necb-6 { display: inline; }
 
-/* Backup icon when in heat-pump mode */
-.hvac-diagram.mode-hp.fuel-gas .backup-gas { display: inline; }
+/* Backup heater appears in HP mode + matching fuel */
+.hvac-diagram.mode-hp.fuel-gas  .backup-gas  { display: inline; }
 .hvac-diagram.mode-hp.fuel-elec .backup-elec { display: inline; }
 
-/* Primary icon when in NECB mode (no heat pump) */
-.hvac-diagram.mode-necb.fuel-gas .primary-gas { display: inline; }
+/* Primary heating source appears in NECB mode + matching fuel */
+.hvac-diagram.mode-necb.fuel-gas  .primary-gas  { display: inline; }
 .hvac-diagram.mode-necb.fuel-elec .primary-elec { display: inline; }
 
 /* Empty / not-yet-configured */
 .hvac-diagram.mode-empty .empty-state { display: inline; }
 
-/* Animations */
+/* Animations — engineering motion only (no flashing emoji) */
 @keyframes hvac-fan-spin {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
 }
 .hvac-diagram .hp-fan {
-    transform-origin: 55px 107px;
+    transform-origin: 84px 149px;
     transform-box: fill-box;
     animation: hvac-fan-spin 2.5s linear infinite;
+}
+.hvac-diagram .rtu-fan {
+    transform-origin: 241px 31px;
+    transform-box: fill-box;
+    animation: hvac-fan-spin 3s linear infinite;
+}
+.hvac-diagram .ahu-fan {
+    transform-origin: 251px 30px;
+    transform-box: fill-box;
+    animation: hvac-fan-spin 3s linear infinite;
+}
+.hvac-diagram .ct-fan {
+    transform-origin: 63px 105px;
+    transform-box: fill-box;
+    animation: hvac-fan-spin 4s linear infinite;
 }
 
 @keyframes hvac-refrig-flow {
     from { stroke-dashoffset: 0; }
-    to   { stroke-dashoffset: -20; }
+    to   { stroke-dashoffset: -18; }
 }
 .hvac-diagram .refrig-line {
     animation: hvac-refrig-flow 1.4s linear infinite;
@@ -1187,36 +1206,23 @@ header h1 {
     animation-direction: reverse;
 }
 
-@keyframes hvac-flame-pulse {
-    0%, 100% { transform: scale(1);    opacity: 1; }
-    50%      { transform: scale(1.18); opacity: 0.85; }
+@keyframes hvac-duct-flow {
+    from { stroke-dashoffset: 0; }
+    to   { stroke-dashoffset: -16; }
 }
-.hvac-diagram .flame-anim {
-    transform-origin: center;
-    transform-box: fill-box;
-    animation: hvac-flame-pulse 1.1s ease-in-out infinite;
+.hvac-diagram .duct-supply rect:not([opacity]) {
+    /* Diffuser tabs — small, no animation */
 }
 
-@keyframes hvac-elec-flash {
-    0%, 70%, 100% { opacity: 1; }
-    75%, 85%      { opacity: 0.3; }
+@keyframes hvac-flame-soft {
+    0%, 100% { transform: scaleY(1);    opacity: 1; }
+    50%      { transform: scaleY(1.12); opacity: 0.9; }
 }
-.hvac-diagram .elec-anim {
-    animation: hvac-elec-flash 1.8s ease-in-out infinite;
-}
-
-@keyframes hvac-heat-wave {
-    0%   { opacity: 0;   transform: translateY(0); }
-    50%  { opacity: 0.6; transform: translateY(-6px); }
-    100% { opacity: 0;   transform: translateY(-12px); }
-}
-.hvac-diagram .heat-wave {
+.hvac-diagram .flame-shape {
+    transform-origin: center bottom;
     transform-box: fill-box;
-    transform-origin: center;
-    animation: hvac-heat-wave 2s ease-in-out infinite;
+    animation: hvac-flame-soft 1.6s ease-in-out infinite;
 }
-.hvac-diagram .heat-wave-2 { animation-delay: 0.6s; }
-.hvac-diagram .heat-wave-3 { animation-delay: 1.2s; }
 
 /* Stack on narrow screens */
 @media (max-width: 760px) {
