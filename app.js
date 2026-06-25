@@ -1,4 +1,4 @@
-﻿// Configuration
+// Configuration
 const API_BASE_URL = 'https://h3v7vtb0ee.execute-api.ca-central-1.amazonaws.com';  // Production API Gateway
 const BUCKET_NAME = 'surrogate-api-dev-tgw-3-btap-v1-uploads';
 const AWS_REGION = 'ca-central-1';
@@ -20,7 +20,7 @@ const ARCHETYPE_GEOMETRY = {
     HighRise: {
         bldg_name: 'HighriseApartment',
         bldg_standards_building_type: 'HighriseApartment',
-        bldg_conditioned_floor_area_m_sq: 7058.0,   // 47.24 Ã— 14.94 Ã— 10
+        bldg_conditioned_floor_area_m_sq: 7058.0,   // 47.24 × 14.94 × 10
         bldg_exterior_area_m_sq: 4870.0,
         bldg_standards_number_of_above_ground_stories: 10,
         bldg_standards_number_of_stories: 10
@@ -36,7 +36,7 @@ const ARCHETYPE_GEOMETRY = {
     LowRise: {
         bldg_name: 'LowriseApartment',
         bldg_standards_building_type: 'LowriseApartment',
-        bldg_conditioned_floor_area_m_sq: 1248.0,   // 32.0 Ã— 13.0 Ã— 3
+        bldg_conditioned_floor_area_m_sq: 1248.0,   // 32.0 × 13.0 × 3
         bldg_exterior_area_m_sq: 1190.0,
         bldg_standards_number_of_above_ground_stories: 3,
         bldg_standards_number_of_stories: 3
@@ -90,7 +90,7 @@ function applyArchetypeGeometry(row, buildingType) {
 // The "Dominant HVAC System" picker is split in the UI into two cascading
 // selects: a system family (e.g. Cold Climate Air Source Heat Pump) and a
 // delivery type (e.g. VRF, Baseboard). The backend surrogate model still
-// expects the original code names (HS08_CCASHP_VRF, HS12_ASHP_Baseboard, â€¦)
+// expects the original code names (HS08_CCASHP_VRF, HS12_ASHP_Baseboard, …)
 // so a hidden input is populated with the mapped backend value whenever
 // either select changes. The mapping below is the single source of truth.
 const HVAC_SYSTEM_OPTIONS = {
@@ -181,7 +181,7 @@ function setupHvacCascade(familyId, typeId, hiddenId) {
 // ---------------------------------------------------------------------------
 // The summary card translates the raw form inputs into plain-English
 // statements about what the simulation will model. It also exposes the
-// "auto-derived" backend value for `primary_heating_fuel` â€” e.g. selecting
+// "auto-derived" backend value for `primary_heating_fuel` — e.g. selecting
 // `HS13_ASHP_VRF` + `NaturalGas` is silently rewritten by BTAP to
 // `NaturalGasHPGasBackup` (heat pump primary, NG backup), and the summary
 // makes that transformation visible to the user.
@@ -192,43 +192,43 @@ function setupHvacCascade(familyId, typeId, hiddenId) {
 // and distribution variants) and drive the working animations (fan spin,
 // refrigerant flow, etc.).
 //
-// NECB system â†’ building-archetype mapping (from NECB_HVAC_Systems.md,
+// NECB system → building-archetype mapping (from NECB_HVAC_Systems.md,
 // derived from NECB 2011 Table 8.4.4.8.A and the BTAP prototype
 // geometries). When the user selects "NECB Default", the building type
 // determines which system the simulator will assign.
 const NECB_DEFAULT_FOR_BUILDING = {
     SmallOffice:   { primary: 3, secondary: null,
-                     note: 'Small Office (1 storey, "General Area" space type) â†’ NECB assigns System 3 (PSZ-AC, packaged single-zone rooftop with baseboards).' },
+                     note: 'Small Office (1 storey, "General Area" space type) → NECB assigns System 3 (PSZ-AC, packaged single-zone rooftop with baseboards).' },
     MediumOffice:  { primary: 6, secondary: null,
-                     note: 'Medium Office (3 storeys) crosses the NECB â‰¥3-storey threshold for "General Area" zones, so the simulator assigns System 6 (built-up VAV with reheat + chiller + boiler).' },
+                     note: 'Medium Office (3 storeys) crosses the NECB ≥3-storey threshold for "General Area" zones, so the simulator assigns System 6 (built-up VAV with reheat + chiller + boiler).' },
     LargeOffice:   { primary: 6, secondary: null,
-                     note: 'Large Office (â‰¥3 storeys) â†’ NECB assigns System 6 (built-up VAV with reheat + chiller + boiler) for all general office zones.' },
+                     note: 'Large Office (≥3 storeys) → NECB assigns System 6 (built-up VAV with reheat + chiller + boiler) for all general office zones.' },
     LowRise:       { primary: 1, secondary: 6,
-                     note: 'Low-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has â‰¥3 storeys.' },
+                     note: 'Low-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has ≥3 storeys.' },
     MidRise:       { primary: 1, secondary: 6,
-                     note: 'Mid-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has â‰¥3 storeys.' },
+                     note: 'Mid-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has ≥3 storeys.' },
     HighRise:      { primary: 1, secondary: 6,
-                     note: 'High-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has â‰¥3 storeys.' }
+                     note: 'High-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has ≥3 storeys.' }
 };
 
 const NECB_SYSTEM_INFO = {
     1: {
-        label: 'System 1 â€” PTAC + baseboards',
-        archetype: 'Packaged Terminal Air Conditioner (PTAC) â€” closest to ASHRAE 90.1 System 1',
+        label: 'System 1 — PTAC + baseboards',
+        archetype: 'Packaged Terminal Air Conditioner (PTAC) — closest to ASHRAE 90.1 System 1',
         primary: 'Through-wall PTAC per zone + hydronic/electric perimeter baseboards (typical dwelling/hotel layout)',
         distribution: 'PTAC unit under each window for cooling + baseboards along perimeter walls for heating',
         cls: 'necb-sys-1'
     },
     3: {
-        label: 'System 3 â€” PSZ-AC',
-        archetype: 'Packaged Single-Zone constant-volume rooftop unit â€” closest to ASHRAE 90.1 System 3',
+        label: 'System 3 — PSZ-AC',
+        archetype: 'Packaged Single-Zone constant-volume rooftop unit — closest to ASHRAE 90.1 System 3',
         primary: 'Packaged Single-Zone rooftop unit (PSZ-AC) with DX cooling and gas/electric/hot-water heating + perimeter baseboards',
         distribution: 'Ducted constant-volume supply from rooftop unit + perimeter baseboards',
         cls: 'necb-sys-3'
     },
     6: {
-        label: 'System 6 â€” Built-up VAV with reheat',
-        archetype: 'Built-up multi-zone VAV with hydronic reheat â€” closest to ASHRAE 90.1 System 7',
+        label: 'System 6 — Built-up VAV with reheat',
+        archetype: 'Built-up multi-zone VAV with hydronic reheat — closest to ASHRAE 90.1 System 7',
         primary: 'Built-up VAV air handler (one per storey) with CHW cooling, HW reheat, central chiller + cooling tower + boiler',
         distribution: 'VAV terminal box with reheat coil per zone + perimeter baseboards; central CHW chiller, cooling tower and HW boiler',
         cls: 'necb-sys-6'
@@ -282,8 +282,8 @@ const HVAC_DIAGRAM_SVG = `
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 3 â€” PSZ-AC (packaged single-zone rooftop)         -->
-    <!-- Equipment-flow schematic: RTU â†’ supply duct â†’ zone â†’ return  -->
+    <!-- NECB SYSTEM 3 — PSZ-AC (packaged single-zone rooftop)         -->
+    <!-- Equipment-flow schematic: RTU → supply duct → zone → return  -->
     <!-- ============================================================ -->
     <g class="sys-necb-3">
         <!-- RTU equipment cabinet with internal stages -->
@@ -313,10 +313,10 @@ const HVAC_DIAGRAM_SVG = `
         <text x="95" y="129" text-anchor="middle" font-size="9" fill="#1a3a6c"
               font-weight="700" font-family="Consolas, monospace">RTU</text>
 
-        <!-- Supply duct â†’ into zone -->
+        <!-- Supply duct → into zone -->
         <line x1="162" y1="70" x2="200" y2="70" stroke="#c0392b" stroke-width="3"
               marker-end="url(#hvac-arrow-red)"/>
-        <!-- Return duct â† from zone -->
+        <!-- Return duct ← from zone -->
         <line x1="200" y1="95" x2="162" y2="95" stroke="#2e6da6" stroke-width="2.2"
               stroke-dasharray="4 2" marker-end="url(#hvac-arrow-blue)"/>
 
@@ -340,8 +340,8 @@ const HVAC_DIAGRAM_SVG = `
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 6 â€” Built-up VAV w/ reheat + central plant        -->
-    <!-- AHU â†’ supply trunk â†’ VAV+RH terminals â†’ zones; plant below   -->
+    <!-- NECB SYSTEM 6 — Built-up VAV w/ reheat + central plant        -->
+    <!-- AHU → supply trunk → VAV+RH terminals → zones; plant below   -->
     <!-- ============================================================ -->
     <g class="sys-necb-6">
         <!-- AHU at top-left -->
@@ -432,20 +432,20 @@ const HVAC_DIAGRAM_SVG = `
               font-weight="700" font-family="Consolas, monospace">Boiler</text>
 
         <!-- Plant piping -->
-        <!-- Condenser water: CT â†” Chiller -->
+        <!-- Condenser water: CT ↔ Chiller -->
         <path d="M60,150 L70,150" stroke="#7a8ba0" stroke-width="1.4" fill="none" stroke-dasharray="3 2"/>
-        <!-- CHW: Chiller â†’ AHU cooling coil -->
+        <!-- CHW: Chiller → AHU cooling coil -->
         <path d="M105,135 Q105,80 60,66" stroke="#2e6da6" stroke-width="1.2" fill="none"/>
-        <!-- HW: Boiler â†’ AHU heating coil -->
+        <!-- HW: Boiler → AHU heating coil -->
         <path d="M170,135 Q170,80 75,66" stroke="#a06000" stroke-width="1.2" fill="none"/>
-        <!-- HW branch â†’ VAV reheat coils -->
+        <!-- HW branch → VAV reheat coils -->
         <path d="M190,140 Q210,120 231,108" stroke="#a06000" stroke-width="0.8" fill="none" stroke-dasharray="3 2"/>
         <path d="M190,148 Q235,130 281,108" stroke="#a06000" stroke-width="0.8" fill="none" stroke-dasharray="3 2"/>
         <path d="M190,156 Q260,140 331,108" stroke="#a06000" stroke-width="0.8" fill="none" stroke-dasharray="3 2"/>
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 1 â€” PTAC + perimeter baseboards (per-zone)        -->
+    <!-- NECB SYSTEM 1 — PTAC + perimeter baseboards (per-zone)        -->
     <!-- Three independent dwelling-style zones (no central plant)    -->
     <!-- ============================================================ -->
     <g class="sys-necb-1">
@@ -494,14 +494,14 @@ const HVAC_DIAGRAM_SVG = `
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB MIXED (Sys 1 + Sys 6) â€” apartments                       -->
+    <!-- NECB MIXED (Sys 1 + Sys 6) — apartments                       -->
     <!-- TOP: dwelling units (PTAC + BB)                               -->
     <!-- BOTTOM: common areas (AHU + VAV + plant)                      -->
     <!-- ============================================================ -->
     <g class="sys-necb-mixed">
         <!-- ===== SECTION A: DWELLING UNITS (System 1) ===== -->
         <text x="18" y="26" font-size="7.5" fill="#1a3a6c" font-weight="700"
-              font-family="Consolas, monospace">DWELLING UNITS â€” SYSTEM 1 (PTAC + BB, per suite)</text>
+              font-family="Consolas, monospace">DWELLING UNITS — SYSTEM 1 (PTAC + BB, per suite)</text>
 
         <!-- Suite A1 -->
         <rect x="18" y="30" width="160" height="38" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
@@ -540,7 +540,7 @@ const HVAC_DIAGRAM_SVG = `
 
         <!-- ===== SECTION B: COMMON AREAS (System 6) ===== -->
         <text x="18" y="130" font-size="7.5" fill="#1a3a6c" font-weight="700"
-              font-family="Consolas, monospace">COMMON AREAS â€” SYSTEM 6 (VAV + reheat + plant)</text>
+              font-family="Consolas, monospace">COMMON AREAS — SYSTEM 6 (VAV + reheat + plant)</text>
 
         <!-- AHU -->
         <rect x="18" y="135" width="84" height="26" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.1"/>
@@ -615,7 +615,7 @@ const HVAC_DIAGRAM_SVG = `
     </g>
 
     <!-- ============================================================ -->
-    <!-- HEAT PUMP â€” outdoor unit + refrigerant lines                  -->
+    <!-- HEAT PUMP — outdoor unit + refrigerant lines                  -->
     <!-- ============================================================ -->
     <g class="hp-unit">
         <rect x="20" y="120" width="100" height="80" rx="3" fill="#fff" stroke="#1a3a6c" stroke-width="1.5"/>
@@ -735,26 +735,33 @@ function renderHvacSummary() {
     const isHP         = family === 'CCASHP' || family === 'ASHP';
     const isNECB       = family === 'NECB_Default';
 
-    // ---- NECB default â†’ actual NECB system number (from building type) ----
+    // ---- NECB default → actual NECB system number (from building type) ----
     const necbMapping = (isNECB && buildingType) ? NECB_DEFAULT_FOR_BUILDING[buildingType] : null;
     const primarySys  = necbMapping ? NECB_SYSTEM_INFO[necbMapping.primary]   : null;
     const secondarySys = (necbMapping && necbMapping.secondary)
                             ? NECB_SYSTEM_INFO[necbMapping.secondary] : null;
 
     // ---- Primary heating ----
-    let primary = 'â€”';
+    let primary = '—';
     if (family === 'CCASHP')           primary = 'Cold Climate Air Source Heat Pump (electric refrigerant cycle)';
     else if (family === 'ASHP')        primary = 'Air Source Heat Pump (electric refrigerant cycle)';
     else if (isNECB) {
-        if (primarySys) {
-            const fuelTag = fuel === 'NaturalGas'   ? ' â€” natural gas fuelled'
-                          : fuel === 'Electricity'  ? ' â€” electrically fuelled'
+        if (primarySys && secondarySys) {
+            // Mixed-use building (e.g. apartments): both systems apply.
+            const fuelTag = fuel === 'NaturalGas'   ? ' — natural gas fuelled'
+                          : fuel === 'Electricity'  ? ' — electrically fuelled'
+                          : '';
+            primary = `${primarySys.label} (dwelling units) + ${secondarySys.label} (common areas)${fuelTag}. `
+                    + `Suites: ${primarySys.primary}. Common areas: ${secondarySys.primary}.`;
+        } else if (primarySys) {
+            const fuelTag = fuel === 'NaturalGas'   ? ' — natural gas fuelled'
+                          : fuel === 'Electricity'  ? ' — electrically fuelled'
                           : '';
             primary = `${primarySys.label}${fuelTag}. ${primarySys.primary}.`;
         } else if (fuel === 'NaturalGas') {
-            primary = 'Natural Gas boiler / furnace (NECB default â€” select a building archetype to see the exact system)';
+            primary = 'Natural Gas boiler / furnace (NECB default — select a building archetype to see the exact system)';
         } else if (fuel === 'Electricity') {
-            primary = 'Electric heating (NECB default â€” select a building archetype to see the exact system)';
+            primary = 'Electric heating (NECB default — select a building archetype to see the exact system)';
         } else {
             primary = 'NECB default (pick a building archetype and fuel)';
         }
@@ -766,31 +773,35 @@ function renderHvacSummary() {
         Baseboard: 'Hydronic / electric baseboards',
         PTHP:      'Packaged Terminal Heat Pump (PTHP)'
     };
-    let distribution = 'â€”';
-    if (isHP && type)         distribution = typeLabels[type] || type;
+    let distribution = '—';
+    if (isHP && type)              distribution = typeLabels[type] || type;
+    else if (isNECB && primarySys && secondarySys) {
+        distribution = `Dwelling units: ${primarySys.distribution}. `
+                     + `Common areas: ${secondarySys.distribution}.`;
+    }
     else if (isNECB && primarySys) distribution = primarySys.distribution;
-    else if (isNECB)          distribution = 'NECB default zoning (depends on building archetype)';
+    else if (isNECB)               distribution = 'NECB default zoning (depends on building archetype)';
 
     // ---- Backup heating + derived fuel value ----
-    let backup       = 'â€”';
-    let derivedFuel  = 'â€”';
+    let backup       = '—';
+    let derivedFuel  = '—';
     let note         = '';
     if (fuel === 'NaturalGas') {
         if (isHP) {
-            backup      = 'Natural Gas â€” boiler / furnace loop (used during very cold hours)';
+            backup      = 'Natural Gas — boiler / furnace loop (used during very cold hours)';
             derivedFuel = 'NaturalGasHPGasBackup (auto-derived)';
             note        = 'The heat pump remains the primary heating source. Natural gas is the supplementary backup, used when the heat pump cannot meet load.';
         } else {
-            backup      = 'N/A â€” natural gas is the primary heat source';
+            backup      = 'N/A — natural gas is the primary heat source';
             derivedFuel = 'NaturalGas';
         }
     } else if (fuel === 'Electricity') {
         if (isHP) {
-            backup      = 'Electric resistance â€” supplementary heating during very cold hours';
+            backup      = 'Electric resistance — supplementary heating during very cold hours';
             derivedFuel = 'ElectricityHPElecBackup (auto-derived)';
             note        = 'The heat pump remains the primary heating source. Electric resistance is the supplementary backup.';
         } else {
-            backup      = 'N/A â€” electricity is the primary heat source';
+            backup      = 'N/A — electricity is the primary heat source';
             derivedFuel = 'Electricity';
         }
     }
@@ -814,7 +825,7 @@ function renderHvacSummary() {
         'Natural Gas Direct Vent with Electric Ignition':      'Natural Gas Direct Vent',
         'Natural Gas Power Vent with Electric Ignition':       'Natural Gas Power Vent'
     };
-    const shwDisplay = shw ? (shwLabels[shw] || shw) : 'â€”';
+    const shwDisplay = shw ? (shwLabels[shw] || shw) : '—';
 
     // ---- Write to the DOM ----
     const set = (id, val) => {
@@ -825,7 +836,7 @@ function renderHvacSummary() {
     set('hvacSummaryDistribution', distribution);
     set('hvacSummaryBackup',       backup);
     set('hvacSummarySHW',          shwDisplay);
-    set('hvacSummaryEcm',          (ecmHidden && ecmHidden.value) || 'â€”');
+    set('hvacSummaryEcm',          (ecmHidden && ecmHidden.value) || '—');
     set('hvacSummaryFuel',         derivedFuel);
     set('hvacSummaryNote',         note);
 
@@ -849,7 +860,7 @@ function renderHvacSummary() {
             classes.push(primarySys.cls);
             if (secondarySys) classes.push('necb-mixed');
         } else if (isNECB) {
-            // NECB selected but no archetype yet â†’ render as empty.
+            // NECB selected but no archetype yet → render as empty.
             classes.push('mode-empty');
         }
 
@@ -860,8 +871,8 @@ function renderHvacSummary() {
         if (titleEl) {
             let title = 'HVAC Schematic';
             if (isHP)                       title = `${family} + ${typeLabels[type] || 'distribution'}`;
-            else if (isNECB && secondarySys) title = `NECB Default â†’ System ${necbMapping.primary} (suites) + System ${necbMapping.secondary} (common)`;
-            else if (isNECB && primarySys)  title = `NECB Default â†’ ${primarySys.label}`;
+            else if (isNECB && secondarySys) title = `NECB Default → System ${necbMapping.primary} (suites) + System ${necbMapping.secondary} (common)`;
+            else if (isNECB && primarySys)  title = `NECB Default → ${primarySys.label}`;
             else if (isNECB)                title = 'NECB Default (pick an archetype)';
             titleEl.textContent = title;
         }
@@ -875,11 +886,11 @@ function renderHvacSummary() {
                 'Backup / Supplementary Heating Fuel ' +
                 '<span class="tooltip" data-tooltip="The heat pump is the primary heating source (electric). ' +
                 'This fuel powers the supplementary boiler / furnace loop used during very cold hours ' +
-                'and for ancillary heating loads.">â„¹ï¸</span>';
+                'and for ancillary heating loads.">ℹ️</span>';
         } else {
             fuelLabel.innerHTML =
                 'Primary Heating Fuel ' +
-                '<span class="tooltip" data-tooltip="The main energy source for heating (boiler / furnace loop).">â„¹ï¸</span>';
+                '<span class="tooltip" data-tooltip="The main energy source for heating (boiler / furnace loop).">ℹ️</span>';
         }
     }
 }
@@ -898,7 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Re-render the summary whenever any contributing field changes.
     // `building_type` is included so the NECB-default summary updates with
     // the selected archetype (the archetype cards dispatch a 'change' on
-    // the hidden #building_type select â€” see surrogate-wizard.js).
+    // the hidden #building_type select — see surrogate-wizard.js).
     ['primary_heating_fuel', 'shw_eff', 'building_type'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', renderHvacSummary);
@@ -1388,7 +1399,7 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
         const baselineEnergy = baselineResults.energy_aggregated_results[0];
         const improvedEnergy = improvedResults.energy_aggregated_results[0];
         
-        // Extract costing results (per mÂ²)
+        // Extract costing results (per m²)
         const baselineCost = baselineResults.costing_results[0];
         const improvedCost = improvedResults.costing_results[0];
         
@@ -1398,12 +1409,12 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
         // If floor_area not available in metadata, try to extract from other sources
         if (!buildingArea) {
             // Try to get from energy results (some APIs include it there)
-            buildingArea = baselineEnergy.floor_area_m_sq || baselineEnergy['Building Area (mÂ²)'] || null;
+            buildingArea = baselineEnergy.floor_area_m_sq || baselineEnergy['Building Area (m²)'] || null;
         }
         
         // Last resort: use a default based on building type
         if (!buildingArea) {
-            console.warn('Building area not found in results, using default 1000 mÂ²');
+            console.warn('Building area not found in results, using default 1000 m²');
             buildingArea = 1000;
         }
         
@@ -1411,7 +1422,7 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
         console.log('Building metadata:', baselineResults.building_metadata);
         console.log('Baseline cost keys:', Object.keys(baselineCost));
     
-    // Calculate equipment costs ($/mÂ²)
+    // Calculate equipment costs ($/m²)
     const baselineEnvelopeCost = baselineCost["Predicted cost_equipment_envelope_total_cost_per_m_sq"] || 0;
     const baselineHvacCost = baselineCost["Predicted cost_equipment_heating_and_cooling_total_cost_per_m_sq"] || 0;
     const baselineLightingCost = baselineCost["Predicted cost_equipment_lighting_total_cost_per_m_sq"] || 0;
@@ -1429,25 +1440,25 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
     // Calculate retrofit cost (difference in equipment costs)
     const retrofitCostPerM2 = improvedTotalCostPerM2 - baselineTotalCostPerM2;
     
-    // For envelope components (windows, walls, roof), costs are per mÂ² of component, not floor area
+    // For envelope components (windows, walls, roof), costs are per m² of component, not floor area
     // Apply correction factor based on parameter type
     let effectiveArea = buildingArea;
     let areaNote = '';
     
     if (parameter === 'fixed_window_cond') {
-        // Window area = Wall area Ã— FDWR (window-to-wall ratio)
-        // Wall area â‰ˆ 0.4-0.5 Ã— floor area for multi-story buildings
+        // Window area = Wall area × FDWR (window-to-wall ratio)
+        // Wall area ≈ 0.4-0.5 × floor area for multi-story buildings
         const wallToFloorRatio = 0.45; // Typical for mid-rise
         const fdwr = config[':fdwr_set'] || 0.3; // Get actual FDWR from config, default 0.3
         const wallArea = buildingArea * wallToFloorRatio;
         effectiveArea = wallArea * fdwr;
-        areaNote = ` (wall area: ${wallArea.toFixed(0)} mÂ² Ã— FDWR: ${(fdwr * 100).toFixed(0)}%)`;
+        areaNote = ` (wall area: ${wallArea.toFixed(0)} m² × FDWR: ${(fdwr * 100).toFixed(0)}%)`;
     } else if (parameter === 'ext_wall_cond') {
-        // Exterior wall area â‰ˆ 40-50% of floor area for mid-rise buildings
+        // Exterior wall area ≈ 40-50% of floor area for mid-rise buildings
         effectiveArea = buildingArea * 0.45;
         areaNote = ' (estimated exterior wall area)';
     } else if (parameter === 'ext_roof_cond') {
-        // Roof area â‰ˆ floor area / number of floors (for flat roof)
+        // Roof area ≈ floor area / number of floors (for flat roof)
         // For multi-story, typically 20-30% of total floor area
         effectiveArea = buildingArea * 0.25;
         areaNote = ' (estimated roof area)';
@@ -1469,13 +1480,13 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
     console.log('Improved energy data:', improvedEnergy);
     console.log('Available energy fields:', Object.keys(baselineEnergy));
     
-    // Calculate energy savings (per mÂ²)
+    // Calculate energy savings (per m²)
     const electricitySavings = baselineEnergy["Predicted Electricity Energy Total (Gigajoules per square meter)"] - 
                                improvedEnergy["Predicted Electricity Energy Total (Gigajoules per square meter)"];
     const gasSavings = baselineEnergy["Predicted Gas Energy Total (Gigajoules per square meter)"] - 
                       improvedEnergy["Predicted Gas Energy Total (Gigajoules per square meter)"];
     
-    console.log('Energy savings (GJ/mÂ²):', {
+    console.log('Energy savings (GJ/m²):', {
         electricitySavings,
         gasSavings,
         baselineElectricity: baselineEnergy["Predicted Electricity Energy Total (Gigajoules per square meter)"],
@@ -1484,10 +1495,10 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
         improvedGas: improvedEnergy["Predicted Gas Energy Total (Gigajoules per square meter)"]
     });
     
-    // Convert to kWh and mÂ³ for the building
+    // Convert to kWh and m³ for the building
     // 1 GJ = 277.778 kWh
     const electricitySavingsKwhPerM2 = electricitySavings * 277.778;
-    // 1 GJ â‰ˆ 26.8 mÂ³ of natural gas
+    // 1 GJ ≈ 26.8 m³ of natural gas
     const gasSavingsM3PerM2 = gasSavings * 26.8;
     
     // Calculate total annual energy savings for the whole building
@@ -1759,7 +1770,7 @@ function displayResults(results) {
     let htmlContent = `
         <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
             <button onclick="downloadSinglePDFReport()" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">
-                ðŸ“„ Download PDF Report
+                📄 Download PDF Report
             </button>
         </div>
         <div class="result-grid">`;
@@ -1775,7 +1786,7 @@ function displayResults(results) {
         console.log('Cost data:', costData);
         console.log('Cost keys:', Object.keys(costData).filter(k => k.includes('cost')));
         
-        // Extract Total Energy (Electricity + Gas in GJ/mÂ²)
+        // Extract Total Energy (Electricity + Gas in GJ/m²)
         const electricityGJ = energyData["Predicted Electricity Energy Total (Gigajoules per square meter)"] || 0;
         const gasGJ = energyData["Predicted Gas Energy Total (Gigajoules per square meter)"] || 0;
         const totalEnergyGJ = electricityGJ + gasGJ;
@@ -1786,7 +1797,7 @@ function displayResults(results) {
         const buildingType = metadata.building_type || 'Unknown';
         const location = metadata.location || 'Unknown';
         
-        // Extract and sum all cost components from costing_results (CAD/mÂ²)
+        // Extract and sum all cost components from costing_results (CAD/m²)
         const envelopeCost = costData["Predicted cost_equipment_envelope_total_cost_per_m_sq"] || 0;
         const hvacCost = costData["Predicted cost_equipment_heating_and_cooling_total_cost_per_m_sq"] || 0;
         const lightingCost = costData["Predicted cost_equipment_lighting_total_cost_per_m_sq"] || 0;
@@ -1799,16 +1810,16 @@ function displayResults(results) {
         
         htmlContent += `
             <div class="result-card highlight">
-                <h4>ðŸ”‹ Total Energy Use Intensity</h4>
+                <h4>🔋 Total Energy Use Intensity</h4>
                 <div class="value">${totalEnergyGJ.toFixed(7)}</div>
-                <div class="unit">GJ/mÂ²</div>
-                <p class="subtext">Electricity: ${electricityGJ.toFixed(7)} GJ/mÂ²</p>
-                <p class="subtext">Natural Gas: ${gasGJ.toFixed(7)} GJ/mÂ²</p>
+                <div class="unit">GJ/m²</div>
+                <p class="subtext">Electricity: ${electricityGJ.toFixed(7)} GJ/m²</p>
+                <p class="subtext">Natural Gas: ${gasGJ.toFixed(7)} GJ/m²</p>
             </div>
             <div class="result-card highlight">
-                <h4>ðŸ’° Total Equipment Cost</h4>
+                <h4>💰 Total Equipment Cost</h4>
                 <div class="value">${totalCost.toFixed(2)}</div>
-                <div class="unit">CAD/mÂ²</div>
+                <div class="unit">CAD/m²</div>
                 <p class="subtext">Envelope: $${envelopeCost.toFixed(2)}</p>
                 <p class="subtext">HVAC: $${hvacCost.toFixed(2)}</p>
                 <p class="subtext">Lighting: $${lightingCost.toFixed(2)}</p>
@@ -1816,9 +1827,9 @@ function displayResults(results) {
                 <p class="subtext">Hot Water: $${shwCost.toFixed(2)}</p>
             </div>
             <div class="result-card">
-                <h4>ðŸ¢ Building Information</h4>
+                <h4>🏢 Building Information</h4>
                 <div class="value">${floorArea.toFixed(0)}</div>
-                <div class="unit">mÂ²</div>
+                <div class="unit">m²</div>
                 <p class="subtext">Type: ${buildingType}</p>
                 <p class="subtext">Location: ${location}</p>
             </div>
@@ -1828,7 +1839,7 @@ function displayResults(results) {
     else if (results.status === 'success' && !results.energy_aggregated_results) {
         htmlContent += `
             <div class="result-card" style="grid-column: 1 / -1;">
-                <h4>âœ… Prediction Complete</h4>
+                <h4>✅ Prediction Complete</h4>
                 <p>Output saved to: ${results.output_key || 'S3'}</p>
                 <p class="subtext">Results are being processed...</p>
             </div>
@@ -1837,7 +1848,7 @@ function displayResults(results) {
         // Display helpful message
         htmlContent += `
             <div class="result-card" style="grid-column: 1 / -1;">
-                <h4>âš ï¸ Unexpected Data Structure</h4>
+                <h4>⚠️ Unexpected Data Structure</h4>
                 <p>Missing energy_aggregated_results or costing_results</p>
                 <p class="subtext">Check browser console for details</p>
                 <details>
@@ -1914,12 +1925,12 @@ function displayCostAnalysisResults(results) {
         roiUnit = `over ${economics.analysisYears} years`;
     }
     
-    const statusEmoji = isGoodInvestment ? 'âœ…' : 'âš ï¸';
+    const statusEmoji = isGoodInvestment ? '✅' : '⚠️';
     const statusText = isGoodInvestment ? 'Financially Viable' : 'Not Recommended';
     
     let htmlContent = `
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
-            <h3 style="margin: 0 0 10px 0;">ðŸ’° Cost-Benefit Analysis: ${parameterDisplayName}</h3>
+            <h3 style="margin: 0 0 10px 0;">💰 Cost-Benefit Analysis: ${parameterDisplayName}</h3>
             <p style="margin: 0; opacity: 0.9;">Comparing baseline vs improved configuration</p>
         </div>
         
@@ -1929,130 +1940,130 @@ function displayCostAnalysisResults(results) {
                 <p style="margin: 0; font-size: 14px; color: #666;">Based on ${economics.analysisYears}-year analysis period</p>
             </div>
             <button onclick="downloadCostAnalysisPDFReport()" class="btn btn-primary" style="padding: 10px 20px;">
-                ðŸ“„ Download PDF Report
+                📄 Download PDF Report
             </button>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px;">
             <div class="result-card" style="background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%); border: 2px solid ${isFeasible ? '#667eea' : '#f56565'};">
-                <h4>ðŸ’µ Simple Payback Period</h4>
+                <h4>💵 Simple Payback Period</h4>
                 <div class="value" style="font-size: ${typeof paybackDisplay === 'string' && paybackDisplay.includes('Feasible') ? '1.8em' : '2.5em'}; color: ${isFeasible ? '#667eea' : '#f56565'};">${paybackDisplay}</div>
                 <div class="unit">${paybackUnit}</div>
                 <p class="subtext">${paybackSubtext}</p>
             </div>
             
             <div class="result-card" style="background: linear-gradient(135deg, #48bb7820 0%, #38a16920 100%); border: 2px solid ${economics.roi >= 0 ? '#48bb78' : '#f56565'};">
-                <h4>ðŸ“ˆ Return on Investment (ROI)</h4>
+                <h4>📈 Return on Investment (ROI)</h4>
                 <div class="value" style="font-size: ${typeof roiDisplay === 'string' && roiDisplay.includes('Feasible') ? '1.8em' : '2.5em'}; color: ${economics.roi >= 0 ? '#48bb78' : '#f56565'};">${roiDisplay}</div>
                 <div class="unit">${roiUnit}</div>
                 <p class="subtext">Total return on investment</p>
             </div>
             
             <div class="result-card" style="background: linear-gradient(135deg, #f6ad5520 0%, #ec845220 100%); border: 2px solid #f6ad55;">
-                <h4>ðŸ’° Annual Cost Savings</h4>
+                <h4>💰 Annual Cost Savings</h4>
                 <div class="value" style="font-size: 2.5em; color: #f6ad55;">$${economics.totalAnnualSavings.toFixed(0)}</div>
                 <div class="unit">per year</div>
                 <p class="subtext">Electricity: $${economics.annualElectricitySavings.toFixed(0)}<br>Gas: $${economics.annualGasSavings.toFixed(0)}</p>
             </div>
         </div>
         
-        <h3 style="margin-top: 30px; color: #2a5298;">ðŸ’¸ Financial Summary</h3>
+        <h3 style="margin-top: 30px; color: #2a5298;">💸 Financial Summary</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 30px;">
             <div class="result-card">
-                <h4>ðŸ”¨ Retrofit Investment</h4>
+                <h4>🔨 Retrofit Investment</h4>
                 <div class="value">$${economics.retrofitCost.toLocaleString()}</div>
                 <div class="unit">total cost</div>
-                <p class="subtext">$${economics.retrofitCostPerM2.toFixed(2)}/mÂ²</p>
+                <p class="subtext">$${economics.retrofitCostPerM2.toFixed(2)}/m²</p>
             </div>
             
             <div class="result-card">
-                <h4>ðŸ’µ Total Savings (${economics.analysisYears}yr)</h4>
+                <h4>💵 Total Savings (${economics.analysisYears}yr)</h4>
                 <div class="value">$${economics.totalSavingsOverPeriod.toLocaleString()}</div>
                 <div class="unit">cumulative</div>
             </div>
             
             <div class="result-card">
-                <h4>ðŸ“Š Net Benefit</h4>
+                <h4>📊 Net Benefit</h4>
                 <div class="value" style="color: ${economics.netSavings >= 0 ? '#48bb78' : '#f56565'};">$${economics.netSavings.toLocaleString()}</div>
                 <div class="unit">after investment</div>
             </div>
         </div>
         
         <div style="background-color: #f0f7ff; padding: 15px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #667eea;">
-            <h4 style="margin-top: 0; color: #2a5298;">ðŸ’¡ Cost Calculation Details</h4>
+            <h4 style="margin-top: 0; color: #2a5298;">💡 Cost Calculation Details</h4>
             <p style="margin: 5px 0; font-size: 14px;">
                 <strong>Baseline Total Equipment Cost:</strong> $${economics.baselineTotalCost.toLocaleString()} 
-                (${baselineResults.total_cost_per_m_sq.toFixed(2)}/mÂ²)
+                (${baselineResults.total_cost_per_m_sq.toFixed(2)}/m²)
             </p>
             <p style="margin: 5px 0; font-size: 14px;">
                 <strong>Improved Total Equipment Cost:</strong> $${economics.improvedTotalCost.toLocaleString()} 
-                (${improvedResults.total_cost_per_m_sq.toFixed(2)}/mÂ²)
+                (${improvedResults.total_cost_per_m_sq.toFixed(2)}/m²)
             </p>
             <p style="margin: 5px 0; font-size: 14px;">
                 <strong>Retrofit Cost (Difference):</strong> $${economics.retrofitCost.toLocaleString()} 
-                (${economics.retrofitCostPerM2.toFixed(2)}/mÂ² Ã— ${economics.effectiveArea.toFixed(0)} mÂ²${economics.areaNote})
+                (${economics.retrofitCostPerM2.toFixed(2)}/m² × ${economics.effectiveArea.toFixed(0)} m²${economics.areaNote})
             </p>
             <p style="margin: 10px 0 0 0; font-size: 13px; color: #666;">
-                Note: ${economics.areaNote ? 'Envelope component costs are per mÂ² of component area, not floor area. Areas are estimated based on typical building geometry.' : 'Retrofit cost is calculated from the equipment cost predictions provided by the surrogate model.'}
+                Note: ${economics.areaNote ? 'Envelope component costs are per m² of component area, not floor area. Areas are estimated based on typical building geometry.' : 'Retrofit cost is calculated from the equipment cost predictions provided by the surrogate model.'}
             </p>
         </div>
         
-        <h3 style="margin-top: 30px; color: #2a5298;">âš¡ Energy Performance Comparison</h3>
+        <h3 style="margin-top: 30px; color: #2a5298;">⚡ Energy Performance Comparison</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 30px;">
             <div class="result-card" style="text-align: center;">
-                <h4>ðŸ“‰ Baseline</h4>
+                <h4>📉 Baseline</h4>
                 <div style="font-size: 1.1em; color: #666; margin: 10px 0;">
                     <strong>${parameterDisplayName}:</strong> ${baselineValue}
                 </div>
                 <div class="value" style="font-size: 1.5em;">${baselineResults.total_energy_eui_electricity_kwh_per_m_sq.toFixed(2)}</div>
-                <div class="unit">kWh/mÂ² (Electricity)</div>
+                <div class="unit">kWh/m² (Electricity)</div>
                 <div class="value" style="font-size: 1.5em; margin-top: 10px;">${baselineResults.total_energy_eui_natural_gas_gj_per_m_sq.toFixed(4)}</div>
-                <div class="unit">GJ/mÂ² (Gas)</div>
+                <div class="unit">GJ/m² (Gas)</div>
             </div>
             
             <div class="result-card" style="text-align: center; background: linear-gradient(135deg, #48bb7820 0%, #38a16920 100%);">
-                <h4>âœ¨ After Retrofit</h4>
+                <h4>✨ After Retrofit</h4>
                 <div style="font-size: 1.1em; color: #666; margin: 10px 0;">
                     <strong>${parameterDisplayName}:</strong> ${improvedValue}
                 </div>
                 <div class="value" style="font-size: 1.5em; color: #48bb78;">${improvedResults.total_energy_eui_electricity_kwh_per_m_sq.toFixed(2)}</div>
-                <div class="unit">kWh/mÂ² (Electricity)</div>
+                <div class="unit">kWh/m² (Electricity)</div>
                 <div class="value" style="font-size: 1.5em; margin-top: 10px; color: #48bb78;">${improvedResults.total_energy_eui_natural_gas_gj_per_m_sq.toFixed(4)}</div>
-                <div class="unit">GJ/mÂ² (Gas)</div>
+                <div class="unit">GJ/m² (Gas)</div>
             </div>
             
             <div class="result-card" style="text-align: center; background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);">
-                <h4>ðŸ“Š Savings</h4>
+                <h4>📊 Savings</h4>
                 <div style="font-size: 1.1em; color: #666; margin: 10px 0;">
                     <strong>Reduction</strong>
                 </div>
                 <div class="value" style="font-size: 1.5em; color: #667eea;">${energySavings.electricitySavingsPercent.toFixed(1)}%</div>
-                <div class="unit">${energySavings.electricitySavings.toFixed(2)} kWh/mÂ²</div>
+                <div class="unit">${energySavings.electricitySavings.toFixed(2)} kWh/m²</div>
                 <div class="value" style="font-size: 1.5em; margin-top: 10px; color: #667eea;">${energySavings.gasSavingsPercent.toFixed(1)}%</div>
-                <div class="unit">${energySavings.gasSavings.toFixed(4)} GJ/mÂ²</div>
+                <div class="unit">${energySavings.gasSavings.toFixed(4)} GJ/m²</div>
             </div>
         </div>
         
-        <h3 style="margin-top: 30px; color: #2a5298;">ðŸ“‹ Economic Assumptions</h3>
+        <h3 style="margin-top: 30px; color: #2a5298;">📋 Economic Assumptions</h3>
         <div style="background-color: #f8f9ff; padding: 20px; border-radius: 8px; border: 1px solid #667eea;">
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                 <div>
-                    <strong>âš¡ Electricity Rate:</strong><br>
+                    <strong>⚡ Electricity Rate:</strong><br>
                     $${economics.electricityRate.toFixed(3)}/kWh
                 </div>
                 <div>
-                    <strong>ðŸ”¥ Natural Gas Rate:</strong><br>
-                    $${economics.gasRate.toFixed(3)}/mÂ³
+                    <strong>🔥 Natural Gas Rate:</strong><br>
+                    $${economics.gasRate.toFixed(3)}/m³
                 </div>
                 <div>
-                    <strong>ðŸ¢ Building Area:</strong><br>
-                    ${economics.buildingArea.toFixed(0)} mÂ²
+                    <strong>🏢 Building Area:</strong><br>
+                    ${economics.buildingArea.toFixed(0)} m²
                 </div>
             </div>
         </div>
         
         <div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
-            <strong>ðŸ’¡ Note:</strong> This is a simplified economic analysis. Actual results may vary based on building operation, maintenance costs, utility rate changes, and other factors. Consider consulting with an energy professional for detailed analysis.
+            <strong>💡 Note:</strong> This is a simplified economic analysis. Actual results may vary based on building operation, maintenance costs, utility rate changes, and other factors. Consider consulting with an energy professional for detailed analysis.
         </div>
     `;
     
@@ -2074,7 +2085,7 @@ function displayAlternativeResults(results) {
         results.energy_aggregated_results.length === 0 || results.costing_results.length === 0) {
         resultsContent.innerHTML = `
             <div class="result-card" style="grid-column: 1 / -1;">
-                <h4>âš ï¸ Incomplete Results</h4>
+                <h4>⚠️ Incomplete Results</h4>
                 <p>Expected multiple configurations but received ${results.energy_aggregated_results?.length || 0}</p>
             </div>
         `;
@@ -2124,9 +2135,9 @@ function displayAlternativeResults(results) {
     
     // Get parameter display name
     const parameterNames = {
-        'ext_wall_cond': 'External Wall Thermal Conductance (W/mÂ²Â·K)',
-        'ext_roof_cond': 'External Roof Thermal Conductance (W/mÂ²Â·K)',
-        'fixed_window_cond': 'Window Thermal Conductance (W/mÂ²Â·K)',
+        'ext_wall_cond': 'External Wall Thermal Conductance (W/m²·K)',
+        'ext_roof_cond': 'External Roof Thermal Conductance (W/m²·K)',
+        'fixed_window_cond': 'Window Thermal Conductance (W/m²·K)',
         'fixed_wind_solar_trans': 'Window Solar Heat Gain Coefficient',
         'fdwr_set': 'Window-to-Wall Ratio (%)',
         'srr_set': 'Skylight-to-Roof Ratio (%)',
@@ -2142,7 +2153,7 @@ function displayAlternativeResults(results) {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3 style="margin: 0;">Alternative Configuration Analysis: ${parameterDisplayName}</h3>
             <button onclick="downloadPDFReport()" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">
-                ðŸ“„ Download PDF Report
+                📄 Download PDF Report
             </button>
         </div>
         
@@ -2153,8 +2164,8 @@ function displayAlternativeResults(results) {
                     <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                         <th style="padding: 15px; text-align: left;">Configuration</th>
                         <th style="padding: 15px; text-align: left;">Parameter Value</th>
-                        <th style="padding: 15px; text-align: right;">Total Energy (GJ/mÂ²)</th>
-                        <th style="padding: 15px; text-align: right;">Total Cost (CAD/mÂ²)</th>
+                        <th style="padding: 15px; text-align: right;">Total Energy (GJ/m²)</th>
+                        <th style="padding: 15px; text-align: right;">Total Cost (CAD/m²)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2167,7 +2178,7 @@ function displayAlternativeResults(results) {
                 onmouseover="this.style.background='#e6f2ff'" 
                 onmouseout="this.style.background='${rowBg}'"
                 onclick="toggleConfigDetails(${config.index})">
-                <td style="padding: 12px; font-weight: bold;">Config ${config.index} <span style="color: #667eea; font-size: 12px;">â–¼</span></td>
+                <td style="padding: 12px; font-weight: bold;">Config ${config.index} <span style="color: #667eea; font-size: 12px;">▼</span></td>
                 <td style="padding: 12px;">${config.paramValue}</td>
                 <td style="padding: 12px; text-align: right; font-family: monospace;">${config.totalEnergy.toFixed(6)}</td>
                 <td style="padding: 12px; text-align: right;">$${config.totalCost.toFixed(2)}</td>
@@ -2176,19 +2187,19 @@ function displayAlternativeResults(results) {
                 <td colspan="4" style="padding: 20px;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
-                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">âš¡ Energy Breakdown</h5>
-                            <p style="margin: 5px 0; font-size: 14px;">Electricity: <strong>${config.electricity.toFixed(6)} GJ/mÂ²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Natural Gas: <strong>${config.gas.toFixed(6)} GJ/mÂ²</strong></p>
-                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #667eea;">Total: <strong>${config.totalEnergy.toFixed(6)} GJ/mÂ²</strong></p>
+                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">⚡ Energy Breakdown</h5>
+                            <p style="margin: 5px 0; font-size: 14px;">Electricity: <strong>${config.electricity.toFixed(6)} GJ/m²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Natural Gas: <strong>${config.gas.toFixed(6)} GJ/m²</strong></p>
+                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #667eea;">Total: <strong>${config.totalEnergy.toFixed(6)} GJ/m²</strong></p>
                         </div>
                         <div>
-                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">ðŸ’° Cost Breakdown</h5>
-                            <p style="margin: 5px 0; font-size: 14px;">Envelope: <strong>$${config.envelopeCost.toFixed(2)}/mÂ²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">HVAC: <strong>$${config.hvacCost.toFixed(2)}/mÂ²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Lighting: <strong>$${config.lightingCost.toFixed(2)}/mÂ²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Ventilation: <strong>$${config.ventilationCost.toFixed(2)}/mÂ²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Hot Water: <strong>$${config.shwCost.toFixed(2)}/mÂ²</strong></p>
-                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #48bb78;">Total: <strong>$${config.totalCost.toFixed(2)}/mÂ²</strong></p>
+                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">💰 Cost Breakdown</h5>
+                            <p style="margin: 5px 0; font-size: 14px;">Envelope: <strong>$${config.envelopeCost.toFixed(2)}/m²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">HVAC: <strong>$${config.hvacCost.toFixed(2)}/m²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Lighting: <strong>$${config.lightingCost.toFixed(2)}/m²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Ventilation: <strong>$${config.ventilationCost.toFixed(2)}/m²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Hot Water: <strong>$${config.shwCost.toFixed(2)}/m²</strong></p>
+                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #48bb78;">Total: <strong>$${config.totalCost.toFixed(2)}/m²</strong></p>
                         </div>
                     </div>
                 </td>
@@ -2204,14 +2215,14 @@ function displayAlternativeResults(results) {
         <!-- Visualization Charts -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; max-width: 100%;">
             <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); min-width: 0; max-width: 100%;">
-                <h4 style="margin: 0 0 20px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">ðŸ“Š Energy Use Intensity Comparison</h4>
+                <h4 style="margin: 0 0 20px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">📊 Energy Use Intensity Comparison</h4>
                 <div style="position: relative; width: 100%; height: 350px;">
                     <canvas id="energyChart" style="width: 100%; height: 100%; cursor: pointer;"></canvas>
                     <div id="energyTooltip" style="display: none; position: absolute; background: rgba(0,0,0,0.85); color: white; padding: 12px 16px; border-radius: 8px; pointer-events: none; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; white-space: nowrap;"></div>
                 </div>
             </div>
             <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); min-width: 0; max-width: 100%;">
-                <h4 style="margin: 0 0 20px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">ðŸ’° Cost Comparison</h4>
+                <h4 style="margin: 0 0 20px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">💰 Cost Comparison</h4>
                 <div style="position: relative; width: 100%; height: 350px;">
                     <canvas id="costChart" style="width: 100%; height: 100%; cursor: pointer;"></canvas>
                     <div id="costTooltip" style="display: none; position: absolute; background: rgba(0,0,0,0.85); color: white; padding: 12px 16px; border-radius: 8px; pointer-events: none; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; white-space: nowrap;"></div>
@@ -2344,7 +2355,7 @@ function drawEnergyChart(configs) {
     ctx.fillStyle = '#4a5568';
     ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Energy Use Intensity (GJ/mÂ²)', 0, 0);
+    ctx.fillText('Energy Use Intensity (GJ/m²)', 0, 0);
     ctx.restore();
     
     // Add hover detection
@@ -2372,9 +2383,9 @@ function drawEnergyChart(configs) {
         if (hoveredConfig) {
             tooltip.innerHTML = `
                 <strong>Configuration ${hoveredConfig.index}</strong><br/>
-                Electricity: ${hoveredConfig.electricity.toFixed(4)} GJ/mÂ²<br/>
-                Gas: ${hoveredConfig.gas.toFixed(4)} GJ/mÂ²<br/>
-                <strong>Total: ${hoveredConfig.totalEnergy.toFixed(4)} GJ/mÂ²</strong>
+                Electricity: ${hoveredConfig.electricity.toFixed(4)} GJ/m²<br/>
+                Gas: ${hoveredConfig.gas.toFixed(4)} GJ/m²<br/>
+                <strong>Total: ${hoveredConfig.totalEnergy.toFixed(4)} GJ/m²</strong>
             `;
             tooltip.style.display = 'block';
             tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
@@ -2479,7 +2490,7 @@ function drawCostChart(configs) {
     ctx.fillStyle = '#4a5568';
     ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Equipment Cost (CAD/mÂ²)', 0, 0);
+    ctx.fillText('Equipment Cost (CAD/m²)', 0, 0);
     ctx.restore();
     
     // Add hover detection
@@ -2507,12 +2518,12 @@ function drawCostChart(configs) {
         if (hoveredConfig) {
             tooltip.innerHTML = `
                 <strong>Configuration ${hoveredConfig.index}</strong><br/>
-                Envelope: $${hoveredConfig.envelopeCost.toFixed(2)}/mÂ²<br/>
-                HVAC: $${hoveredConfig.hvacCost.toFixed(2)}/mÂ²<br/>
-                Lighting: $${hoveredConfig.lightingCost.toFixed(2)}/mÂ²<br/>
-                Ventilation: $${hoveredConfig.ventilationCost.toFixed(2)}/mÂ²<br/>
-                Hot Water: $${hoveredConfig.shwCost.toFixed(2)}/mÂ²<br/>
-                <strong>Total: $${hoveredConfig.totalCost.toFixed(2)}/mÂ²</strong>
+                Envelope: $${hoveredConfig.envelopeCost.toFixed(2)}/m²<br/>
+                HVAC: $${hoveredConfig.hvacCost.toFixed(2)}/m²<br/>
+                Lighting: $${hoveredConfig.lightingCost.toFixed(2)}/m²<br/>
+                Ventilation: $${hoveredConfig.ventilationCost.toFixed(2)}/m²<br/>
+                Hot Water: $${hoveredConfig.shwCost.toFixed(2)}/m²<br/>
+                <strong>Total: $${hoveredConfig.totalCost.toFixed(2)}/m²</strong>
             `;
             tooltip.style.display = 'block';
             tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
@@ -2639,7 +2650,7 @@ function drawHighResEnergyChart(ctx, configs, width, height, padding, chartWidth
     ctx.fillStyle = '#4a5568';
     ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Energy Use Intensity (GJ/mÂ²)', 0, 0);
+    ctx.fillText('Energy Use Intensity (GJ/m²)', 0, 0);
     ctx.restore();
 }
 
@@ -2716,7 +2727,7 @@ function drawHighResCostChart(ctx, configs, width, height, padding, chartWidth, 
     ctx.fillStyle = '#4a5568';
     ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Equipment Cost (CAD/mÂ²)', 0, 0);
+    ctx.fillText('Equipment Cost (CAD/m²)', 0, 0);
     ctx.restore();
 }
 
@@ -2825,14 +2836,14 @@ async function downloadCostAnalysisPDFReport() {
             'erv_package': 'Energy Recovery Ventilator',
             'airloop_economizer_type': 'Economizer Type',
             'nv_type': 'Natural Ventilation',
-            'ext_wall_cond': 'Wall Conductance (W/mÂ²Â·K)',
-            'ext_roof_cond': 'Roof Conductance (W/mÂ²Â·K)',
-            'fixed_window_cond': 'Window Conductance (W/mÂ²Â·K)',
+            'ext_wall_cond': 'Wall Conductance (W/m²·K)',
+            'ext_roof_cond': 'Roof Conductance (W/m²·K)',
+            'fixed_window_cond': 'Window Conductance (W/m²·K)',
             'fixed_wind_solar_trans': 'Window SHGC',
             'fdwr_set': 'Window-to-Wall Ratio',
             'srr_set': 'Skylight-to-Roof Ratio',
             'building_type': 'Building Type',
-            'rotation_degrees': 'Building Rotation (Â°)',
+            'rotation_degrees': 'Building Rotation (°)',
             'epw_file': 'Weather Location'
         };
         
@@ -2899,9 +2910,9 @@ async function downloadCostAnalysisPDFReport() {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     const energy = results.energySavings;
-    doc.text(`Electricity Reduction: ${energy.electricitySavingsPercent.toFixed(1)}% (${energy.electricitySavings.toFixed(2)} kWh/mÂ²)`, 15, yPos);
+    doc.text(`Electricity Reduction: ${energy.electricitySavingsPercent.toFixed(1)}% (${energy.electricitySavings.toFixed(2)} kWh/m²)`, 15, yPos);
     yPos += 6;
-    doc.text(`Natural Gas Reduction: ${energy.gasSavingsPercent.toFixed(1)}% (${energy.gasSavings.toFixed(4)} GJ/mÂ²)`, 15, yPos);
+    doc.text(`Natural Gas Reduction: ${energy.gasSavingsPercent.toFixed(1)}% (${energy.gasSavings.toFixed(4)} GJ/m²)`, 15, yPos);
     yPos += 12;
     
     // Footer
@@ -2966,7 +2977,7 @@ async function downloadSinglePDFReport() {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         const metadata = globalSinglePrediction.metadata;
-        doc.text(`Floor Area: ${metadata.floor_area?.toFixed(0) || 'N/A'} mÂ²`, 20, yPos);
+        doc.text(`Floor Area: ${metadata.floor_area?.toFixed(0) || 'N/A'} m²`, 20, yPos);
         yPos += 5;
         doc.text(`Building Type: ${metadata.building_type || 'N/A'}`, 20, yPos);
         yPos += 5;
@@ -3001,14 +3012,14 @@ async function downloadSinglePDFReport() {
             'erv_package': 'Energy Recovery Ventilator',
             'airloop_economizer_type': 'Economizer Type',
             'nv_type': 'Natural Ventilation',
-            'ext_wall_cond': 'Wall Conductance (W/mÂ²Â·K)',
-            'ext_roof_cond': 'Roof Conductance (W/mÂ²Â·K)',
-            'fixed_window_cond': 'Window Conductance (W/mÂ²Â·K)',
+            'ext_wall_cond': 'Wall Conductance (W/m²·K)',
+            'ext_roof_cond': 'Roof Conductance (W/m²·K)',
+            'fixed_window_cond': 'Window Conductance (W/m²·K)',
             'fixed_wind_solar_trans': 'Window SHGC',
             'fdwr_set': 'Window-to-Wall Ratio',
             'srr_set': 'Skylight-to-Roof Ratio',
             'building_type': 'Building Type',
-            'rotation_degrees': 'Building Rotation (Â°)',
+            'rotation_degrees': 'Building Rotation (°)',
             'epw_file': 'Weather Location'
         };
         
@@ -3052,16 +3063,16 @@ async function downloadSinglePDFReport() {
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Total Energy Use Intensity: ${globalSinglePrediction.totalEnergyGJ.toFixed(7)} GJ/mÂ²`, 20, yPos);
+    doc.text(`Total Energy Use Intensity: ${globalSinglePrediction.totalEnergyGJ.toFixed(7)} GJ/m²`, 20, yPos);
     yPos += 10;
     
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text('Energy Breakdown:', 20, yPos);
     yPos += 6;
-    doc.text(`  â€¢ Electricity: ${globalSinglePrediction.electricityGJ.toFixed(7)} GJ/mÂ²`, 25, yPos);
+    doc.text(`  • Electricity: ${globalSinglePrediction.electricityGJ.toFixed(7)} GJ/m²`, 25, yPos);
     yPos += 5;
-    doc.text(`  â€¢ Natural Gas: ${globalSinglePrediction.gasGJ.toFixed(7)} GJ/mÂ²`, 25, yPos);
+    doc.text(`  • Natural Gas: ${globalSinglePrediction.gasGJ.toFixed(7)} GJ/m²`, 25, yPos);
     yPos += 15;
     
     // Cost Analysis Section
@@ -3076,22 +3087,22 @@ async function downloadSinglePDFReport() {
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Total Equipment Cost: $${globalSinglePrediction.totalCost.toFixed(2)}/mÂ²`, 20, yPos);
+    doc.text(`Total Equipment Cost: $${globalSinglePrediction.totalCost.toFixed(2)}/m²`, 20, yPos);
     yPos += 10;
     
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text('Cost Breakdown by Component:', 20, yPos);
     yPos += 6;
-    doc.text(`  â€¢ Envelope: $${globalSinglePrediction.envelopeCost.toFixed(2)}/mÂ²`, 25, yPos);
+    doc.text(`  • Envelope: $${globalSinglePrediction.envelopeCost.toFixed(2)}/m²`, 25, yPos);
     yPos += 5;
-    doc.text(`  â€¢ HVAC (Heating & Cooling): $${globalSinglePrediction.hvacCost.toFixed(2)}/mÂ²`, 25, yPos);
+    doc.text(`  • HVAC (Heating & Cooling): $${globalSinglePrediction.hvacCost.toFixed(2)}/m²`, 25, yPos);
     yPos += 5;
-    doc.text(`  â€¢ Lighting: $${globalSinglePrediction.lightingCost.toFixed(2)}/mÂ²`, 25, yPos);
+    doc.text(`  • Lighting: $${globalSinglePrediction.lightingCost.toFixed(2)}/m²`, 25, yPos);
     yPos += 5;
-    doc.text(`  â€¢ Ventilation: $${globalSinglePrediction.ventilationCost.toFixed(2)}/mÂ²`, 25, yPos);
+    doc.text(`  • Ventilation: $${globalSinglePrediction.ventilationCost.toFixed(2)}/m²`, 25, yPos);
     yPos += 5;
-    doc.text(`  â€¢ Service Hot Water: $${globalSinglePrediction.shwCost.toFixed(2)}/mÂ²`, 25, yPos);
+    doc.text(`  • Service Hot Water: $${globalSinglePrediction.shwCost.toFixed(2)}/m²`, 25, yPos);
     yPos += 15;
     
     // Summary Section
@@ -3180,7 +3191,7 @@ async function downloadPDFReport() {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         const metadata = globalResults.building_metadata;
-        doc.text(`Floor Area: ${metadata.floor_area?.toFixed(0) || 'N/A'} mÂ²`, 20, yPos);
+        doc.text(`Floor Area: ${metadata.floor_area?.toFixed(0) || 'N/A'} m²`, 20, yPos);
         yPos += 5;
         doc.text(`Building Type: ${metadata.building_type || 'N/A'}`, 20, yPos);
         yPos += 5;
@@ -3205,13 +3216,13 @@ async function downloadPDFReport() {
     
     doc.text(`Total Configurations Analyzed: ${globalConfigs.length}`, 20, yPos);
     yPos += 5;
-    doc.text(`Energy Range: ${minEnergy.toFixed(4)} - ${maxEnergy.toFixed(4)} GJ/mÂ²`, 20, yPos);
+    doc.text(`Energy Range: ${minEnergy.toFixed(4)} - ${maxEnergy.toFixed(4)} GJ/m²`, 20, yPos);
     yPos += 5;
-    doc.text(`Average Energy: ${avgEnergy.toFixed(4)} GJ/mÂ²`, 20, yPos);
+    doc.text(`Average Energy: ${avgEnergy.toFixed(4)} GJ/m²`, 20, yPos);
     yPos += 5;
-    doc.text(`Cost Range: $${minCost.toFixed(2)} - $${maxCost.toFixed(2)}/mÂ²`, 20, yPos);
+    doc.text(`Cost Range: $${minCost.toFixed(2)} - $${maxCost.toFixed(2)}/m²`, 20, yPos);
     yPos += 5;
-    doc.text(`Average Cost: $${avgCost.toFixed(2)}/mÂ²`, 20, yPos);
+    doc.text(`Average Cost: $${avgCost.toFixed(2)}/m²`, 20, yPos);
     yPos += 10;
     
     // Comparison Table
@@ -3228,8 +3239,8 @@ async function downloadPDFReport() {
     doc.setFont('helvetica', 'bold');
     doc.text('Config', 20, yPos + 5.5);
     doc.text('Parameter Value', 50, yPos + 5.5);
-    doc.text('Energy (GJ/mÂ²)', 110, yPos + 5.5);
-    doc.text('Cost (CAD/mÂ²)', 155, yPos + 5.5);
+    doc.text('Energy (GJ/m²)', 110, yPos + 5.5);
+    doc.text('Cost (CAD/m²)', 155, yPos + 5.5);
     yPos += 8;
     
     // Table rows
@@ -3311,12 +3322,12 @@ async function downloadPDFReport() {
         yPos += 5;
         
         doc.setFont('helvetica', 'normal');
-        doc.text(`  Electricity: ${config.electricity.toFixed(6)} GJ/mÂ²`, 25, yPos);
+        doc.text(`  Electricity: ${config.electricity.toFixed(6)} GJ/m²`, 25, yPos);
         yPos += 5;
-        doc.text(`  Natural Gas: ${config.gas.toFixed(6)} GJ/mÂ²`, 25, yPos);
+        doc.text(`  Natural Gas: ${config.gas.toFixed(6)} GJ/m²`, 25, yPos);
         yPos += 5;
         doc.setFont('helvetica', 'bold');
-        doc.text(`  Total Energy: ${config.totalEnergy.toFixed(6)} GJ/mÂ²`, 25, yPos);
+        doc.text(`  Total Energy: ${config.totalEnergy.toFixed(6)} GJ/m²`, 25, yPos);
         yPos += 8;
         
         doc.setFont('helvetica', 'bold');
@@ -3324,18 +3335,18 @@ async function downloadPDFReport() {
         yPos += 5;
         
         doc.setFont('helvetica', 'normal');
-        doc.text(`  Envelope: $${config.envelopeCost.toFixed(2)}/mÂ²`, 25, yPos);
+        doc.text(`  Envelope: $${config.envelopeCost.toFixed(2)}/m²`, 25, yPos);
         yPos += 5;
-        doc.text(`  HVAC: $${config.hvacCost.toFixed(2)}/mÂ²`, 25, yPos);
+        doc.text(`  HVAC: $${config.hvacCost.toFixed(2)}/m²`, 25, yPos);
         yPos += 5;
-        doc.text(`  Lighting: $${config.lightingCost.toFixed(2)}/mÂ²`, 25, yPos);
+        doc.text(`  Lighting: $${config.lightingCost.toFixed(2)}/m²`, 25, yPos);
         yPos += 5;
-        doc.text(`  Ventilation: $${config.ventilationCost.toFixed(2)}/mÂ²`, 25, yPos);
+        doc.text(`  Ventilation: $${config.ventilationCost.toFixed(2)}/m²`, 25, yPos);
         yPos += 5;
-        doc.text(`  Hot Water: $${config.shwCost.toFixed(2)}/mÂ²`, 25, yPos);
+        doc.text(`  Hot Water: $${config.shwCost.toFixed(2)}/m²`, 25, yPos);
         yPos += 5;
         doc.setFont('helvetica', 'bold');
-        doc.text(`  Total Cost: $${config.totalCost.toFixed(2)}/mÂ²`, 25, yPos);
+        doc.text(`  Total Cost: $${config.totalCost.toFixed(2)}/m²`, 25, yPos);
         yPos += 10;
     });
     
@@ -3362,7 +3373,7 @@ function displayError(message) {
     
     resultsContent.innerHTML = `
         <div class="result-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);">
-            <h4>âš ï¸ Error</h4>
+            <h4>⚠️ Error</h4>
             <p>${message}</p>
             <p class="subtext">Please check your inputs and try again.</p>
         </div>
