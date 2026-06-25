@@ -1,4 +1,4 @@
-// Configuration
+﻿// Configuration
 const API_BASE_URL = 'https://h3v7vtb0ee.execute-api.ca-central-1.amazonaws.com';  // Production API Gateway
 const BUCKET_NAME = 'surrogate-api-dev-tgw-3-btap-v1-uploads';
 const AWS_REGION = 'ca-central-1';
@@ -20,7 +20,7 @@ const ARCHETYPE_GEOMETRY = {
     HighRise: {
         bldg_name: 'HighriseApartment',
         bldg_standards_building_type: 'HighriseApartment',
-        bldg_conditioned_floor_area_m_sq: 7058.0,   // 47.24 × 14.94 × 10
+        bldg_conditioned_floor_area_m_sq: 7058.0,   // 47.24 Ã— 14.94 Ã— 10
         bldg_exterior_area_m_sq: 4870.0,
         bldg_standards_number_of_above_ground_stories: 10,
         bldg_standards_number_of_stories: 10
@@ -36,7 +36,7 @@ const ARCHETYPE_GEOMETRY = {
     LowRise: {
         bldg_name: 'LowriseApartment',
         bldg_standards_building_type: 'LowriseApartment',
-        bldg_conditioned_floor_area_m_sq: 1248.0,   // 32.0 × 13.0 × 3
+        bldg_conditioned_floor_area_m_sq: 1248.0,   // 32.0 Ã— 13.0 Ã— 3
         bldg_exterior_area_m_sq: 1190.0,
         bldg_standards_number_of_above_ground_stories: 3,
         bldg_standards_number_of_stories: 3
@@ -90,7 +90,7 @@ function applyArchetypeGeometry(row, buildingType) {
 // The "Dominant HVAC System" picker is split in the UI into two cascading
 // selects: a system family (e.g. Cold Climate Air Source Heat Pump) and a
 // delivery type (e.g. VRF, Baseboard). The backend surrogate model still
-// expects the original code names (HS08_CCASHP_VRF, HS12_ASHP_Baseboard, …)
+// expects the original code names (HS08_CCASHP_VRF, HS12_ASHP_Baseboard, â€¦)
 // so a hidden input is populated with the mapped backend value whenever
 // either select changes. The mapping below is the single source of truth.
 const HVAC_SYSTEM_OPTIONS = {
@@ -181,7 +181,7 @@ function setupHvacCascade(familyId, typeId, hiddenId) {
 // ---------------------------------------------------------------------------
 // The summary card translates the raw form inputs into plain-English
 // statements about what the simulation will model. It also exposes the
-// "auto-derived" backend value for `primary_heating_fuel` — e.g. selecting
+// "auto-derived" backend value for `primary_heating_fuel` â€” e.g. selecting
 // `HS13_ASHP_VRF` + `NaturalGas` is silently rewritten by BTAP to
 // `NaturalGasHPGasBackup` (heat pump primary, NG backup), and the summary
 // makes that transformation visible to the user.
@@ -192,43 +192,43 @@ function setupHvacCascade(familyId, typeId, hiddenId) {
 // and distribution variants) and drive the working animations (fan spin,
 // refrigerant flow, etc.).
 //
-// NECB system → building-archetype mapping (from NECB_HVAC_Systems.md,
+// NECB system â†’ building-archetype mapping (from NECB_HVAC_Systems.md,
 // derived from NECB 2011 Table 8.4.4.8.A and the BTAP prototype
 // geometries). When the user selects "NECB Default", the building type
 // determines which system the simulator will assign.
 const NECB_DEFAULT_FOR_BUILDING = {
     SmallOffice:   { primary: 3, secondary: null,
-                     note: 'Small Office (1 storey, "General Area" space type) → NECB assigns System 3 (PSZ-AC, packaged single-zone rooftop with baseboards).' },
+                     note: 'Small Office (1 storey, "General Area" space type) â†’ NECB assigns System 3 (PSZ-AC, packaged single-zone rooftop with baseboards).' },
     MediumOffice:  { primary: 6, secondary: null,
-                     note: 'Medium Office (3 storeys) crosses the NECB ≥3-storey threshold for "General Area" zones, so the simulator assigns System 6 (built-up VAV with reheat + chiller + boiler).' },
+                     note: 'Medium Office (3 storeys) crosses the NECB â‰¥3-storey threshold for "General Area" zones, so the simulator assigns System 6 (built-up VAV with reheat + chiller + boiler).' },
     LargeOffice:   { primary: 6, secondary: null,
-                     note: 'Large Office (≥3 storeys) → NECB assigns System 6 (built-up VAV with reheat + chiller + boiler) for all general office zones.' },
+                     note: 'Large Office (â‰¥3 storeys) â†’ NECB assigns System 6 (built-up VAV with reheat + chiller + boiler) for all general office zones.' },
     LowRise:       { primary: 1, secondary: 6,
-                     note: 'Low-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has ≥3 storeys.' },
+                     note: 'Low-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has â‰¥3 storeys.' },
     MidRise:       { primary: 1, secondary: 6,
-                     note: 'Mid-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has ≥3 storeys.' },
+                     note: 'Mid-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has â‰¥3 storeys.' },
     HighRise:      { primary: 1, secondary: 6,
-                     note: 'High-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has ≥3 storeys.' }
+                     note: 'High-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has â‰¥3 storeys.' }
 };
 
 const NECB_SYSTEM_INFO = {
     1: {
-        label: 'System 1 — PTAC + baseboards',
-        archetype: 'Packaged Terminal Air Conditioner (PTAC) — closest to ASHRAE 90.1 System 1',
+        label: 'System 1 â€” PTAC + baseboards',
+        archetype: 'Packaged Terminal Air Conditioner (PTAC) â€” closest to ASHRAE 90.1 System 1',
         primary: 'Through-wall PTAC per zone + hydronic/electric perimeter baseboards (typical dwelling/hotel layout)',
         distribution: 'PTAC unit under each window for cooling + baseboards along perimeter walls for heating',
         cls: 'necb-sys-1'
     },
     3: {
-        label: 'System 3 — PSZ-AC',
-        archetype: 'Packaged Single-Zone constant-volume rooftop unit — closest to ASHRAE 90.1 System 3',
+        label: 'System 3 â€” PSZ-AC',
+        archetype: 'Packaged Single-Zone constant-volume rooftop unit â€” closest to ASHRAE 90.1 System 3',
         primary: 'Packaged Single-Zone rooftop unit (PSZ-AC) with DX cooling and gas/electric/hot-water heating + perimeter baseboards',
         distribution: 'Ducted constant-volume supply from rooftop unit + perimeter baseboards',
         cls: 'necb-sys-3'
     },
     6: {
-        label: 'System 6 — Built-up VAV with reheat',
-        archetype: 'Built-up multi-zone VAV with hydronic reheat — closest to ASHRAE 90.1 System 7',
+        label: 'System 6 â€” Built-up VAV with reheat',
+        archetype: 'Built-up multi-zone VAV with hydronic reheat â€” closest to ASHRAE 90.1 System 7',
         primary: 'Built-up VAV air handler (one per storey) with CHW cooling, HW reheat, central chiller + cooling tower + boiler',
         distribution: 'VAV terminal box with reheat coil per zone + perimeter baseboards; central CHW chiller, cooling tower and HW boiler',
         cls: 'necb-sys-6'
@@ -263,45 +263,14 @@ const HVAC_DIAGRAM_SVG = `
 
     <!-- Inline flow legend (always visible) -->
     <g font-family="Consolas, monospace" font-size="6.5" fill="#cfd8e3">
-        <line x1="200" y1="9" x2="214" y2="9" stroke="#e74c3c" stroke-width="2"/>
-        <text x="216" y="11">supply / hot</text>
-        <line x1="262" y1="9" x2="276" y2="9" stroke="#3498db" stroke-width="2" stroke-dasharray="3 2"/>
-        <text x="278" y="11">return / cold</text>
-        <rect x="332" y="6" width="10" height="3" fill="#f39c12"/>
-        <text x="344" y="11">BB</text>
-    </g>
-
-    <!-- Grade line -->
-    <rect x="0" y="200" width="360" height="30" fill="#dde3ec"/>
-    <line x1="0" y1="200" x2="360" y2="200" stroke="#7a8ba0" stroke-width="1.5"/>
-
-    <!-- Building shell — 3 storey cross section -->
-    <g class="building-shell">
-        <rect x="190" y="40" width="160" height="5" fill="#7a8ba0"/>
-        <rect x="188" y="34" width="4" height="11" fill="#5a6a80"/>
-        <rect x="346" y="34" width="4" height="11" fill="#5a6a80"/>
-        <rect x="190" y="45" width="160" height="48" fill="#fafcff" stroke="#2a5298" stroke-width="1"/>
-        <line x1="190" y1="93" x2="350" y2="93" stroke="#7a8ba0" stroke-width="2.5"/>
-        <rect x="190" y="93" width="160" height="48" fill="#fafcff" stroke="#2a5298" stroke-width="1"/>
-        <line x1="190" y1="141" x2="350" y2="141" stroke="#7a8ba0" stroke-width="2.5"/>
-        <rect x="190" y="141" width="160" height="59" fill="#fafcff" stroke="#2a5298" stroke-width="1"/>
-        <g font-family="Consolas, monospace" font-size="6.5" fill="#5a6a80">
-            <text x="194" y="56">L3</text>
-            <text x="194" y="104">L2</text>
-            <text x="194" y="153">L1</text>
-        </g>
-        <!-- Windows -->
-        <g fill="#cfe2ff" stroke="#2a5298" stroke-width="0.6">
-            <rect x="266" y="62" width="20" height="22"/>
-            <rect x="294" y="62" width="20" height="22"/>
-            <rect x="322" y="62" width="20" height="22"/>
-            <rect x="266" y="110" width="20" height="22"/>
-            <rect x="294" y="110" width="20" height="22"/>
-            <rect x="322" y="110" width="20" height="22"/>
-            <rect x="266" y="158" width="20" height="22"/>
-            <rect x="294" y="158" width="20" height="22"/>
-            <rect x="322" y="158" width="20" height="22"/>
-        </g>
+        <line x1="190" y1="9" x2="204" y2="9" stroke="#e74c3c" stroke-width="2"/>
+        <text x="206" y="11">supply</text>
+        <line x1="240" y1="9" x2="254" y2="9" stroke="#3498db" stroke-width="2" stroke-dasharray="3 2"/>
+        <text x="256" y="11">return</text>
+        <line x1="290" y1="9" x2="304" y2="9" stroke="#a06000" stroke-width="2"/>
+        <text x="306" y="11">HW</text>
+        <rect x="326" y="6" width="10" height="3" fill="#f39c12"/>
+        <text x="338" y="11">BB</text>
     </g>
 
     <!-- Empty state -->
@@ -313,381 +282,430 @@ const HVAC_DIAGRAM_SVG = `
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 3 — PSZ-AC rooftop unit (single-zone CV)          -->
+    <!-- NECB SYSTEM 3 â€” PSZ-AC (packaged single-zone rooftop)         -->
+    <!-- Equipment-flow schematic: RTU â†’ supply duct â†’ zone â†’ return  -->
     <!-- ============================================================ -->
     <g class="sys-necb-3">
-        <!-- Rooftop unit on roof -->
-        <rect x="240" y="22" width="70" height="18" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.2"/>
-        <rect x="244" y="26" width="12" height="10" fill="#e6f0ff" stroke="#1a3a6c" stroke-width="0.6"/>
+        <!-- RTU equipment cabinet with internal stages -->
+        <rect x="22" y="55" width="140" height="55" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.4"/>
+        <!-- OA damper -->
+        <rect x="28" y="61" width="12" height="43" fill="#e6f0ff" stroke="#2e6da6" stroke-width="0.5"/>
+        <text x="34" y="120" text-anchor="middle" font-size="5" fill="#2e6da6" font-family="Consolas, monospace">OA</text>
+        <!-- Filter -->
+        <rect x="44" y="61" width="12" height="43" fill="#fff" stroke="#7a8ba0" stroke-width="0.5"/>
+        <line x1="44" y1="61" x2="56" y2="104" stroke="#7a8ba0" stroke-width="0.4"/>
+        <line x1="44" y1="104" x2="56" y2="61" stroke="#7a8ba0" stroke-width="0.4"/>
+        <!-- DX cooling coil -->
+        <rect x="60" y="61" width="14" height="43" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.6"/>
+        <text x="67" y="120" text-anchor="middle" font-size="5" fill="#2e6da6" font-family="Consolas, monospace">DX</text>
+        <!-- Heat coil (gas/elec) -->
+        <rect x="78" y="61" width="14" height="43" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
+        <text x="85" y="120" text-anchor="middle" font-size="5" fill="#a06000" font-family="Consolas, monospace">HC</text>
+        <!-- Supply fan -->
         <g class="rtu-fan">
-            <line x1="250" y1="27" x2="250" y2="35" stroke="#1a3a6c" stroke-width="1"/>
-            <line x1="246" y1="31" x2="254" y2="31" stroke="#1a3a6c" stroke-width="1"/>
+            <circle cx="125" cy="82" r="17" fill="none" stroke="#1a3a6c" stroke-width="0.9"/>
+            <line x1="125" y1="65" x2="125" y2="99" stroke="#1a3a6c" stroke-width="1.3"/>
+            <line x1="108" y1="82" x2="142" y2="82" stroke="#1a3a6c" stroke-width="1.3"/>
+            <line x1="113" y1="70" x2="137" y2="94" stroke="#1a3a6c" stroke-width="1.3"/>
+            <line x1="137" y1="70" x2="113" y2="94" stroke="#1a3a6c" stroke-width="1.3"/>
+            <circle cx="125" cy="82" r="2.5" fill="#1a3a6c"/>
         </g>
-        <text x="287" y="34" text-anchor="middle" font-size="7" fill="#1a3a6c"
+        <text x="95" y="129" text-anchor="middle" font-size="9" fill="#1a3a6c"
               font-weight="700" font-family="Consolas, monospace">RTU</text>
-        <!-- Supply riser (red) + diffusers per floor -->
-        <line x1="222" y1="40" x2="222" y2="200" stroke="#c0392b" stroke-width="2.5"/>
+
+        <!-- Supply duct â†’ into zone -->
+        <line x1="162" y1="70" x2="200" y2="70" stroke="#c0392b" stroke-width="3"
+              marker-end="url(#hvac-arrow-red)"/>
+        <!-- Return duct â† from zone -->
+        <line x1="200" y1="95" x2="162" y2="95" stroke="#2e6da6" stroke-width="2.2"
+              stroke-dasharray="4 2" marker-end="url(#hvac-arrow-blue)"/>
+
+        <!-- Conditioned zone -->
+        <rect x="200" y="45" width="148" height="165" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.8"/>
+        <text x="274" y="58" text-anchor="middle" font-size="7" fill="#7a8ba0"
+              font-family="Consolas, monospace">CONDITIONED ZONE</text>
+        <!-- Supply distribution inside zone with ceiling diffusers -->
+        <line x1="200" y1="80" x2="345" y2="80" stroke="#c0392b" stroke-width="1.8"/>
         <g fill="#c0392b">
-            <rect x="222" y="58" width="118" height="3"/>
-            <rect x="222" y="106" width="118" height="3"/>
-            <rect x="222" y="154" width="118" height="3"/>
-            <!-- Diffuser tabs -->
-            <polygon points="262,61 268,61 265,67"/>
-            <polygon points="297,61 303,61 300,67"/>
-            <polygon points="327,61 333,61 330,67"/>
-            <polygon points="262,109 268,109 265,115"/>
-            <polygon points="297,109 303,109 300,115"/>
-            <polygon points="327,109 333,109 330,115"/>
-            <polygon points="262,157 268,157 265,163"/>
-            <polygon points="297,157 303,157 300,163"/>
-            <polygon points="327,157 333,157 330,163"/>
+            <polygon points="225,80 241,80 233,90"/>
+            <polygon points="270,80 286,80 278,90"/>
+            <polygon points="315,80 331,80 323,90"/>
         </g>
-        <!-- Return riser (blue dashed) -->
-        <line x1="228" y1="40" x2="228" y2="200" stroke="#2e6da6" stroke-width="1.8" stroke-dasharray="3 2"/>
-        <!-- Baseboards -->
-        <rect x="262" y="88" width="80" height="3" fill="#f39c12"/>
-        <rect x="262" y="136" width="80" height="3" fill="#f39c12"/>
-        <rect x="262" y="194" width="80" height="3" fill="#f39c12"/>
+        <!-- Return grille at floor -->
+        <line x1="200" y1="180" x2="345" y2="180" stroke="#2e6da6" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <!-- Perimeter baseboard -->
+        <rect x="210" y="195" width="130" height="3" fill="#f39c12"/>
+        <text x="346" y="198" text-anchor="end" font-size="6" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">BB</text>
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 6 — Built-up VAV w/ reheat + plant                -->
+    <!-- NECB SYSTEM 6 â€” Built-up VAV w/ reheat + central plant        -->
+    <!-- AHU â†’ supply trunk â†’ VAV+RH terminals â†’ zones; plant below   -->
     <!-- ============================================================ -->
     <g class="sys-necb-6">
-        <!-- Penthouse AHU with coil bank + fan -->
-        <rect x="210" y="22" width="130" height="18" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.2"/>
-        <rect x="214" y="26" width="14" height="10" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.6"/>
-        <rect x="230" y="26" width="14" height="10" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
-        <rect x="246" y="26" width="12" height="10" fill="#fff" stroke="#1a3a6c" stroke-width="0.5"/>
+        <!-- AHU at top-left -->
+        <rect x="18" y="28" width="170" height="38" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.3"/>
+        <rect x="24" y="32" width="9" height="30" fill="#e6f0ff" stroke="#2e6da6" stroke-width="0.4"/>
+        <rect x="35" y="32" width="9" height="30" fill="#fff" stroke="#7a8ba0" stroke-width="0.4"/>
+        <line x1="35" y1="32" x2="44" y2="62" stroke="#7a8ba0" stroke-width="0.3"/>
+        <line x1="35" y1="62" x2="44" y2="32" stroke="#7a8ba0" stroke-width="0.3"/>
+        <rect x="46" y="32" width="13" height="30" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.5"/>
+        <rect x="61" y="32" width="13" height="30" fill="#fff7e6" stroke="#a06000" stroke-width="0.5"/>
         <g class="ahu-fan">
-            <line x1="252" y1="27" x2="252" y2="35" stroke="#1a3a6c" stroke-width="1"/>
-            <line x1="248" y1="31" x2="256" y2="31" stroke="#1a3a6c" stroke-width="1"/>
+            <circle cx="155" cy="47" r="14" fill="none" stroke="#1a3a6c" stroke-width="0.9"/>
+            <line x1="155" y1="33" x2="155" y2="61" stroke="#1a3a6c" stroke-width="1.2"/>
+            <line x1="141" y1="47" x2="169" y2="47" stroke="#1a3a6c" stroke-width="1.2"/>
+            <line x1="145" y1="37" x2="165" y2="57" stroke="#1a3a6c" stroke-width="1.2"/>
+            <line x1="165" y1="37" x2="145" y2="57" stroke="#1a3a6c" stroke-width="1.2"/>
+            <circle cx="155" cy="47" r="2" fill="#1a3a6c"/>
         </g>
-        <text x="298" y="34" text-anchor="middle" font-size="7" fill="#1a3a6c"
+        <text x="103" y="79" text-anchor="middle" font-size="8" fill="#1a3a6c"
               font-weight="700" font-family="Consolas, monospace">AHU</text>
 
-        <!-- Supply riser (red) -->
-        <line x1="220" y1="40" x2="220" y2="200" stroke="#c0392b" stroke-width="2.5"/>
-        <!-- VAV boxes per floor with reheat coil -->
-        <g class="vav-boxes">
-            <rect x="222" y="60" width="22" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
-            <rect x="240" y="62" width="3" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
-            <text x="232" y="69" text-anchor="middle" font-size="5.5" fill="#a06000"
-                  font-weight="700" font-family="Consolas, monospace">VAV</text>
-            <rect x="244" y="64" width="98" height="3" fill="#c0392b"/>
+        <!-- Supply trunk right -->
+        <line x1="188" y1="40" x2="348" y2="40" stroke="#c0392b" stroke-width="2.5"/>
+        <!-- Return trunk left -->
+        <line x1="348" y1="56" x2="188" y2="56" stroke="#2e6da6" stroke-width="2" stroke-dasharray="4 2"/>
 
-            <rect x="222" y="108" width="22" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
-            <rect x="240" y="110" width="3" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
-            <text x="232" y="117" text-anchor="middle" font-size="5.5" fill="#a06000"
-                  font-weight="700" font-family="Consolas, monospace">VAV</text>
-            <rect x="244" y="112" width="98" height="3" fill="#c0392b"/>
+        <!-- 3 VAV + reheat terminals serving 3 zones -->
+        <!-- VAV 1 -->
+        <line x1="220" y1="40" x2="220" y2="95" stroke="#c0392b" stroke-width="1.8"/>
+        <rect x="210" y="95" width="22" height="13" rx="1" fill="#fff" stroke="#a06000" stroke-width="1"/>
+        <rect x="228" y="97" width="3" height="9" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
+        <text x="221" y="104" text-anchor="middle" font-size="5.5" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">VAV</text>
+        <rect x="200" y="115" width="44" height="92" rx="1" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
+        <text x="222" y="125" text-anchor="middle" font-size="5.5" fill="#7a8ba0"
+              font-family="Consolas, monospace">ZONE 1</text>
+        <rect x="204" y="198" width="36" height="3" fill="#f39c12"/>
 
-            <rect x="222" y="156" width="22" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
-            <rect x="240" y="158" width="3" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
-            <text x="232" y="165" text-anchor="middle" font-size="5.5" fill="#a06000"
-                  font-weight="700" font-family="Consolas, monospace">VAV</text>
-            <rect x="244" y="160" width="98" height="3" fill="#c0392b"/>
+        <!-- VAV 2 -->
+        <line x1="270" y1="40" x2="270" y2="95" stroke="#c0392b" stroke-width="1.8"/>
+        <rect x="260" y="95" width="22" height="13" rx="1" fill="#fff" stroke="#a06000" stroke-width="1"/>
+        <rect x="278" y="97" width="3" height="9" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
+        <text x="271" y="104" text-anchor="middle" font-size="5.5" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">VAV</text>
+        <rect x="250" y="115" width="44" height="92" rx="1" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
+        <text x="272" y="125" text-anchor="middle" font-size="5.5" fill="#7a8ba0"
+              font-family="Consolas, monospace">ZONE 2</text>
+        <rect x="254" y="198" width="36" height="3" fill="#f39c12"/>
+
+        <!-- VAV 3 -->
+        <line x1="320" y1="40" x2="320" y2="95" stroke="#c0392b" stroke-width="1.8"/>
+        <rect x="310" y="95" width="22" height="13" rx="1" fill="#fff" stroke="#a06000" stroke-width="1"/>
+        <rect x="328" y="97" width="3" height="9" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
+        <text x="321" y="104" text-anchor="middle" font-size="5.5" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">VAV</text>
+        <rect x="300" y="115" width="44" height="92" rx="1" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
+        <text x="322" y="125" text-anchor="middle" font-size="5.5" fill="#7a8ba0"
+              font-family="Consolas, monospace">ZONE 3</text>
+        <rect x="304" y="198" width="36" height="3" fill="#f39c12"/>
+
+        <!-- Plant equipment row -->
+        <!-- Cooling tower -->
+        <rect x="18" y="125" width="42" height="48" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.2"/>
+        <line x1="18" y1="135" x2="60" y2="135" stroke="#1a3a6c" stroke-width="0.5"/>
+        <g class="ct-fan">
+            <circle cx="39" cy="152" r="11" fill="none" stroke="#1a3a6c" stroke-width="0.9"/>
+            <line x1="28" y1="152" x2="50" y2="152" stroke="#1a3a6c" stroke-width="1.1"/>
+            <line x1="39" y1="141" x2="39" y2="163" stroke="#1a3a6c" stroke-width="1.1"/>
+            <line x1="31" y1="144" x2="47" y2="160" stroke="#1a3a6c" stroke-width="1.1"/>
+            <line x1="47" y1="144" x2="31" y2="160" stroke="#1a3a6c" stroke-width="1.1"/>
+            <circle cx="39" cy="152" r="1.6" fill="#1a3a6c"/>
         </g>
-        <!-- Return riser (blue dashed) -->
-        <line x1="226" y1="40" x2="226" y2="200" stroke="#2e6da6" stroke-width="1.8" stroke-dasharray="3 2"/>
-        <!-- Baseboards -->
-        <rect x="262" y="88" width="80" height="3" fill="#f39c12"/>
-        <rect x="262" y="136" width="80" height="3" fill="#f39c12"/>
-        <rect x="262" y="194" width="80" height="3" fill="#f39c12"/>
+        <text x="39" y="185" text-anchor="middle" font-size="7" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">CT</text>
 
-        <!-- Plant: cooling tower + chiller + boiler -->
-        <g class="plant-equip-sys6">
-            <!-- Cooling tower -->
-            <rect x="14" y="76" width="38" height="46" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.2"/>
-            <line x1="14" y1="86" x2="52" y2="86" stroke="#1a3a6c" stroke-width="0.6"/>
-            <g class="ct-fan">
-                <circle cx="33" cy="100" r="8" fill="none" stroke="#1a3a6c" stroke-width="0.8"/>
-                <line x1="25" y1="100" x2="41" y2="100" stroke="#1a3a6c" stroke-width="1"/>
-                <line x1="33" y1="92" x2="33" y2="108" stroke="#1a3a6c" stroke-width="1"/>
-                <line x1="27" y1="94" x2="39" y2="106" stroke="#1a3a6c" stroke-width="1"/>
-                <line x1="39" y1="94" x2="27" y2="106" stroke="#1a3a6c" stroke-width="1"/>
-            </g>
-            <text x="33" y="135" text-anchor="middle" font-size="6" fill="#1a3a6c"
-                  font-weight="700" font-family="Consolas, monospace">CT</text>
-            <!-- Chiller -->
-            <rect x="62" y="155" width="44" height="32" rx="2" fill="#fff" stroke="#2e6da6" stroke-width="1.2"/>
-            <circle cx="78" cy="171" r="6" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.6"/>
-            <text x="92" y="174" text-anchor="middle" font-size="6.5" fill="#2e6da6"
-                  font-weight="700" font-family="Consolas, monospace">Chiller</text>
-            <!-- Boiler -->
-            <rect x="116" y="155" width="40" height="32" rx="2" fill="#fff" stroke="#a06000" stroke-width="1.2"/>
-            <circle cx="130" cy="171" r="6" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
-            <path d="M128,177 L128,167 L132,171 L132,177 Z M128,167 L132,162 L132,171 Z"
-                  fill="#e67e22" class="flame-shape"/>
-            <text x="145" y="174" text-anchor="middle" font-size="6.5" fill="#a06000"
-                  font-weight="700" font-family="Consolas, monospace">Boiler</text>
+        <!-- Chiller -->
+        <rect x="70" y="135" width="55" height="38" rx="2" fill="#fff" stroke="#2e6da6" stroke-width="1.2"/>
+        <circle cx="86" cy="154" r="8" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.6"/>
+        <text x="103" y="160" text-anchor="middle" font-size="7.5" fill="#2e6da6"
+              font-weight="700" font-family="Consolas, monospace">Chiller</text>
 
-            <!-- Loops: CT↔Chiller (condenser), Chiller→AHU (CHW), Boiler→AHU (HW) -->
-            <path d="M52,107 Q72,107 78,155" stroke="#7a8ba0" stroke-width="1" fill="none" stroke-dasharray="3 2"/>
-            <path d="M95,155 Q140,90 210,40" stroke="#2e6da6" stroke-width="0.9" fill="none" stroke-dasharray="4 2"/>
-            <path d="M140,155 Q170,90 210,40" stroke="#a06000" stroke-width="0.9" fill="none" stroke-dasharray="4 2"/>
-        </g>
+        <!-- Boiler -->
+        <rect x="135" y="135" width="55" height="38" rx="2" fill="#fff" stroke="#a06000" stroke-width="1.2"/>
+        <circle cx="151" cy="154" r="8" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
+        <path d="M149,161 L149,150 L153,154 L153,161 Z M149,150 L153,145 L153,154 Z"
+              fill="#e67e22" class="flame-shape"/>
+        <text x="170" y="160" text-anchor="middle" font-size="7.5" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">Boiler</text>
+
+        <!-- Plant piping -->
+        <!-- Condenser water: CT â†” Chiller -->
+        <path d="M60,150 L70,150" stroke="#7a8ba0" stroke-width="1.4" fill="none" stroke-dasharray="3 2"/>
+        <!-- CHW: Chiller â†’ AHU cooling coil -->
+        <path d="M105,135 Q105,80 60,66" stroke="#2e6da6" stroke-width="1.2" fill="none"/>
+        <!-- HW: Boiler â†’ AHU heating coil -->
+        <path d="M170,135 Q170,80 75,66" stroke="#a06000" stroke-width="1.2" fill="none"/>
+        <!-- HW branch â†’ VAV reheat coils -->
+        <path d="M190,140 Q210,120 231,108" stroke="#a06000" stroke-width="0.8" fill="none" stroke-dasharray="3 2"/>
+        <path d="M190,148 Q235,130 281,108" stroke="#a06000" stroke-width="0.8" fill="none" stroke-dasharray="3 2"/>
+        <path d="M190,156 Q260,140 331,108" stroke="#a06000" stroke-width="0.8" fill="none" stroke-dasharray="3 2"/>
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 1 — PTAC + baseboards (dwelling, all floors)      -->
+    <!-- NECB SYSTEM 1 â€” PTAC + perimeter baseboards (per-zone)        -->
+    <!-- Three independent dwelling-style zones (no central plant)    -->
     <!-- ============================================================ -->
     <g class="sys-necb-1">
-        <g class="ptac-units" fill="#fff" stroke="#1a3a6c" stroke-width="1">
-            <rect x="266" y="82" width="20" height="5" rx="0.5"/>
-            <rect x="294" y="82" width="20" height="5" rx="0.5"/>
-            <rect x="322" y="82" width="20" height="5" rx="0.5"/>
-            <rect x="266" y="130" width="20" height="5" rx="0.5"/>
-            <rect x="294" y="130" width="20" height="5" rx="0.5"/>
-            <rect x="322" y="130" width="20" height="5" rx="0.5"/>
-            <rect x="266" y="178" width="20" height="5" rx="0.5"/>
-            <rect x="294" y="178" width="20" height="5" rx="0.5"/>
-            <rect x="322" y="178" width="20" height="5" rx="0.5"/>
-        </g>
-        <!-- Fin marks for visual cue (cooling coil) -->
+        <!-- Zone 1 -->
+        <rect x="18" y="32" width="324" height="50" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.7"/>
+        <rect x="28" y="48" width="34" height="22" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
+        <text x="45" y="62" text-anchor="middle" font-size="6" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">PTAC</text>
         <g stroke="#1a3a6c" stroke-width="0.4" opacity="0.6">
-            <line x1="270" y1="84" x2="270" y2="86"/><line x1="274" y1="84" x2="274" y2="86"/>
-            <line x1="278" y1="84" x2="278" y2="86"/><line x1="282" y1="84" x2="282" y2="86"/>
-            <line x1="298" y1="84" x2="298" y2="86"/><line x1="302" y1="84" x2="302" y2="86"/>
-            <line x1="306" y1="84" x2="306" y2="86"/><line x1="310" y1="84" x2="310" y2="86"/>
-            <line x1="270" y1="132" x2="270" y2="134"/><line x1="274" y1="132" x2="274" y2="134"/>
-            <line x1="278" y1="132" x2="278" y2="134"/><line x1="282" y1="132" x2="282" y2="134"/>
-            <line x1="270" y1="180" x2="270" y2="182"/><line x1="274" y1="180" x2="274" y2="182"/>
-            <line x1="278" y1="180" x2="278" y2="182"/><line x1="282" y1="180" x2="282" y2="182"/>
+            <line x1="33" y1="51" x2="33" y2="55"/><line x1="38" y1="51" x2="38" y2="55"/>
+            <line x1="43" y1="51" x2="43" y2="55"/><line x1="48" y1="51" x2="48" y2="55"/>
+            <line x1="53" y1="51" x2="53" y2="55"/><line x1="58" y1="51" x2="58" y2="55"/>
         </g>
-        <!-- PTAC label (one only, for legend) -->
-        <text x="200" y="86" font-size="6.5" fill="#1a3a6c" font-weight="700"
-              font-family="Consolas, monospace">PTAC</text>
-        <line x1="220" y1="84" x2="265" y2="84" stroke="#1a3a6c" stroke-width="0.4" stroke-dasharray="2 2"/>
-        <!-- Baseboards -->
-        <rect x="200" y="88" width="64" height="3" fill="#f39c12"/>
-        <rect x="200" y="136" width="64" height="3" fill="#f39c12"/>
-        <rect x="200" y="194" width="64" height="3" fill="#f39c12"/>
+        <text x="80" y="45" font-size="6" fill="#7a8ba0" font-family="Consolas, monospace">ZONE 1 (dwelling unit)</text>
+        <rect x="80" y="75" width="252" height="3" fill="#f39c12"/>
+
+        <!-- Zone 2 -->
+        <rect x="18" y="92" width="324" height="50" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.7"/>
+        <rect x="28" y="108" width="34" height="22" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
+        <text x="45" y="122" text-anchor="middle" font-size="6" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">PTAC</text>
+        <g stroke="#1a3a6c" stroke-width="0.4" opacity="0.6">
+            <line x1="33" y1="111" x2="33" y2="115"/><line x1="38" y1="111" x2="38" y2="115"/>
+            <line x1="43" y1="111" x2="43" y2="115"/><line x1="48" y1="111" x2="48" y2="115"/>
+            <line x1="53" y1="111" x2="53" y2="115"/><line x1="58" y1="111" x2="58" y2="115"/>
+        </g>
+        <text x="80" y="105" font-size="6" fill="#7a8ba0" font-family="Consolas, monospace">ZONE 2 (dwelling unit)</text>
+        <rect x="80" y="135" width="252" height="3" fill="#f39c12"/>
+
+        <!-- Zone 3 -->
+        <rect x="18" y="152" width="324" height="50" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.7"/>
+        <rect x="28" y="168" width="34" height="22" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
+        <text x="45" y="182" text-anchor="middle" font-size="6" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">PTAC</text>
+        <g stroke="#1a3a6c" stroke-width="0.4" opacity="0.6">
+            <line x1="33" y1="171" x2="33" y2="175"/><line x1="38" y1="171" x2="38" y2="175"/>
+            <line x1="43" y1="171" x2="43" y2="175"/><line x1="48" y1="171" x2="48" y2="175"/>
+            <line x1="53" y1="171" x2="53" y2="175"/><line x1="58" y1="171" x2="58" y2="175"/>
+        </g>
+        <text x="80" y="165" font-size="6" fill="#7a8ba0" font-family="Consolas, monospace">ZONE 3 (dwelling unit)</text>
+        <rect x="80" y="195" width="252" height="3" fill="#f39c12"/>
+
+        <!-- BB legend pointer -->
+        <text x="340" y="220" text-anchor="end" font-size="6" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">BB = perimeter baseboard</text>
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB MIXED (Sys 1 + Sys 6) — apartments: suites + common      -->
-    <!--   - Upper floors (L2, L3): PTAC + baseboards (suites)         -->
-    <!--   - Ground floor (L1):     VAV + reheat (lobby/common)        -->
-    <!--   - Outside: cooling tower + chiller + boiler                  -->
+    <!-- NECB MIXED (Sys 1 + Sys 6) â€” apartments                       -->
+    <!-- TOP: dwelling units (PTAC + BB)                               -->
+    <!-- BOTTOM: common areas (AHU + VAV + plant)                      -->
     <!-- ============================================================ -->
     <g class="sys-necb-mixed">
-        <!-- Suite divider lines for visual context -->
-        <g stroke="#cfd8e3" stroke-width="0.4" stroke-dasharray="2 2">
-            <line x1="232" y1="45" x2="232" y2="93"/>
-            <line x1="262" y1="45" x2="262" y2="93"/>
-            <line x1="292" y1="45" x2="292" y2="93"/>
-            <line x1="232" y1="93" x2="232" y2="141"/>
-            <line x1="262" y1="93" x2="262" y2="141"/>
-            <line x1="292" y1="93" x2="292" y2="141"/>
-        </g>
+        <!-- ===== SECTION A: DWELLING UNITS (System 1) ===== -->
+        <text x="18" y="26" font-size="7.5" fill="#1a3a6c" font-weight="700"
+              font-family="Consolas, monospace">DWELLING UNITS â€” SYSTEM 1 (PTAC + BB, per suite)</text>
 
-        <!-- Suite annotations (very small) -->
-        <g font-family="Consolas, monospace" font-size="5.5" fill="#7a8ba0">
-            <text x="242" y="50">SUITE</text>
-            <text x="272" y="50">SUITE</text>
-            <text x="302" y="50">SUITE</text>
-            <text x="332" y="50">SUITE</text>
-            <text x="242" y="98">SUITE</text>
-            <text x="272" y="98">SUITE</text>
-            <text x="302" y="98">SUITE</text>
-            <text x="332" y="98">SUITE</text>
-            <text x="278" y="153" font-weight="700" fill="#1a3a6c">LOBBY / COMMON</text>
-        </g>
-
-        <!-- =========== L2 + L3: Sys 1 (PTAC + baseboards) =========== -->
-        <g class="ptac-units" fill="#fff" stroke="#1a3a6c" stroke-width="1">
-            <rect x="266" y="82" width="20" height="5" rx="0.5"/>
-            <rect x="294" y="82" width="20" height="5" rx="0.5"/>
-            <rect x="322" y="82" width="20" height="5" rx="0.5"/>
-            <rect x="266" y="130" width="20" height="5" rx="0.5"/>
-            <rect x="294" y="130" width="20" height="5" rx="0.5"/>
-            <rect x="322" y="130" width="20" height="5" rx="0.5"/>
-        </g>
-        <g stroke="#1a3a6c" stroke-width="0.4" opacity="0.6">
-            <line x1="270" y1="84" x2="270" y2="86"/><line x1="274" y1="84" x2="274" y2="86"/>
-            <line x1="278" y1="84" x2="278" y2="86"/><line x1="282" y1="84" x2="282" y2="86"/>
-            <line x1="270" y1="132" x2="270" y2="134"/><line x1="274" y1="132" x2="274" y2="134"/>
-            <line x1="278" y1="132" x2="278" y2="134"/><line x1="282" y1="132" x2="282" y2="134"/>
-        </g>
-        <!-- PTAC label -->
-        <text x="200" y="86" font-size="6.5" fill="#1a3a6c" font-weight="700"
+        <!-- Suite A1 -->
+        <rect x="18" y="30" width="160" height="38" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
+        <rect x="26" y="43" width="26" height="17" fill="#fff" stroke="#1a3a6c" stroke-width="0.9"/>
+        <text x="39" y="54" text-anchor="middle" font-size="5" fill="#1a3a6c" font-weight="700"
               font-family="Consolas, monospace">PTAC</text>
-        <line x1="220" y1="84" x2="265" y2="84" stroke="#1a3a6c" stroke-width="0.4" stroke-dasharray="2 2"/>
-        <!-- Baseboards on L2 + L3 (suites only) -->
-        <rect x="200" y="88" width="64" height="3" fill="#f39c12"/>
-        <rect x="200" y="136" width="64" height="3" fill="#f39c12"/>
-        <text x="172" y="139" font-size="6" fill="#a06000" font-weight="700"
-              text-anchor="end" font-family="Consolas, monospace">BB</text>
+        <text x="60" y="42" font-size="5.5" fill="#7a8ba0" font-family="Consolas, monospace">SUITE</text>
+        <rect x="60" y="62" width="112" height="3" fill="#f39c12"/>
 
-        <!-- =========== L1: Sys 6 (VAV + reheat + plant) =========== -->
-        <!-- Penthouse AHU -->
-        <rect x="220" y="22" width="120" height="14" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1"/>
-        <rect x="224" y="24" width="10" height="10" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.5"/>
-        <rect x="236" y="24" width="10" height="10" fill="#fff7e6" stroke="#a06000" stroke-width="0.5"/>
+        <!-- Suite A2 -->
+        <rect x="184" y="30" width="160" height="38" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
+        <rect x="192" y="43" width="26" height="17" fill="#fff" stroke="#1a3a6c" stroke-width="0.9"/>
+        <text x="205" y="54" text-anchor="middle" font-size="5" fill="#1a3a6c" font-weight="700"
+              font-family="Consolas, monospace">PTAC</text>
+        <text x="226" y="42" font-size="5.5" fill="#7a8ba0" font-family="Consolas, monospace">SUITE</text>
+        <rect x="226" y="62" width="112" height="3" fill="#f39c12"/>
+
+        <!-- Suite A3 -->
+        <rect x="18" y="72" width="160" height="38" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
+        <rect x="26" y="85" width="26" height="17" fill="#fff" stroke="#1a3a6c" stroke-width="0.9"/>
+        <text x="39" y="96" text-anchor="middle" font-size="5" fill="#1a3a6c" font-weight="700"
+              font-family="Consolas, monospace">PTAC</text>
+        <text x="60" y="84" font-size="5.5" fill="#7a8ba0" font-family="Consolas, monospace">SUITE</text>
+        <rect x="60" y="104" width="112" height="3" fill="#f39c12"/>
+
+        <!-- Suite A4 -->
+        <rect x="184" y="72" width="160" height="38" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
+        <rect x="192" y="85" width="26" height="17" fill="#fff" stroke="#1a3a6c" stroke-width="0.9"/>
+        <text x="205" y="96" text-anchor="middle" font-size="5" fill="#1a3a6c" font-weight="700"
+              font-family="Consolas, monospace">PTAC</text>
+        <text x="226" y="84" font-size="5.5" fill="#7a8ba0" font-family="Consolas, monospace">SUITE</text>
+        <rect x="226" y="104" width="112" height="3" fill="#f39c12"/>
+
+        <!-- Divider -->
+        <line x1="18" y1="118" x2="344" y2="118" stroke="#7a8ba0" stroke-width="0.5" stroke-dasharray="5 3"/>
+
+        <!-- ===== SECTION B: COMMON AREAS (System 6) ===== -->
+        <text x="18" y="130" font-size="7.5" fill="#1a3a6c" font-weight="700"
+              font-family="Consolas, monospace">COMMON AREAS â€” SYSTEM 6 (VAV + reheat + plant)</text>
+
+        <!-- AHU -->
+        <rect x="18" y="135" width="84" height="26" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.1"/>
+        <rect x="22" y="138" width="7" height="20" fill="#e6f0ff" stroke="#2e6da6" stroke-width="0.4"/>
+        <rect x="31" y="138" width="7" height="20" fill="#fff" stroke="#7a8ba0" stroke-width="0.4"/>
+        <line x1="31" y1="138" x2="38" y2="158" stroke="#7a8ba0" stroke-width="0.3"/>
+        <line x1="31" y1="158" x2="38" y2="138" stroke="#7a8ba0" stroke-width="0.3"/>
+        <rect x="40" y="138" width="9" height="20" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.4"/>
+        <rect x="51" y="138" width="9" height="20" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
         <g class="ahu-fan">
-            <line x1="252" y1="25" x2="252" y2="33" stroke="#1a3a6c" stroke-width="1"/>
-            <line x1="248" y1="29" x2="256" y2="29" stroke="#1a3a6c" stroke-width="1"/>
+            <circle cx="83" cy="148" r="9" fill="none" stroke="#1a3a6c" stroke-width="0.7"/>
+            <line x1="74" y1="148" x2="92" y2="148" stroke="#1a3a6c" stroke-width="0.9"/>
+            <line x1="83" y1="139" x2="83" y2="157" stroke="#1a3a6c" stroke-width="0.9"/>
+            <line x1="76" y1="141" x2="90" y2="155" stroke="#1a3a6c" stroke-width="0.9"/>
+            <line x1="90" y1="141" x2="76" y2="155" stroke="#1a3a6c" stroke-width="0.9"/>
+            <circle cx="83" cy="148" r="1.5" fill="#1a3a6c"/>
         </g>
-        <text x="298" y="32" text-anchor="middle" font-size="6.5" fill="#1a3a6c"
+        <text x="60" y="170" text-anchor="middle" font-size="7" fill="#1a3a6c"
               font-weight="700" font-family="Consolas, monospace">AHU</text>
 
-        <!-- Supply + return risers to L1 only -->
-        <line x1="220" y1="36" x2="220" y2="195" stroke="#c0392b" stroke-width="2"/>
-        <line x1="226" y1="36" x2="226" y2="195" stroke="#2e6da6" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <!-- Supply duct + return -->
+        <line x1="102" y1="142" x2="148" y2="142" stroke="#c0392b" stroke-width="2"
+              marker-end="url(#hvac-arrow-red)"/>
+        <line x1="148" y1="155" x2="102" y2="155" stroke="#2e6da6" stroke-width="1.5"
+              stroke-dasharray="3 2" marker-end="url(#hvac-arrow-blue)"/>
 
-        <!-- L1 VAV + reheat coil + supply trunk -->
-        <rect x="222" y="170" width="22" height="11" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
-        <rect x="240" y="172" width="3" height="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
-        <text x="232" y="179" text-anchor="middle" font-size="5.5" fill="#a06000"
-              font-weight="700" font-family="Consolas, monospace">VAV</text>
-        <rect x="244" y="174" width="98" height="3" fill="#c0392b"/>
-        <!-- L1 lobby baseboards -->
-        <rect x="262" y="194" width="80" height="3" fill="#f39c12"/>
+        <!-- VAV + reheat -->
+        <rect x="148" y="137" width="24" height="13" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
+        <rect x="168" y="139" width="3" height="9" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
+        <text x="159" y="146" text-anchor="middle" font-size="5" fill="#a06000" font-weight="700"
+              font-family="Consolas, monospace">VAV</text>
+        <line x1="172" y1="143" x2="195" y2="143" stroke="#c0392b" stroke-width="1.5"/>
 
-        <!-- Plant: cooling tower + chiller + boiler -->
-        <g class="plant-equip-mixed">
-            <rect x="14" y="86" width="34" height="40" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.1"/>
-            <line x1="14" y1="94" x2="48" y2="94" stroke="#1a3a6c" stroke-width="0.6"/>
-            <g class="ct-fan">
-                <circle cx="31" cy="107" r="7" fill="none" stroke="#1a3a6c" stroke-width="0.8"/>
-                <line x1="24" y1="107" x2="38" y2="107" stroke="#1a3a6c" stroke-width="1"/>
-                <line x1="31" y1="100" x2="31" y2="114" stroke="#1a3a6c" stroke-width="1"/>
-                <line x1="26" y1="102" x2="36" y2="112" stroke="#1a3a6c" stroke-width="1"/>
-                <line x1="36" y1="102" x2="26" y2="112" stroke="#1a3a6c" stroke-width="1"/>
-            </g>
-            <text x="31" y="138" text-anchor="middle" font-size="6" fill="#1a3a6c"
-                  font-weight="700" font-family="Consolas, monospace">CT</text>
-            <rect x="60" y="158" width="42" height="28" rx="2" fill="#fff" stroke="#2e6da6" stroke-width="1.1"/>
-            <circle cx="74" cy="172" r="5" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.6"/>
-            <text x="88" y="174" text-anchor="middle" font-size="6" fill="#2e6da6"
-                  font-weight="700" font-family="Consolas, monospace">Chiller</text>
-            <rect x="112" y="158" width="38" height="28" rx="2" fill="#fff" stroke="#a06000" stroke-width="1.1"/>
-            <circle cx="124" cy="172" r="5" fill="#fff7e6" stroke="#a06000" stroke-width="0.6"/>
-            <path d="M122,177 L122,168 L126,172 L126,177 Z M122,168 L126,164 L126,172 Z"
-                  fill="#e67e22" class="flame-shape"/>
-            <text x="139" y="174" text-anchor="middle" font-size="6" fill="#a06000"
-                  font-weight="700" font-family="Consolas, monospace">Boiler</text>
+        <!-- Lobby / corridor zone -->
+        <rect x="195" y="135" width="84" height="55" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
+        <text x="237" y="146" text-anchor="middle" font-size="6" fill="#7a8ba0"
+              font-family="Consolas, monospace">LOBBY / CORRIDOR</text>
+        <rect x="200" y="183" width="74" height="3" fill="#f39c12"/>
 
-            <!-- Loops -->
-            <path d="M48,112 Q66,112 74,158" stroke="#7a8ba0" stroke-width="0.9" fill="none" stroke-dasharray="3 2"/>
-            <path d="M90,158 Q140,80 220,30" stroke="#2e6da6" stroke-width="0.9" fill="none" stroke-dasharray="4 2"/>
-            <path d="M135,158 Q170,80 220,30" stroke="#a06000" stroke-width="0.9" fill="none" stroke-dasharray="4 2"/>
+        <!-- Plant (compact) -->
+        <!-- CT -->
+        <rect x="285" y="133" width="22" height="22" rx="1" fill="#fff" stroke="#1a3a6c" stroke-width="0.9"/>
+        <g class="ct-fan">
+            <circle cx="296" cy="144" r="7" fill="none" stroke="#1a3a6c" stroke-width="0.6"/>
+            <line x1="289" y1="144" x2="303" y2="144" stroke="#1a3a6c" stroke-width="0.8"/>
+            <line x1="296" y1="137" x2="296" y2="151" stroke="#1a3a6c" stroke-width="0.8"/>
+            <line x1="291" y1="139" x2="301" y2="149" stroke="#1a3a6c" stroke-width="0.8"/>
+            <line x1="301" y1="139" x2="291" y2="149" stroke="#1a3a6c" stroke-width="0.8"/>
         </g>
+        <text x="296" y="165" text-anchor="middle" font-size="6" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">CT</text>
+
+        <!-- Chiller -->
+        <rect x="285" y="170" width="22" height="22" rx="1" fill="#fff" stroke="#2e6da6" stroke-width="0.9"/>
+        <circle cx="291" cy="181" r="4" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.5"/>
+        <text x="299" y="204" text-anchor="middle" font-size="6" fill="#2e6da6"
+              font-weight="700" font-family="Consolas, monospace">CHW</text>
+
+        <!-- Boiler -->
+        <rect x="315" y="170" width="22" height="22" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
+        <circle cx="321" cy="181" r="4" fill="#fff7e6" stroke="#a06000" stroke-width="0.5"/>
+        <path d="M319,185 L319,178 L323,181 L323,185 Z M319,178 L323,175 L323,181 Z"
+              fill="#e67e22" class="flame-shape"/>
+        <text x="329" y="204" text-anchor="middle" font-size="6" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">Boiler</text>
+
+        <!-- Plant pipes -->
+        <path d="M285,144 L307,144" stroke="#7a8ba0" stroke-width="0.7" fill="none" stroke-dasharray="3 2"/>
+        <path d="M299,170 Q280,120 102,142" stroke="#2e6da6" stroke-width="0.8" fill="none"/>
+        <path d="M329,170 Q330,90 100,150" stroke="#a06000" stroke-width="0.8" fill="none"/>
+        <path d="M148,143 L148,148" stroke="#a06000" stroke-width="0.6" fill="none"/>
     </g>
 
     <!-- ============================================================ -->
-    <!-- HEAT PUMP SYSTEMS — outdoor unit + refrigerant lines          -->
+    <!-- HEAT PUMP â€” outdoor unit + refrigerant lines                  -->
     <!-- ============================================================ -->
     <g class="hp-unit">
-        <rect x="42" y="186" width="100" height="6" fill="#9aa7b8"/>
-        <rect x="50" y="120" width="80" height="66" rx="3" fill="#fff" stroke="#1a3a6c" stroke-width="1.5"/>
-        <circle cx="118" cy="170" r="6" fill="#e6f0ff" stroke="#1a3a6c" stroke-width="0.6"/>
-        <text x="118" y="172" text-anchor="middle" font-size="5" fill="#1a3a6c" font-weight="700">C</text>
-        <rect x="56" y="126" width="56" height="46" rx="2" fill="#f5f9ff" stroke="#1a3a6c" stroke-width="0.6"/>
+        <rect x="20" y="120" width="100" height="80" rx="3" fill="#fff" stroke="#1a3a6c" stroke-width="1.5"/>
+        <rect x="28" y="128" width="60" height="50" rx="2" fill="#f5f9ff" stroke="#1a3a6c" stroke-width="0.6"/>
         <g class="hp-fan">
-            <circle cx="84" cy="149" r="20" fill="none" stroke="#1a3a6c" stroke-width="1"/>
-            <line x1="84" y1="129" x2="84" y2="169" stroke="#1a3a6c" stroke-width="1.5"/>
-            <line x1="64" y1="149" x2="104" y2="149" stroke="#1a3a6c" stroke-width="1.5"/>
-            <line x1="70" y1="135" x2="98" y2="163" stroke="#1a3a6c" stroke-width="1.5"/>
-            <line x1="98" y1="135" x2="70" y2="163" stroke="#1a3a6c" stroke-width="1.5"/>
-            <circle cx="84" cy="149" r="2.5" fill="#1a3a6c"/>
+            <circle cx="58" cy="153" r="20" fill="none" stroke="#1a3a6c" stroke-width="1"/>
+            <line x1="58" y1="133" x2="58" y2="173" stroke="#1a3a6c" stroke-width="1.5"/>
+            <line x1="38" y1="153" x2="78" y2="153" stroke="#1a3a6c" stroke-width="1.5"/>
+            <line x1="44" y1="139" x2="72" y2="167" stroke="#1a3a6c" stroke-width="1.5"/>
+            <line x1="72" y1="139" x2="44" y2="167" stroke="#1a3a6c" stroke-width="1.5"/>
+            <circle cx="58" cy="153" r="2.5" fill="#1a3a6c"/>
         </g>
-        <rect x="128" y="135" width="6" height="3" fill="#c0392b"/>
-        <rect x="128" y="142" width="6" height="3" fill="#2e6da6"/>
-        <text x="90" y="180" text-anchor="middle" font-size="7" fill="#1a3a6c"
-              font-weight="700" font-family="Consolas, monospace">HP</text>
+        <circle cx="103" cy="184" r="6" fill="#e6f0ff" stroke="#1a3a6c" stroke-width="0.6"/>
+        <text x="103" y="186" text-anchor="middle" font-size="5" fill="#1a3a6c" font-weight="700">C</text>
+        <text x="70" y="216" text-anchor="middle" font-size="9" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">HP (outdoor)</text>
 
-        <!-- Refrigerant lines -->
-        <path d="M134,136 L190,136" stroke="#c0392b" stroke-width="2"
+        <!-- Refrigerant lines to indoor side -->
+        <path d="M120,140 L200,140" stroke="#c0392b" stroke-width="2"
               stroke-dasharray="6 3" fill="none" class="refrig-line refrig-supply"
               marker-end="url(#hvac-arrow-red)"/>
-        <path d="M190,143 L134,143" stroke="#2e6da6" stroke-width="2"
+        <path d="M200,158 L120,158" stroke="#2e6da6" stroke-width="2"
               stroke-dasharray="6 3" fill="none" class="refrig-line refrig-return"
               marker-end="url(#hvac-arrow-blue)"/>
     </g>
 
-    <!-- HP distribution: VRF cassettes -->
+    <!-- HP distribution: VRF cassettes inside zone -->
     <g class="dist-vrf-vis">
-        <g fill="#f39c12">
-            <rect x="200" y="50" width="140" height="4" rx="0.5" opacity="0.4"/>
-            <rect x="210" y="50" width="12" height="6"/>
-            <rect x="245" y="50" width="12" height="6"/>
-            <rect x="280" y="50" width="12" height="6"/>
-            <rect x="315" y="50" width="12" height="6"/>
-            <rect x="200" y="98" width="140" height="4" rx="0.5" opacity="0.4"/>
-            <rect x="210" y="98" width="12" height="6"/>
-            <rect x="245" y="98" width="12" height="6"/>
-            <rect x="280" y="98" width="12" height="6"/>
-            <rect x="315" y="98" width="12" height="6"/>
-            <rect x="200" y="146" width="140" height="4" rx="0.5" opacity="0.4"/>
-            <rect x="210" y="146" width="12" height="6"/>
-            <rect x="245" y="146" width="12" height="6"/>
-            <rect x="280" y="146" width="12" height="6"/>
-            <rect x="315" y="146" width="12" height="6"/>
+        <rect x="200" y="40" width="148" height="170" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.7"/>
+        <text x="274" y="53" text-anchor="middle" font-size="7" fill="#7a8ba0"
+              font-family="Consolas, monospace">INDOOR ZONES</text>
+        <g fill="#f39c12" stroke="#a06000" stroke-width="0.5">
+            <rect x="216" y="62" width="44" height="9" rx="1"/>
+            <rect x="278" y="62" width="44" height="9" rx="1"/>
+            <rect x="216" y="112" width="44" height="9" rx="1"/>
+            <rect x="278" y="112" width="44" height="9" rx="1"/>
+            <rect x="216" y="162" width="44" height="9" rx="1"/>
+            <rect x="278" y="162" width="44" height="9" rx="1"/>
         </g>
-        <text x="200" y="218" font-size="6.5" fill="#a06000" font-weight="700"
-              font-family="Consolas, monospace">VRF</text>
+        <text x="216" y="82" font-size="6" fill="#a06000" font-weight="700"
+              font-family="Consolas, monospace">VRF cassette</text>
     </g>
 
-    <!-- HP distribution: Baseboards -->
+    <!-- HP distribution: hydronic baseboards -->
     <g class="dist-baseboard-vis">
-        <rect x="200" y="88" width="148" height="3" fill="#f39c12"/>
-        <rect x="200" y="136" width="148" height="3" fill="#f39c12"/>
-        <rect x="200" y="194" width="148" height="3" fill="#f39c12"/>
-        <text x="200" y="218" font-size="6.5" fill="#a06000" font-weight="700"
-              font-family="Consolas, monospace">BB</text>
+        <rect x="200" y="40" width="148" height="170" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.7"/>
+        <text x="274" y="53" text-anchor="middle" font-size="7" fill="#7a8ba0"
+              font-family="Consolas, monospace">INDOOR ZONES</text>
+        <rect x="216" y="90" width="124" height="3" fill="#f39c12"/>
+        <rect x="216" y="140" width="124" height="3" fill="#f39c12"/>
+        <rect x="216" y="190" width="124" height="3" fill="#f39c12"/>
+        <text x="216" y="105" font-size="6" fill="#a06000" font-weight="700"
+              font-family="Consolas, monospace">Hydronic BB</text>
     </g>
 
-    <!-- HP distribution: PTHP -->
+    <!-- HP distribution: PTHP per zone -->
     <g class="dist-pthp-vis">
-        <g fill="#f39c12" stroke="#a06000" stroke-width="0.6">
-            <rect x="266" y="82" width="20" height="5"/><rect x="294" y="82" width="20" height="5"/><rect x="322" y="82" width="20" height="5"/>
-            <rect x="266" y="130" width="20" height="5"/><rect x="294" y="130" width="20" height="5"/><rect x="322" y="130" width="20" height="5"/>
-            <rect x="266" y="178" width="20" height="5"/><rect x="294" y="178" width="20" height="5"/><rect x="322" y="178" width="20" height="5"/>
+        <rect x="200" y="40" width="148" height="170" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.7"/>
+        <text x="274" y="53" text-anchor="middle" font-size="7" fill="#7a8ba0"
+              font-family="Consolas, monospace">INDOOR ZONES</text>
+        <g fill="#fff" stroke="#1a3a6c" stroke-width="0.8">
+            <rect x="216" y="68" width="30" height="14"/>
+            <rect x="262" y="68" width="30" height="14"/>
+            <rect x="216" y="118" width="30" height="14"/>
+            <rect x="262" y="118" width="30" height="14"/>
+            <rect x="216" y="168" width="30" height="14"/>
+            <rect x="262" y="168" width="30" height="14"/>
         </g>
-        <text x="200" y="218" font-size="6.5" fill="#a06000" font-weight="700"
+        <text x="216" y="98" font-size="6" fill="#1a3a6c" font-weight="700"
               font-family="Consolas, monospace">PTHP</text>
     </g>
 
     <!-- HP backup: NG boiler -->
     <g class="backup-gas">
-        <rect x="148" y="115" width="44" height="34" rx="2" fill="#fff" stroke="#a06000" stroke-width="1.2"/>
-        <circle cx="170" cy="132" r="9" fill="#fff7e6" stroke="#a06000" stroke-width="0.8"/>
-        <path d="M168,138 L168,130 L172,134 L172,138 Z M168,130 L172,126 L172,134 Z"
+        <rect x="140" y="32" width="50" height="32" rx="2" fill="#fff" stroke="#a06000" stroke-width="1.2"/>
+        <circle cx="156" cy="48" r="7" fill="#fff7e6" stroke="#a06000" stroke-width="0.7"/>
+        <path d="M154,54 L154,45 L158,49 L158,54 Z M154,45 L158,41 L158,49 Z"
               fill="#e67e22" class="flame-shape"/>
-        <text x="170" y="160" text-anchor="middle" font-size="6.5" fill="#a06000"
+        <text x="176" y="51" text-anchor="middle" font-size="6.5" fill="#a06000"
               font-weight="700" font-family="Consolas, monospace">NG backup</text>
     </g>
 
     <!-- HP backup: electric -->
     <g class="backup-elec">
-        <rect x="148" y="115" width="44" height="34" rx="2" fill="#fff" stroke="#7a4ec9" stroke-width="1.2"/>
-        <rect x="155" y="122" width="30" height="20" fill="#f4efff" stroke="#7a4ec9" stroke-width="0.6"/>
-        <path d="M157,132 L161,128 L165,132 L169,128 L173,132 L177,128 L181,132 L183,128"
-              stroke="#7a4ec9" stroke-width="1.4" fill="none"/>
-        <text x="170" y="160" text-anchor="middle" font-size="6.5" fill="#7a4ec9"
+        <rect x="140" y="32" width="50" height="32" rx="2" fill="#fff" stroke="#7a4ec9" stroke-width="1.2"/>
+        <rect x="147" y="40" width="36" height="16" fill="#f4efff" stroke="#7a4ec9" stroke-width="0.6"/>
+        <path d="M149,51 L154,44 L159,51 L164,44 L169,51 L174,44 L179,51"
+              stroke="#7a4ec9" stroke-width="1.3" fill="none"/>
+        <text x="165" y="74" text-anchor="middle" font-size="6.5" fill="#7a4ec9"
               font-weight="700" font-family="Consolas, monospace">Elec backup</text>
-    </g>
-
-    <!-- NECB primary heat source: NG -->
-    <g class="primary-gas">
-        <rect x="44" y="135" width="60" height="36" rx="3" fill="#fff" stroke="#a06000" stroke-width="1.2"/>
-        <circle cx="64" cy="153" r="9" fill="#fff7e6" stroke="#a06000" stroke-width="0.8"/>
-        <path d="M62,159 L62,151 L66,155 L66,159 Z M62,151 L66,147 L66,155 Z"
-              fill="#e67e22" class="flame-shape"/>
-        <text x="86" y="156" text-anchor="middle" font-size="6.5" fill="#a06000"
-              font-weight="700" font-family="Consolas, monospace">Boiler</text>
-    </g>
-
-    <!-- NECB primary heat source: electric -->
-    <g class="primary-elec">
-        <rect x="44" y="135" width="60" height="36" rx="3" fill="#fff" stroke="#7a4ec9" stroke-width="1.2"/>
-        <rect x="52" y="143" width="44" height="20" fill="#f4efff" stroke="#7a4ec9" stroke-width="0.6"/>
-        <path d="M54,156 L60,148 L66,156 L72,148 L78,156 L84,148 L90,156"
-              stroke="#7a4ec9" stroke-width="1.4" fill="none"/>
-        <text x="74" y="180" text-anchor="middle" font-size="6.5" fill="#7a4ec9"
-              font-weight="700" font-family="Consolas, monospace">Electric</text>
     </g>
 </svg>
 `;
@@ -717,26 +735,26 @@ function renderHvacSummary() {
     const isHP         = family === 'CCASHP' || family === 'ASHP';
     const isNECB       = family === 'NECB_Default';
 
-    // ---- NECB default → actual NECB system number (from building type) ----
+    // ---- NECB default â†’ actual NECB system number (from building type) ----
     const necbMapping = (isNECB && buildingType) ? NECB_DEFAULT_FOR_BUILDING[buildingType] : null;
     const primarySys  = necbMapping ? NECB_SYSTEM_INFO[necbMapping.primary]   : null;
     const secondarySys = (necbMapping && necbMapping.secondary)
                             ? NECB_SYSTEM_INFO[necbMapping.secondary] : null;
 
     // ---- Primary heating ----
-    let primary = '—';
+    let primary = 'â€”';
     if (family === 'CCASHP')           primary = 'Cold Climate Air Source Heat Pump (electric refrigerant cycle)';
     else if (family === 'ASHP')        primary = 'Air Source Heat Pump (electric refrigerant cycle)';
     else if (isNECB) {
         if (primarySys) {
-            const fuelTag = fuel === 'NaturalGas'   ? ' — natural gas fuelled'
-                          : fuel === 'Electricity'  ? ' — electrically fuelled'
+            const fuelTag = fuel === 'NaturalGas'   ? ' â€” natural gas fuelled'
+                          : fuel === 'Electricity'  ? ' â€” electrically fuelled'
                           : '';
             primary = `${primarySys.label}${fuelTag}. ${primarySys.primary}.`;
         } else if (fuel === 'NaturalGas') {
-            primary = 'Natural Gas boiler / furnace (NECB default — select a building archetype to see the exact system)';
+            primary = 'Natural Gas boiler / furnace (NECB default â€” select a building archetype to see the exact system)';
         } else if (fuel === 'Electricity') {
-            primary = 'Electric heating (NECB default — select a building archetype to see the exact system)';
+            primary = 'Electric heating (NECB default â€” select a building archetype to see the exact system)';
         } else {
             primary = 'NECB default (pick a building archetype and fuel)';
         }
@@ -748,31 +766,31 @@ function renderHvacSummary() {
         Baseboard: 'Hydronic / electric baseboards',
         PTHP:      'Packaged Terminal Heat Pump (PTHP)'
     };
-    let distribution = '—';
+    let distribution = 'â€”';
     if (isHP && type)         distribution = typeLabels[type] || type;
     else if (isNECB && primarySys) distribution = primarySys.distribution;
     else if (isNECB)          distribution = 'NECB default zoning (depends on building archetype)';
 
     // ---- Backup heating + derived fuel value ----
-    let backup       = '—';
-    let derivedFuel  = '—';
+    let backup       = 'â€”';
+    let derivedFuel  = 'â€”';
     let note         = '';
     if (fuel === 'NaturalGas') {
         if (isHP) {
-            backup      = 'Natural Gas — boiler / furnace loop (used during very cold hours)';
+            backup      = 'Natural Gas â€” boiler / furnace loop (used during very cold hours)';
             derivedFuel = 'NaturalGasHPGasBackup (auto-derived)';
             note        = 'The heat pump remains the primary heating source. Natural gas is the supplementary backup, used when the heat pump cannot meet load.';
         } else {
-            backup      = 'N/A — natural gas is the primary heat source';
+            backup      = 'N/A â€” natural gas is the primary heat source';
             derivedFuel = 'NaturalGas';
         }
     } else if (fuel === 'Electricity') {
         if (isHP) {
-            backup      = 'Electric resistance — supplementary heating during very cold hours';
+            backup      = 'Electric resistance â€” supplementary heating during very cold hours';
             derivedFuel = 'ElectricityHPElecBackup (auto-derived)';
             note        = 'The heat pump remains the primary heating source. Electric resistance is the supplementary backup.';
         } else {
-            backup      = 'N/A — electricity is the primary heat source';
+            backup      = 'N/A â€” electricity is the primary heat source';
             derivedFuel = 'Electricity';
         }
     }
@@ -796,7 +814,7 @@ function renderHvacSummary() {
         'Natural Gas Direct Vent with Electric Ignition':      'Natural Gas Direct Vent',
         'Natural Gas Power Vent with Electric Ignition':       'Natural Gas Power Vent'
     };
-    const shwDisplay = shw ? (shwLabels[shw] || shw) : '—';
+    const shwDisplay = shw ? (shwLabels[shw] || shw) : 'â€”';
 
     // ---- Write to the DOM ----
     const set = (id, val) => {
@@ -807,7 +825,7 @@ function renderHvacSummary() {
     set('hvacSummaryDistribution', distribution);
     set('hvacSummaryBackup',       backup);
     set('hvacSummarySHW',          shwDisplay);
-    set('hvacSummaryEcm',          (ecmHidden && ecmHidden.value) || '—');
+    set('hvacSummaryEcm',          (ecmHidden && ecmHidden.value) || 'â€”');
     set('hvacSummaryFuel',         derivedFuel);
     set('hvacSummaryNote',         note);
 
@@ -831,7 +849,7 @@ function renderHvacSummary() {
             classes.push(primarySys.cls);
             if (secondarySys) classes.push('necb-mixed');
         } else if (isNECB) {
-            // NECB selected but no archetype yet → render as empty.
+            // NECB selected but no archetype yet â†’ render as empty.
             classes.push('mode-empty');
         }
 
@@ -842,8 +860,8 @@ function renderHvacSummary() {
         if (titleEl) {
             let title = 'HVAC Schematic';
             if (isHP)                       title = `${family} + ${typeLabels[type] || 'distribution'}`;
-            else if (isNECB && secondarySys) title = `NECB Default → System ${necbMapping.primary} (suites) + System ${necbMapping.secondary} (common)`;
-            else if (isNECB && primarySys)  title = `NECB Default → ${primarySys.label}`;
+            else if (isNECB && secondarySys) title = `NECB Default â†’ System ${necbMapping.primary} (suites) + System ${necbMapping.secondary} (common)`;
+            else if (isNECB && primarySys)  title = `NECB Default â†’ ${primarySys.label}`;
             else if (isNECB)                title = 'NECB Default (pick an archetype)';
             titleEl.textContent = title;
         }
@@ -857,11 +875,11 @@ function renderHvacSummary() {
                 'Backup / Supplementary Heating Fuel ' +
                 '<span class="tooltip" data-tooltip="The heat pump is the primary heating source (electric). ' +
                 'This fuel powers the supplementary boiler / furnace loop used during very cold hours ' +
-                'and for ancillary heating loads.">ℹ️</span>';
+                'and for ancillary heating loads.">â„¹ï¸</span>';
         } else {
             fuelLabel.innerHTML =
                 'Primary Heating Fuel ' +
-                '<span class="tooltip" data-tooltip="The main energy source for heating (boiler / furnace loop).">ℹ️</span>';
+                '<span class="tooltip" data-tooltip="The main energy source for heating (boiler / furnace loop).">â„¹ï¸</span>';
         }
     }
 }
@@ -880,7 +898,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Re-render the summary whenever any contributing field changes.
     // `building_type` is included so the NECB-default summary updates with
     // the selected archetype (the archetype cards dispatch a 'change' on
-    // the hidden #building_type select — see surrogate-wizard.js).
+    // the hidden #building_type select â€” see surrogate-wizard.js).
     ['primary_heating_fuel', 'shw_eff', 'building_type'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', renderHvacSummary);
@@ -1370,7 +1388,7 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
         const baselineEnergy = baselineResults.energy_aggregated_results[0];
         const improvedEnergy = improvedResults.energy_aggregated_results[0];
         
-        // Extract costing results (per m²)
+        // Extract costing results (per mÂ²)
         const baselineCost = baselineResults.costing_results[0];
         const improvedCost = improvedResults.costing_results[0];
         
@@ -1380,12 +1398,12 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
         // If floor_area not available in metadata, try to extract from other sources
         if (!buildingArea) {
             // Try to get from energy results (some APIs include it there)
-            buildingArea = baselineEnergy.floor_area_m_sq || baselineEnergy['Building Area (m²)'] || null;
+            buildingArea = baselineEnergy.floor_area_m_sq || baselineEnergy['Building Area (mÂ²)'] || null;
         }
         
         // Last resort: use a default based on building type
         if (!buildingArea) {
-            console.warn('Building area not found in results, using default 1000 m²');
+            console.warn('Building area not found in results, using default 1000 mÂ²');
             buildingArea = 1000;
         }
         
@@ -1393,7 +1411,7 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
         console.log('Building metadata:', baselineResults.building_metadata);
         console.log('Baseline cost keys:', Object.keys(baselineCost));
     
-    // Calculate equipment costs ($/m²)
+    // Calculate equipment costs ($/mÂ²)
     const baselineEnvelopeCost = baselineCost["Predicted cost_equipment_envelope_total_cost_per_m_sq"] || 0;
     const baselineHvacCost = baselineCost["Predicted cost_equipment_heating_and_cooling_total_cost_per_m_sq"] || 0;
     const baselineLightingCost = baselineCost["Predicted cost_equipment_lighting_total_cost_per_m_sq"] || 0;
@@ -1411,25 +1429,25 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
     // Calculate retrofit cost (difference in equipment costs)
     const retrofitCostPerM2 = improvedTotalCostPerM2 - baselineTotalCostPerM2;
     
-    // For envelope components (windows, walls, roof), costs are per m² of component, not floor area
+    // For envelope components (windows, walls, roof), costs are per mÂ² of component, not floor area
     // Apply correction factor based on parameter type
     let effectiveArea = buildingArea;
     let areaNote = '';
     
     if (parameter === 'fixed_window_cond') {
-        // Window area = Wall area × FDWR (window-to-wall ratio)
-        // Wall area ≈ 0.4-0.5 × floor area for multi-story buildings
+        // Window area = Wall area Ã— FDWR (window-to-wall ratio)
+        // Wall area â‰ˆ 0.4-0.5 Ã— floor area for multi-story buildings
         const wallToFloorRatio = 0.45; // Typical for mid-rise
         const fdwr = config[':fdwr_set'] || 0.3; // Get actual FDWR from config, default 0.3
         const wallArea = buildingArea * wallToFloorRatio;
         effectiveArea = wallArea * fdwr;
-        areaNote = ` (wall area: ${wallArea.toFixed(0)} m² × FDWR: ${(fdwr * 100).toFixed(0)}%)`;
+        areaNote = ` (wall area: ${wallArea.toFixed(0)} mÂ² Ã— FDWR: ${(fdwr * 100).toFixed(0)}%)`;
     } else if (parameter === 'ext_wall_cond') {
-        // Exterior wall area ≈ 40-50% of floor area for mid-rise buildings
+        // Exterior wall area â‰ˆ 40-50% of floor area for mid-rise buildings
         effectiveArea = buildingArea * 0.45;
         areaNote = ' (estimated exterior wall area)';
     } else if (parameter === 'ext_roof_cond') {
-        // Roof area ≈ floor area / number of floors (for flat roof)
+        // Roof area â‰ˆ floor area / number of floors (for flat roof)
         // For multi-story, typically 20-30% of total floor area
         effectiveArea = buildingArea * 0.25;
         areaNote = ' (estimated roof area)';
@@ -1451,13 +1469,13 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
     console.log('Improved energy data:', improvedEnergy);
     console.log('Available energy fields:', Object.keys(baselineEnergy));
     
-    // Calculate energy savings (per m²)
+    // Calculate energy savings (per mÂ²)
     const electricitySavings = baselineEnergy["Predicted Electricity Energy Total (Gigajoules per square meter)"] - 
                                improvedEnergy["Predicted Electricity Energy Total (Gigajoules per square meter)"];
     const gasSavings = baselineEnergy["Predicted Gas Energy Total (Gigajoules per square meter)"] - 
                       improvedEnergy["Predicted Gas Energy Total (Gigajoules per square meter)"];
     
-    console.log('Energy savings (GJ/m²):', {
+    console.log('Energy savings (GJ/mÂ²):', {
         electricitySavings,
         gasSavings,
         baselineElectricity: baselineEnergy["Predicted Electricity Energy Total (Gigajoules per square meter)"],
@@ -1466,10 +1484,10 @@ async function performCostAnalysis(config, parameter, baselineValue, improvedVal
         improvedGas: improvedEnergy["Predicted Gas Energy Total (Gigajoules per square meter)"]
     });
     
-    // Convert to kWh and m³ for the building
+    // Convert to kWh and mÂ³ for the building
     // 1 GJ = 277.778 kWh
     const electricitySavingsKwhPerM2 = electricitySavings * 277.778;
-    // 1 GJ ≈ 26.8 m³ of natural gas
+    // 1 GJ â‰ˆ 26.8 mÂ³ of natural gas
     const gasSavingsM3PerM2 = gasSavings * 26.8;
     
     // Calculate total annual energy savings for the whole building
@@ -1741,7 +1759,7 @@ function displayResults(results) {
     let htmlContent = `
         <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
             <button onclick="downloadSinglePDFReport()" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">
-                📄 Download PDF Report
+                ðŸ“„ Download PDF Report
             </button>
         </div>
         <div class="result-grid">`;
@@ -1757,7 +1775,7 @@ function displayResults(results) {
         console.log('Cost data:', costData);
         console.log('Cost keys:', Object.keys(costData).filter(k => k.includes('cost')));
         
-        // Extract Total Energy (Electricity + Gas in GJ/m²)
+        // Extract Total Energy (Electricity + Gas in GJ/mÂ²)
         const electricityGJ = energyData["Predicted Electricity Energy Total (Gigajoules per square meter)"] || 0;
         const gasGJ = energyData["Predicted Gas Energy Total (Gigajoules per square meter)"] || 0;
         const totalEnergyGJ = electricityGJ + gasGJ;
@@ -1768,7 +1786,7 @@ function displayResults(results) {
         const buildingType = metadata.building_type || 'Unknown';
         const location = metadata.location || 'Unknown';
         
-        // Extract and sum all cost components from costing_results (CAD/m²)
+        // Extract and sum all cost components from costing_results (CAD/mÂ²)
         const envelopeCost = costData["Predicted cost_equipment_envelope_total_cost_per_m_sq"] || 0;
         const hvacCost = costData["Predicted cost_equipment_heating_and_cooling_total_cost_per_m_sq"] || 0;
         const lightingCost = costData["Predicted cost_equipment_lighting_total_cost_per_m_sq"] || 0;
@@ -1781,16 +1799,16 @@ function displayResults(results) {
         
         htmlContent += `
             <div class="result-card highlight">
-                <h4>🔋 Total Energy Use Intensity</h4>
+                <h4>ðŸ”‹ Total Energy Use Intensity</h4>
                 <div class="value">${totalEnergyGJ.toFixed(7)}</div>
-                <div class="unit">GJ/m²</div>
-                <p class="subtext">Electricity: ${electricityGJ.toFixed(7)} GJ/m²</p>
-                <p class="subtext">Natural Gas: ${gasGJ.toFixed(7)} GJ/m²</p>
+                <div class="unit">GJ/mÂ²</div>
+                <p class="subtext">Electricity: ${electricityGJ.toFixed(7)} GJ/mÂ²</p>
+                <p class="subtext">Natural Gas: ${gasGJ.toFixed(7)} GJ/mÂ²</p>
             </div>
             <div class="result-card highlight">
-                <h4>💰 Total Equipment Cost</h4>
+                <h4>ðŸ’° Total Equipment Cost</h4>
                 <div class="value">${totalCost.toFixed(2)}</div>
-                <div class="unit">CAD/m²</div>
+                <div class="unit">CAD/mÂ²</div>
                 <p class="subtext">Envelope: $${envelopeCost.toFixed(2)}</p>
                 <p class="subtext">HVAC: $${hvacCost.toFixed(2)}</p>
                 <p class="subtext">Lighting: $${lightingCost.toFixed(2)}</p>
@@ -1798,9 +1816,9 @@ function displayResults(results) {
                 <p class="subtext">Hot Water: $${shwCost.toFixed(2)}</p>
             </div>
             <div class="result-card">
-                <h4>🏢 Building Information</h4>
+                <h4>ðŸ¢ Building Information</h4>
                 <div class="value">${floorArea.toFixed(0)}</div>
-                <div class="unit">m²</div>
+                <div class="unit">mÂ²</div>
                 <p class="subtext">Type: ${buildingType}</p>
                 <p class="subtext">Location: ${location}</p>
             </div>
@@ -1810,7 +1828,7 @@ function displayResults(results) {
     else if (results.status === 'success' && !results.energy_aggregated_results) {
         htmlContent += `
             <div class="result-card" style="grid-column: 1 / -1;">
-                <h4>✅ Prediction Complete</h4>
+                <h4>âœ… Prediction Complete</h4>
                 <p>Output saved to: ${results.output_key || 'S3'}</p>
                 <p class="subtext">Results are being processed...</p>
             </div>
@@ -1819,7 +1837,7 @@ function displayResults(results) {
         // Display helpful message
         htmlContent += `
             <div class="result-card" style="grid-column: 1 / -1;">
-                <h4>⚠️ Unexpected Data Structure</h4>
+                <h4>âš ï¸ Unexpected Data Structure</h4>
                 <p>Missing energy_aggregated_results or costing_results</p>
                 <p class="subtext">Check browser console for details</p>
                 <details>
@@ -1896,12 +1914,12 @@ function displayCostAnalysisResults(results) {
         roiUnit = `over ${economics.analysisYears} years`;
     }
     
-    const statusEmoji = isGoodInvestment ? '✅' : '⚠️';
+    const statusEmoji = isGoodInvestment ? 'âœ…' : 'âš ï¸';
     const statusText = isGoodInvestment ? 'Financially Viable' : 'Not Recommended';
     
     let htmlContent = `
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
-            <h3 style="margin: 0 0 10px 0;">💰 Cost-Benefit Analysis: ${parameterDisplayName}</h3>
+            <h3 style="margin: 0 0 10px 0;">ðŸ’° Cost-Benefit Analysis: ${parameterDisplayName}</h3>
             <p style="margin: 0; opacity: 0.9;">Comparing baseline vs improved configuration</p>
         </div>
         
@@ -1911,130 +1929,130 @@ function displayCostAnalysisResults(results) {
                 <p style="margin: 0; font-size: 14px; color: #666;">Based on ${economics.analysisYears}-year analysis period</p>
             </div>
             <button onclick="downloadCostAnalysisPDFReport()" class="btn btn-primary" style="padding: 10px 20px;">
-                📄 Download PDF Report
+                ðŸ“„ Download PDF Report
             </button>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px;">
             <div class="result-card" style="background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%); border: 2px solid ${isFeasible ? '#667eea' : '#f56565'};">
-                <h4>💵 Simple Payback Period</h4>
+                <h4>ðŸ’µ Simple Payback Period</h4>
                 <div class="value" style="font-size: ${typeof paybackDisplay === 'string' && paybackDisplay.includes('Feasible') ? '1.8em' : '2.5em'}; color: ${isFeasible ? '#667eea' : '#f56565'};">${paybackDisplay}</div>
                 <div class="unit">${paybackUnit}</div>
                 <p class="subtext">${paybackSubtext}</p>
             </div>
             
             <div class="result-card" style="background: linear-gradient(135deg, #48bb7820 0%, #38a16920 100%); border: 2px solid ${economics.roi >= 0 ? '#48bb78' : '#f56565'};">
-                <h4>📈 Return on Investment (ROI)</h4>
+                <h4>ðŸ“ˆ Return on Investment (ROI)</h4>
                 <div class="value" style="font-size: ${typeof roiDisplay === 'string' && roiDisplay.includes('Feasible') ? '1.8em' : '2.5em'}; color: ${economics.roi >= 0 ? '#48bb78' : '#f56565'};">${roiDisplay}</div>
                 <div class="unit">${roiUnit}</div>
                 <p class="subtext">Total return on investment</p>
             </div>
             
             <div class="result-card" style="background: linear-gradient(135deg, #f6ad5520 0%, #ec845220 100%); border: 2px solid #f6ad55;">
-                <h4>💰 Annual Cost Savings</h4>
+                <h4>ðŸ’° Annual Cost Savings</h4>
                 <div class="value" style="font-size: 2.5em; color: #f6ad55;">$${economics.totalAnnualSavings.toFixed(0)}</div>
                 <div class="unit">per year</div>
                 <p class="subtext">Electricity: $${economics.annualElectricitySavings.toFixed(0)}<br>Gas: $${economics.annualGasSavings.toFixed(0)}</p>
             </div>
         </div>
         
-        <h3 style="margin-top: 30px; color: #2a5298;">💸 Financial Summary</h3>
+        <h3 style="margin-top: 30px; color: #2a5298;">ðŸ’¸ Financial Summary</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 30px;">
             <div class="result-card">
-                <h4>🔨 Retrofit Investment</h4>
+                <h4>ðŸ”¨ Retrofit Investment</h4>
                 <div class="value">$${economics.retrofitCost.toLocaleString()}</div>
                 <div class="unit">total cost</div>
-                <p class="subtext">$${economics.retrofitCostPerM2.toFixed(2)}/m²</p>
+                <p class="subtext">$${economics.retrofitCostPerM2.toFixed(2)}/mÂ²</p>
             </div>
             
             <div class="result-card">
-                <h4>💵 Total Savings (${economics.analysisYears}yr)</h4>
+                <h4>ðŸ’µ Total Savings (${economics.analysisYears}yr)</h4>
                 <div class="value">$${economics.totalSavingsOverPeriod.toLocaleString()}</div>
                 <div class="unit">cumulative</div>
             </div>
             
             <div class="result-card">
-                <h4>📊 Net Benefit</h4>
+                <h4>ðŸ“Š Net Benefit</h4>
                 <div class="value" style="color: ${economics.netSavings >= 0 ? '#48bb78' : '#f56565'};">$${economics.netSavings.toLocaleString()}</div>
                 <div class="unit">after investment</div>
             </div>
         </div>
         
         <div style="background-color: #f0f7ff; padding: 15px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #667eea;">
-            <h4 style="margin-top: 0; color: #2a5298;">💡 Cost Calculation Details</h4>
+            <h4 style="margin-top: 0; color: #2a5298;">ðŸ’¡ Cost Calculation Details</h4>
             <p style="margin: 5px 0; font-size: 14px;">
                 <strong>Baseline Total Equipment Cost:</strong> $${economics.baselineTotalCost.toLocaleString()} 
-                (${baselineResults.total_cost_per_m_sq.toFixed(2)}/m²)
+                (${baselineResults.total_cost_per_m_sq.toFixed(2)}/mÂ²)
             </p>
             <p style="margin: 5px 0; font-size: 14px;">
                 <strong>Improved Total Equipment Cost:</strong> $${economics.improvedTotalCost.toLocaleString()} 
-                (${improvedResults.total_cost_per_m_sq.toFixed(2)}/m²)
+                (${improvedResults.total_cost_per_m_sq.toFixed(2)}/mÂ²)
             </p>
             <p style="margin: 5px 0; font-size: 14px;">
                 <strong>Retrofit Cost (Difference):</strong> $${economics.retrofitCost.toLocaleString()} 
-                (${economics.retrofitCostPerM2.toFixed(2)}/m² × ${economics.effectiveArea.toFixed(0)} m²${economics.areaNote})
+                (${economics.retrofitCostPerM2.toFixed(2)}/mÂ² Ã— ${economics.effectiveArea.toFixed(0)} mÂ²${economics.areaNote})
             </p>
             <p style="margin: 10px 0 0 0; font-size: 13px; color: #666;">
-                Note: ${economics.areaNote ? 'Envelope component costs are per m² of component area, not floor area. Areas are estimated based on typical building geometry.' : 'Retrofit cost is calculated from the equipment cost predictions provided by the surrogate model.'}
+                Note: ${economics.areaNote ? 'Envelope component costs are per mÂ² of component area, not floor area. Areas are estimated based on typical building geometry.' : 'Retrofit cost is calculated from the equipment cost predictions provided by the surrogate model.'}
             </p>
         </div>
         
-        <h3 style="margin-top: 30px; color: #2a5298;">⚡ Energy Performance Comparison</h3>
+        <h3 style="margin-top: 30px; color: #2a5298;">âš¡ Energy Performance Comparison</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 30px;">
             <div class="result-card" style="text-align: center;">
-                <h4>📉 Baseline</h4>
+                <h4>ðŸ“‰ Baseline</h4>
                 <div style="font-size: 1.1em; color: #666; margin: 10px 0;">
                     <strong>${parameterDisplayName}:</strong> ${baselineValue}
                 </div>
                 <div class="value" style="font-size: 1.5em;">${baselineResults.total_energy_eui_electricity_kwh_per_m_sq.toFixed(2)}</div>
-                <div class="unit">kWh/m² (Electricity)</div>
+                <div class="unit">kWh/mÂ² (Electricity)</div>
                 <div class="value" style="font-size: 1.5em; margin-top: 10px;">${baselineResults.total_energy_eui_natural_gas_gj_per_m_sq.toFixed(4)}</div>
-                <div class="unit">GJ/m² (Gas)</div>
+                <div class="unit">GJ/mÂ² (Gas)</div>
             </div>
             
             <div class="result-card" style="text-align: center; background: linear-gradient(135deg, #48bb7820 0%, #38a16920 100%);">
-                <h4>✨ After Retrofit</h4>
+                <h4>âœ¨ After Retrofit</h4>
                 <div style="font-size: 1.1em; color: #666; margin: 10px 0;">
                     <strong>${parameterDisplayName}:</strong> ${improvedValue}
                 </div>
                 <div class="value" style="font-size: 1.5em; color: #48bb78;">${improvedResults.total_energy_eui_electricity_kwh_per_m_sq.toFixed(2)}</div>
-                <div class="unit">kWh/m² (Electricity)</div>
+                <div class="unit">kWh/mÂ² (Electricity)</div>
                 <div class="value" style="font-size: 1.5em; margin-top: 10px; color: #48bb78;">${improvedResults.total_energy_eui_natural_gas_gj_per_m_sq.toFixed(4)}</div>
-                <div class="unit">GJ/m² (Gas)</div>
+                <div class="unit">GJ/mÂ² (Gas)</div>
             </div>
             
             <div class="result-card" style="text-align: center; background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);">
-                <h4>📊 Savings</h4>
+                <h4>ðŸ“Š Savings</h4>
                 <div style="font-size: 1.1em; color: #666; margin: 10px 0;">
                     <strong>Reduction</strong>
                 </div>
                 <div class="value" style="font-size: 1.5em; color: #667eea;">${energySavings.electricitySavingsPercent.toFixed(1)}%</div>
-                <div class="unit">${energySavings.electricitySavings.toFixed(2)} kWh/m²</div>
+                <div class="unit">${energySavings.electricitySavings.toFixed(2)} kWh/mÂ²</div>
                 <div class="value" style="font-size: 1.5em; margin-top: 10px; color: #667eea;">${energySavings.gasSavingsPercent.toFixed(1)}%</div>
-                <div class="unit">${energySavings.gasSavings.toFixed(4)} GJ/m²</div>
+                <div class="unit">${energySavings.gasSavings.toFixed(4)} GJ/mÂ²</div>
             </div>
         </div>
         
-        <h3 style="margin-top: 30px; color: #2a5298;">📋 Economic Assumptions</h3>
+        <h3 style="margin-top: 30px; color: #2a5298;">ðŸ“‹ Economic Assumptions</h3>
         <div style="background-color: #f8f9ff; padding: 20px; border-radius: 8px; border: 1px solid #667eea;">
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                 <div>
-                    <strong>⚡ Electricity Rate:</strong><br>
+                    <strong>âš¡ Electricity Rate:</strong><br>
                     $${economics.electricityRate.toFixed(3)}/kWh
                 </div>
                 <div>
-                    <strong>🔥 Natural Gas Rate:</strong><br>
-                    $${economics.gasRate.toFixed(3)}/m³
+                    <strong>ðŸ”¥ Natural Gas Rate:</strong><br>
+                    $${economics.gasRate.toFixed(3)}/mÂ³
                 </div>
                 <div>
-                    <strong>🏢 Building Area:</strong><br>
-                    ${economics.buildingArea.toFixed(0)} m²
+                    <strong>ðŸ¢ Building Area:</strong><br>
+                    ${economics.buildingArea.toFixed(0)} mÂ²
                 </div>
             </div>
         </div>
         
         <div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
-            <strong>💡 Note:</strong> This is a simplified economic analysis. Actual results may vary based on building operation, maintenance costs, utility rate changes, and other factors. Consider consulting with an energy professional for detailed analysis.
+            <strong>ðŸ’¡ Note:</strong> This is a simplified economic analysis. Actual results may vary based on building operation, maintenance costs, utility rate changes, and other factors. Consider consulting with an energy professional for detailed analysis.
         </div>
     `;
     
@@ -2056,7 +2074,7 @@ function displayAlternativeResults(results) {
         results.energy_aggregated_results.length === 0 || results.costing_results.length === 0) {
         resultsContent.innerHTML = `
             <div class="result-card" style="grid-column: 1 / -1;">
-                <h4>⚠️ Incomplete Results</h4>
+                <h4>âš ï¸ Incomplete Results</h4>
                 <p>Expected multiple configurations but received ${results.energy_aggregated_results?.length || 0}</p>
             </div>
         `;
@@ -2106,9 +2124,9 @@ function displayAlternativeResults(results) {
     
     // Get parameter display name
     const parameterNames = {
-        'ext_wall_cond': 'External Wall Thermal Conductance (W/m²·K)',
-        'ext_roof_cond': 'External Roof Thermal Conductance (W/m²·K)',
-        'fixed_window_cond': 'Window Thermal Conductance (W/m²·K)',
+        'ext_wall_cond': 'External Wall Thermal Conductance (W/mÂ²Â·K)',
+        'ext_roof_cond': 'External Roof Thermal Conductance (W/mÂ²Â·K)',
+        'fixed_window_cond': 'Window Thermal Conductance (W/mÂ²Â·K)',
         'fixed_wind_solar_trans': 'Window Solar Heat Gain Coefficient',
         'fdwr_set': 'Window-to-Wall Ratio (%)',
         'srr_set': 'Skylight-to-Roof Ratio (%)',
@@ -2124,7 +2142,7 @@ function displayAlternativeResults(results) {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3 style="margin: 0;">Alternative Configuration Analysis: ${parameterDisplayName}</h3>
             <button onclick="downloadPDFReport()" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">
-                📄 Download PDF Report
+                ðŸ“„ Download PDF Report
             </button>
         </div>
         
@@ -2135,8 +2153,8 @@ function displayAlternativeResults(results) {
                     <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                         <th style="padding: 15px; text-align: left;">Configuration</th>
                         <th style="padding: 15px; text-align: left;">Parameter Value</th>
-                        <th style="padding: 15px; text-align: right;">Total Energy (GJ/m²)</th>
-                        <th style="padding: 15px; text-align: right;">Total Cost (CAD/m²)</th>
+                        <th style="padding: 15px; text-align: right;">Total Energy (GJ/mÂ²)</th>
+                        <th style="padding: 15px; text-align: right;">Total Cost (CAD/mÂ²)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2149,7 +2167,7 @@ function displayAlternativeResults(results) {
                 onmouseover="this.style.background='#e6f2ff'" 
                 onmouseout="this.style.background='${rowBg}'"
                 onclick="toggleConfigDetails(${config.index})">
-                <td style="padding: 12px; font-weight: bold;">Config ${config.index} <span style="color: #667eea; font-size: 12px;">▼</span></td>
+                <td style="padding: 12px; font-weight: bold;">Config ${config.index} <span style="color: #667eea; font-size: 12px;">â–¼</span></td>
                 <td style="padding: 12px;">${config.paramValue}</td>
                 <td style="padding: 12px; text-align: right; font-family: monospace;">${config.totalEnergy.toFixed(6)}</td>
                 <td style="padding: 12px; text-align: right;">$${config.totalCost.toFixed(2)}</td>
@@ -2158,19 +2176,19 @@ function displayAlternativeResults(results) {
                 <td colspan="4" style="padding: 20px;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
-                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">⚡ Energy Breakdown</h5>
-                            <p style="margin: 5px 0; font-size: 14px;">Electricity: <strong>${config.electricity.toFixed(6)} GJ/m²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Natural Gas: <strong>${config.gas.toFixed(6)} GJ/m²</strong></p>
-                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #667eea;">Total: <strong>${config.totalEnergy.toFixed(6)} GJ/m²</strong></p>
+                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">âš¡ Energy Breakdown</h5>
+                            <p style="margin: 5px 0; font-size: 14px;">Electricity: <strong>${config.electricity.toFixed(6)} GJ/mÂ²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Natural Gas: <strong>${config.gas.toFixed(6)} GJ/mÂ²</strong></p>
+                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #667eea;">Total: <strong>${config.totalEnergy.toFixed(6)} GJ/mÂ²</strong></p>
                         </div>
                         <div>
-                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">💰 Cost Breakdown</h5>
-                            <p style="margin: 5px 0; font-size: 14px;">Envelope: <strong>$${config.envelopeCost.toFixed(2)}/m²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">HVAC: <strong>$${config.hvacCost.toFixed(2)}/m²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Lighting: <strong>$${config.lightingCost.toFixed(2)}/m²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Ventilation: <strong>$${config.ventilationCost.toFixed(2)}/m²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Hot Water: <strong>$${config.shwCost.toFixed(2)}/m²</strong></p>
-                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #48bb78;">Total: <strong>$${config.totalCost.toFixed(2)}/m²</strong></p>
+                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">ðŸ’° Cost Breakdown</h5>
+                            <p style="margin: 5px 0; font-size: 14px;">Envelope: <strong>$${config.envelopeCost.toFixed(2)}/mÂ²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">HVAC: <strong>$${config.hvacCost.toFixed(2)}/mÂ²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Lighting: <strong>$${config.lightingCost.toFixed(2)}/mÂ²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Ventilation: <strong>$${config.ventilationCost.toFixed(2)}/mÂ²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Hot Water: <strong>$${config.shwCost.toFixed(2)}/mÂ²</strong></p>
+                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #48bb78;">Total: <strong>$${config.totalCost.toFixed(2)}/mÂ²</strong></p>
                         </div>
                     </div>
                 </td>
@@ -2186,14 +2204,14 @@ function displayAlternativeResults(results) {
         <!-- Visualization Charts -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; max-width: 100%;">
             <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); min-width: 0; max-width: 100%;">
-                <h4 style="margin: 0 0 20px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">📊 Energy Use Intensity Comparison</h4>
+                <h4 style="margin: 0 0 20px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">ðŸ“Š Energy Use Intensity Comparison</h4>
                 <div style="position: relative; width: 100%; height: 350px;">
                     <canvas id="energyChart" style="width: 100%; height: 100%; cursor: pointer;"></canvas>
                     <div id="energyTooltip" style="display: none; position: absolute; background: rgba(0,0,0,0.85); color: white; padding: 12px 16px; border-radius: 8px; pointer-events: none; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; white-space: nowrap;"></div>
                 </div>
             </div>
             <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); min-width: 0; max-width: 100%;">
-                <h4 style="margin: 0 0 20px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">💰 Cost Comparison</h4>
+                <h4 style="margin: 0 0 20px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">ðŸ’° Cost Comparison</h4>
                 <div style="position: relative; width: 100%; height: 350px;">
                     <canvas id="costChart" style="width: 100%; height: 100%; cursor: pointer;"></canvas>
                     <div id="costTooltip" style="display: none; position: absolute; background: rgba(0,0,0,0.85); color: white; padding: 12px 16px; border-radius: 8px; pointer-events: none; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; white-space: nowrap;"></div>
@@ -2326,7 +2344,7 @@ function drawEnergyChart(configs) {
     ctx.fillStyle = '#4a5568';
     ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Energy Use Intensity (GJ/m²)', 0, 0);
+    ctx.fillText('Energy Use Intensity (GJ/mÂ²)', 0, 0);
     ctx.restore();
     
     // Add hover detection
@@ -2354,9 +2372,9 @@ function drawEnergyChart(configs) {
         if (hoveredConfig) {
             tooltip.innerHTML = `
                 <strong>Configuration ${hoveredConfig.index}</strong><br/>
-                Electricity: ${hoveredConfig.electricity.toFixed(4)} GJ/m²<br/>
-                Gas: ${hoveredConfig.gas.toFixed(4)} GJ/m²<br/>
-                <strong>Total: ${hoveredConfig.totalEnergy.toFixed(4)} GJ/m²</strong>
+                Electricity: ${hoveredConfig.electricity.toFixed(4)} GJ/mÂ²<br/>
+                Gas: ${hoveredConfig.gas.toFixed(4)} GJ/mÂ²<br/>
+                <strong>Total: ${hoveredConfig.totalEnergy.toFixed(4)} GJ/mÂ²</strong>
             `;
             tooltip.style.display = 'block';
             tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
@@ -2461,7 +2479,7 @@ function drawCostChart(configs) {
     ctx.fillStyle = '#4a5568';
     ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Equipment Cost (CAD/m²)', 0, 0);
+    ctx.fillText('Equipment Cost (CAD/mÂ²)', 0, 0);
     ctx.restore();
     
     // Add hover detection
@@ -2489,12 +2507,12 @@ function drawCostChart(configs) {
         if (hoveredConfig) {
             tooltip.innerHTML = `
                 <strong>Configuration ${hoveredConfig.index}</strong><br/>
-                Envelope: $${hoveredConfig.envelopeCost.toFixed(2)}/m²<br/>
-                HVAC: $${hoveredConfig.hvacCost.toFixed(2)}/m²<br/>
-                Lighting: $${hoveredConfig.lightingCost.toFixed(2)}/m²<br/>
-                Ventilation: $${hoveredConfig.ventilationCost.toFixed(2)}/m²<br/>
-                Hot Water: $${hoveredConfig.shwCost.toFixed(2)}/m²<br/>
-                <strong>Total: $${hoveredConfig.totalCost.toFixed(2)}/m²</strong>
+                Envelope: $${hoveredConfig.envelopeCost.toFixed(2)}/mÂ²<br/>
+                HVAC: $${hoveredConfig.hvacCost.toFixed(2)}/mÂ²<br/>
+                Lighting: $${hoveredConfig.lightingCost.toFixed(2)}/mÂ²<br/>
+                Ventilation: $${hoveredConfig.ventilationCost.toFixed(2)}/mÂ²<br/>
+                Hot Water: $${hoveredConfig.shwCost.toFixed(2)}/mÂ²<br/>
+                <strong>Total: $${hoveredConfig.totalCost.toFixed(2)}/mÂ²</strong>
             `;
             tooltip.style.display = 'block';
             tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
@@ -2621,7 +2639,7 @@ function drawHighResEnergyChart(ctx, configs, width, height, padding, chartWidth
     ctx.fillStyle = '#4a5568';
     ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Energy Use Intensity (GJ/m²)', 0, 0);
+    ctx.fillText('Energy Use Intensity (GJ/mÂ²)', 0, 0);
     ctx.restore();
 }
 
@@ -2698,7 +2716,7 @@ function drawHighResCostChart(ctx, configs, width, height, padding, chartWidth, 
     ctx.fillStyle = '#4a5568';
     ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Equipment Cost (CAD/m²)', 0, 0);
+    ctx.fillText('Equipment Cost (CAD/mÂ²)', 0, 0);
     ctx.restore();
 }
 
@@ -2807,14 +2825,14 @@ async function downloadCostAnalysisPDFReport() {
             'erv_package': 'Energy Recovery Ventilator',
             'airloop_economizer_type': 'Economizer Type',
             'nv_type': 'Natural Ventilation',
-            'ext_wall_cond': 'Wall Conductance (W/m²·K)',
-            'ext_roof_cond': 'Roof Conductance (W/m²·K)',
-            'fixed_window_cond': 'Window Conductance (W/m²·K)',
+            'ext_wall_cond': 'Wall Conductance (W/mÂ²Â·K)',
+            'ext_roof_cond': 'Roof Conductance (W/mÂ²Â·K)',
+            'fixed_window_cond': 'Window Conductance (W/mÂ²Â·K)',
             'fixed_wind_solar_trans': 'Window SHGC',
             'fdwr_set': 'Window-to-Wall Ratio',
             'srr_set': 'Skylight-to-Roof Ratio',
             'building_type': 'Building Type',
-            'rotation_degrees': 'Building Rotation (°)',
+            'rotation_degrees': 'Building Rotation (Â°)',
             'epw_file': 'Weather Location'
         };
         
@@ -2881,9 +2899,9 @@ async function downloadCostAnalysisPDFReport() {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     const energy = results.energySavings;
-    doc.text(`Electricity Reduction: ${energy.electricitySavingsPercent.toFixed(1)}% (${energy.electricitySavings.toFixed(2)} kWh/m²)`, 15, yPos);
+    doc.text(`Electricity Reduction: ${energy.electricitySavingsPercent.toFixed(1)}% (${energy.electricitySavings.toFixed(2)} kWh/mÂ²)`, 15, yPos);
     yPos += 6;
-    doc.text(`Natural Gas Reduction: ${energy.gasSavingsPercent.toFixed(1)}% (${energy.gasSavings.toFixed(4)} GJ/m²)`, 15, yPos);
+    doc.text(`Natural Gas Reduction: ${energy.gasSavingsPercent.toFixed(1)}% (${energy.gasSavings.toFixed(4)} GJ/mÂ²)`, 15, yPos);
     yPos += 12;
     
     // Footer
@@ -2948,7 +2966,7 @@ async function downloadSinglePDFReport() {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         const metadata = globalSinglePrediction.metadata;
-        doc.text(`Floor Area: ${metadata.floor_area?.toFixed(0) || 'N/A'} m²`, 20, yPos);
+        doc.text(`Floor Area: ${metadata.floor_area?.toFixed(0) || 'N/A'} mÂ²`, 20, yPos);
         yPos += 5;
         doc.text(`Building Type: ${metadata.building_type || 'N/A'}`, 20, yPos);
         yPos += 5;
@@ -2983,14 +3001,14 @@ async function downloadSinglePDFReport() {
             'erv_package': 'Energy Recovery Ventilator',
             'airloop_economizer_type': 'Economizer Type',
             'nv_type': 'Natural Ventilation',
-            'ext_wall_cond': 'Wall Conductance (W/m²·K)',
-            'ext_roof_cond': 'Roof Conductance (W/m²·K)',
-            'fixed_window_cond': 'Window Conductance (W/m²·K)',
+            'ext_wall_cond': 'Wall Conductance (W/mÂ²Â·K)',
+            'ext_roof_cond': 'Roof Conductance (W/mÂ²Â·K)',
+            'fixed_window_cond': 'Window Conductance (W/mÂ²Â·K)',
             'fixed_wind_solar_trans': 'Window SHGC',
             'fdwr_set': 'Window-to-Wall Ratio',
             'srr_set': 'Skylight-to-Roof Ratio',
             'building_type': 'Building Type',
-            'rotation_degrees': 'Building Rotation (°)',
+            'rotation_degrees': 'Building Rotation (Â°)',
             'epw_file': 'Weather Location'
         };
         
@@ -3034,16 +3052,16 @@ async function downloadSinglePDFReport() {
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Total Energy Use Intensity: ${globalSinglePrediction.totalEnergyGJ.toFixed(7)} GJ/m²`, 20, yPos);
+    doc.text(`Total Energy Use Intensity: ${globalSinglePrediction.totalEnergyGJ.toFixed(7)} GJ/mÂ²`, 20, yPos);
     yPos += 10;
     
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text('Energy Breakdown:', 20, yPos);
     yPos += 6;
-    doc.text(`  • Electricity: ${globalSinglePrediction.electricityGJ.toFixed(7)} GJ/m²`, 25, yPos);
+    doc.text(`  â€¢ Electricity: ${globalSinglePrediction.electricityGJ.toFixed(7)} GJ/mÂ²`, 25, yPos);
     yPos += 5;
-    doc.text(`  • Natural Gas: ${globalSinglePrediction.gasGJ.toFixed(7)} GJ/m²`, 25, yPos);
+    doc.text(`  â€¢ Natural Gas: ${globalSinglePrediction.gasGJ.toFixed(7)} GJ/mÂ²`, 25, yPos);
     yPos += 15;
     
     // Cost Analysis Section
@@ -3058,22 +3076,22 @@ async function downloadSinglePDFReport() {
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Total Equipment Cost: $${globalSinglePrediction.totalCost.toFixed(2)}/m²`, 20, yPos);
+    doc.text(`Total Equipment Cost: $${globalSinglePrediction.totalCost.toFixed(2)}/mÂ²`, 20, yPos);
     yPos += 10;
     
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text('Cost Breakdown by Component:', 20, yPos);
     yPos += 6;
-    doc.text(`  • Envelope: $${globalSinglePrediction.envelopeCost.toFixed(2)}/m²`, 25, yPos);
+    doc.text(`  â€¢ Envelope: $${globalSinglePrediction.envelopeCost.toFixed(2)}/mÂ²`, 25, yPos);
     yPos += 5;
-    doc.text(`  • HVAC (Heating & Cooling): $${globalSinglePrediction.hvacCost.toFixed(2)}/m²`, 25, yPos);
+    doc.text(`  â€¢ HVAC (Heating & Cooling): $${globalSinglePrediction.hvacCost.toFixed(2)}/mÂ²`, 25, yPos);
     yPos += 5;
-    doc.text(`  • Lighting: $${globalSinglePrediction.lightingCost.toFixed(2)}/m²`, 25, yPos);
+    doc.text(`  â€¢ Lighting: $${globalSinglePrediction.lightingCost.toFixed(2)}/mÂ²`, 25, yPos);
     yPos += 5;
-    doc.text(`  • Ventilation: $${globalSinglePrediction.ventilationCost.toFixed(2)}/m²`, 25, yPos);
+    doc.text(`  â€¢ Ventilation: $${globalSinglePrediction.ventilationCost.toFixed(2)}/mÂ²`, 25, yPos);
     yPos += 5;
-    doc.text(`  • Service Hot Water: $${globalSinglePrediction.shwCost.toFixed(2)}/m²`, 25, yPos);
+    doc.text(`  â€¢ Service Hot Water: $${globalSinglePrediction.shwCost.toFixed(2)}/mÂ²`, 25, yPos);
     yPos += 15;
     
     // Summary Section
@@ -3162,7 +3180,7 @@ async function downloadPDFReport() {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         const metadata = globalResults.building_metadata;
-        doc.text(`Floor Area: ${metadata.floor_area?.toFixed(0) || 'N/A'} m²`, 20, yPos);
+        doc.text(`Floor Area: ${metadata.floor_area?.toFixed(0) || 'N/A'} mÂ²`, 20, yPos);
         yPos += 5;
         doc.text(`Building Type: ${metadata.building_type || 'N/A'}`, 20, yPos);
         yPos += 5;
@@ -3187,13 +3205,13 @@ async function downloadPDFReport() {
     
     doc.text(`Total Configurations Analyzed: ${globalConfigs.length}`, 20, yPos);
     yPos += 5;
-    doc.text(`Energy Range: ${minEnergy.toFixed(4)} - ${maxEnergy.toFixed(4)} GJ/m²`, 20, yPos);
+    doc.text(`Energy Range: ${minEnergy.toFixed(4)} - ${maxEnergy.toFixed(4)} GJ/mÂ²`, 20, yPos);
     yPos += 5;
-    doc.text(`Average Energy: ${avgEnergy.toFixed(4)} GJ/m²`, 20, yPos);
+    doc.text(`Average Energy: ${avgEnergy.toFixed(4)} GJ/mÂ²`, 20, yPos);
     yPos += 5;
-    doc.text(`Cost Range: $${minCost.toFixed(2)} - $${maxCost.toFixed(2)}/m²`, 20, yPos);
+    doc.text(`Cost Range: $${minCost.toFixed(2)} - $${maxCost.toFixed(2)}/mÂ²`, 20, yPos);
     yPos += 5;
-    doc.text(`Average Cost: $${avgCost.toFixed(2)}/m²`, 20, yPos);
+    doc.text(`Average Cost: $${avgCost.toFixed(2)}/mÂ²`, 20, yPos);
     yPos += 10;
     
     // Comparison Table
@@ -3210,8 +3228,8 @@ async function downloadPDFReport() {
     doc.setFont('helvetica', 'bold');
     doc.text('Config', 20, yPos + 5.5);
     doc.text('Parameter Value', 50, yPos + 5.5);
-    doc.text('Energy (GJ/m²)', 110, yPos + 5.5);
-    doc.text('Cost (CAD/m²)', 155, yPos + 5.5);
+    doc.text('Energy (GJ/mÂ²)', 110, yPos + 5.5);
+    doc.text('Cost (CAD/mÂ²)', 155, yPos + 5.5);
     yPos += 8;
     
     // Table rows
@@ -3293,12 +3311,12 @@ async function downloadPDFReport() {
         yPos += 5;
         
         doc.setFont('helvetica', 'normal');
-        doc.text(`  Electricity: ${config.electricity.toFixed(6)} GJ/m²`, 25, yPos);
+        doc.text(`  Electricity: ${config.electricity.toFixed(6)} GJ/mÂ²`, 25, yPos);
         yPos += 5;
-        doc.text(`  Natural Gas: ${config.gas.toFixed(6)} GJ/m²`, 25, yPos);
+        doc.text(`  Natural Gas: ${config.gas.toFixed(6)} GJ/mÂ²`, 25, yPos);
         yPos += 5;
         doc.setFont('helvetica', 'bold');
-        doc.text(`  Total Energy: ${config.totalEnergy.toFixed(6)} GJ/m²`, 25, yPos);
+        doc.text(`  Total Energy: ${config.totalEnergy.toFixed(6)} GJ/mÂ²`, 25, yPos);
         yPos += 8;
         
         doc.setFont('helvetica', 'bold');
@@ -3306,18 +3324,18 @@ async function downloadPDFReport() {
         yPos += 5;
         
         doc.setFont('helvetica', 'normal');
-        doc.text(`  Envelope: $${config.envelopeCost.toFixed(2)}/m²`, 25, yPos);
+        doc.text(`  Envelope: $${config.envelopeCost.toFixed(2)}/mÂ²`, 25, yPos);
         yPos += 5;
-        doc.text(`  HVAC: $${config.hvacCost.toFixed(2)}/m²`, 25, yPos);
+        doc.text(`  HVAC: $${config.hvacCost.toFixed(2)}/mÂ²`, 25, yPos);
         yPos += 5;
-        doc.text(`  Lighting: $${config.lightingCost.toFixed(2)}/m²`, 25, yPos);
+        doc.text(`  Lighting: $${config.lightingCost.toFixed(2)}/mÂ²`, 25, yPos);
         yPos += 5;
-        doc.text(`  Ventilation: $${config.ventilationCost.toFixed(2)}/m²`, 25, yPos);
+        doc.text(`  Ventilation: $${config.ventilationCost.toFixed(2)}/mÂ²`, 25, yPos);
         yPos += 5;
-        doc.text(`  Hot Water: $${config.shwCost.toFixed(2)}/m²`, 25, yPos);
+        doc.text(`  Hot Water: $${config.shwCost.toFixed(2)}/mÂ²`, 25, yPos);
         yPos += 5;
         doc.setFont('helvetica', 'bold');
-        doc.text(`  Total Cost: $${config.totalCost.toFixed(2)}/m²`, 25, yPos);
+        doc.text(`  Total Cost: $${config.totalCost.toFixed(2)}/mÂ²`, 25, yPos);
         yPos += 10;
     });
     
@@ -3344,7 +3362,7 @@ function displayError(message) {
     
     resultsContent.innerHTML = `
         <div class="result-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);">
-            <h4>⚠️ Error</h4>
+            <h4>âš ï¸ Error</h4>
             <p>${message}</p>
             <p class="subtext">Please check your inputs and try again.</p>
         </div>

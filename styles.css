@@ -1142,8 +1142,6 @@ header h1 {
 .hvac-diagram .sys-necb-mixed,
 .hvac-diagram .backup-gas,
 .hvac-diagram .backup-elec,
-.hvac-diagram .primary-gas,
-.hvac-diagram .primary-elec,
 .hvac-diagram .empty-state {
     display: none;
 }
@@ -1165,12 +1163,6 @@ header h1 {
 .hvac-diagram.mode-hp.fuel-gas  .backup-gas  { display: inline; }
 .hvac-diagram.mode-hp.fuel-elec .backup-elec { display: inline; }
 
-/* Primary heating source appears in NECB mode + matching fuel.
-   Suppress for mixed apartments (plant boiler is already shown inside
-   the mixed schematic) and for Sys 6 standalone (same reason). */
-.hvac-diagram.mode-necb.fuel-gas:not(.necb-mixed):not(.necb-sys-6)  .primary-gas  { display: inline; }
-.hvac-diagram.mode-necb.fuel-elec:not(.necb-mixed):not(.necb-sys-6) .primary-elec { display: inline; }
-
 /* Empty / not-yet-configured */
 .hvac-diagram.mode-empty .empty-state { display: inline; }
 
@@ -1179,26 +1171,20 @@ header h1 {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
 }
-.hvac-diagram .hp-fan {
-    transform-origin: 84px 149px;
-    transform-box: fill-box;
-    animation: hvac-fan-spin 2.5s linear infinite;
-}
-.hvac-diagram .rtu-fan {
-    transform-origin: 241px 31px;
-    transform-box: fill-box;
-    animation: hvac-fan-spin 3s linear infinite;
-}
-.hvac-diagram .ahu-fan {
-    transform-origin: 251px 30px;
-    transform-box: fill-box;
-    animation: hvac-fan-spin 3s linear infinite;
-}
+/* Each fan group rotates around its own visual center.
+   transform-box: fill-box + transform-origin: center keeps the rotation
+   pivot at the centre of the fan blade group regardless of its position. */
+.hvac-diagram .hp-fan,
+.hvac-diagram .rtu-fan,
+.hvac-diagram .ahu-fan,
 .hvac-diagram .ct-fan {
-    transform-origin: 63px 105px;
     transform-box: fill-box;
-    animation: hvac-fan-spin 4s linear infinite;
+    transform-origin: center;
 }
+.hvac-diagram .hp-fan  { animation: hvac-fan-spin 2.5s linear infinite; }
+.hvac-diagram .rtu-fan { animation: hvac-fan-spin 3s   linear infinite; }
+.hvac-diagram .ahu-fan { animation: hvac-fan-spin 3s   linear infinite; }
+.hvac-diagram .ct-fan  { animation: hvac-fan-spin 4s   linear infinite; }
 
 @keyframes hvac-refrig-flow {
     from { stroke-dashoffset: 0; }
@@ -1209,14 +1195,6 @@ header h1 {
 }
 .hvac-diagram .refrig-return {
     animation-direction: reverse;
-}
-
-@keyframes hvac-duct-flow {
-    from { stroke-dashoffset: 0; }
-    to   { stroke-dashoffset: -16; }
-}
-.hvac-diagram .duct-supply rect:not([opacity]) {
-    /* Diffuser tabs — small, no animation */
 }
 
 @keyframes hvac-flame-soft {
