@@ -1118,7 +1118,7 @@ header h1 {
     border: 1px solid #c8d3f1;
     border-radius: 8px;
     overflow: hidden;
-    min-height: 220px;
+    min-height: 260px;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -1128,7 +1128,7 @@ header h1 {
 .hvac-diagram svg {
     width: 100%;
     height: auto;
-    max-height: 260px;
+    max-height: 320px;
     display: block;
 }
 
