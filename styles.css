@@ -1120,7 +1120,8 @@ header h1 {
     overflow: hidden;
     min-height: 220px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     justify-content: center;
 }
 
@@ -1129,6 +1130,29 @@ header h1 {
     height: auto;
     max-height: 260px;
     display: block;
+}
+
+.hvac-diagram-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding: 8px 12px;
+    border-top: 1px solid #eef1f8;
+    font-size: 11px;
+    color: #4a5b76;
+    background: #f8fafd;
+}
+.hvac-diagram-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.hvac-diagram-legend i {
+    display: inline-block;
+    width: 14px;
+    height: 4px;
+    border-radius: 2px;
 }
 
 /* Mode-based visibility (toggled via classes added to .hvac-diagram) */
@@ -1167,47 +1191,6 @@ header h1 {
 
 /* Empty / not-yet-configured */
 .hvac-diagram.mode-empty .empty-state { display: inline; }
-
-/* Animations — engineering motion only (no flashing emoji) */
-@keyframes hvac-fan-spin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-}
-/* Each fan group rotates around its own visual center.
-   transform-box: fill-box + transform-origin: center keeps the rotation
-   pivot at the centre of the fan blade group regardless of its position. */
-.hvac-diagram .hp-fan,
-.hvac-diagram .rtu-fan,
-.hvac-diagram .ahu-fan,
-.hvac-diagram .ct-fan {
-    transform-box: fill-box;
-    transform-origin: center;
-}
-.hvac-diagram .hp-fan  { animation: hvac-fan-spin 2.5s linear infinite; }
-.hvac-diagram .rtu-fan { animation: hvac-fan-spin 3s   linear infinite; }
-.hvac-diagram .ahu-fan { animation: hvac-fan-spin 3s   linear infinite; }
-.hvac-diagram .ct-fan  { animation: hvac-fan-spin 4s   linear infinite; }
-
-@keyframes hvac-refrig-flow {
-    from { stroke-dashoffset: 0; }
-    to   { stroke-dashoffset: -18; }
-}
-.hvac-diagram .refrig-line {
-    animation: hvac-refrig-flow 1.4s linear infinite;
-}
-.hvac-diagram .refrig-return {
-    animation-direction: reverse;
-}
-
-@keyframes hvac-flame-soft {
-    0%, 100% { transform: scaleY(1);    opacity: 1; }
-    50%      { transform: scaleY(1.12); opacity: 0.9; }
-}
-.hvac-diagram .flame-shape {
-    transform-origin: center bottom;
-    transform-box: fill-box;
-    animation: hvac-flame-soft 1.6s ease-in-out infinite;
-}
 
 /* Stack on narrow screens */
 @media (max-width: 760px) {
