@@ -1138,6 +1138,7 @@ header h1 {
 .hvac-diagram .dist-pthp-vis,
 .hvac-diagram .sys-necb-1,
 .hvac-diagram .sys-necb-3,
+.hvac-diagram .sys-necb-4,
 .hvac-diagram .sys-necb-6,
 .hvac-diagram .sys-necb-mixed,
 .hvac-diagram .backup-gas,
@@ -1153,9 +1154,10 @@ header h1 {
 .hvac-diagram.mode-hp.dist-pthp .dist-pthp-vis { display: inline; }
 
 /* NECB sub-system layouts (selected via archetype).
-   Mixed mode (apartments) uses a dedicated combined schematic. */
+   Mixed mode (apartments = Sys 1 + Sys 4) uses a dedicated combined schematic. */
 .hvac-diagram.mode-necb.necb-sys-1:not(.necb-mixed) .sys-necb-1 { display: inline; }
 .hvac-diagram.mode-necb.necb-sys-3 .sys-necb-3 { display: inline; }
+.hvac-diagram.mode-necb.necb-sys-4:not(.necb-mixed) .sys-necb-4 { display: inline; }
 .hvac-diagram.mode-necb.necb-sys-6:not(.necb-mixed) .sys-necb-6 { display: inline; }
 .hvac-diagram.mode-necb.necb-mixed .sys-necb-mixed { display: inline; }
 

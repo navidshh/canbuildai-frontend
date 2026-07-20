@@ -181,56 +181,66 @@ function setupHvacCascade(familyId, typeId, hiddenId) {
 // ---------------------------------------------------------------------------
 // The summary card translates the raw form inputs into plain-English
 // statements about what the simulation will model. It also exposes the
-// "auto-derived" backend value for `primary_heating_fuel` — e.g. selecting
+// "auto-derived" backend value for `primary_heating_fuel` - e.g. selecting
 // `HS13_ASHP_VRF` + `NaturalGas` is silently rewritten by BTAP to
 // `NaturalGasHPGasBackup` (heat pump primary, NG backup), and the summary
 // makes that transformation visible to the user.
 //
 // The layout diagram is an engineering-style SVG schematic.  All elements
 // are present at all times; CSS classes on the parent container toggle
-// which ones are visible (mode-hp / mode-necb, necb-sys-1 / -3 / -6, fuel
-// and distribution variants) and drive the working animations (fan spin,
-// refrigerant flow, etc.).
+// which ones are visible (mode-hp / mode-necb, necb-sys-1 / -3 / -4 / -6,
+// necb-mixed for apartments (Sys 1 + Sys 4), fuel and distribution
+// variants) and drive the working animations (fan spin, refrigerant flow,
+// etc.).
 //
-// NECB system → building-archetype mapping (from NECB_HVAC_Systems.md,
-// derived from NECB 2011 Table 8.4.4.8.A and the BTAP prototype
-// geometries). When the user selects "NECB Default", the building type
-// determines which system the simulator will assign.
+// NECB system → building-archetype mapping (revised per the latest BTAP
+// system assignment table). When the user selects "NECB Default", the
+// building type determines which NECB system(s) the simulator will assign.
+// Apartment archetypes are mixed-use: dwelling units get System 1 (PTAC +
+// baseboards), corridors and common areas get System 4 (single-zone CAV
+// make-up air unit, no reheat).
 const NECB_DEFAULT_FOR_BUILDING = {
     SmallOffice:   { primary: 3, secondary: null,
-                     note: 'Small Office (1 storey, "General Area" space type) → NECB assigns System 3 (PSZ-AC, packaged single-zone rooftop with baseboards).' },
+                     note: 'Small Office (1 storey) → NECB assigns System 3 (PSZ-AC, packaged single-zone rooftop) with a single-duct CV diffuser and HW/electric perimeter baseboards.' },
     MediumOffice:  { primary: 6, secondary: null,
-                     note: 'Medium Office (3 storeys) crosses the NECB ≥3-storey threshold for "General Area" zones, so the simulator assigns System 6 (built-up VAV with reheat + chiller + boiler).' },
+                     note: 'Medium Office (3 storeys) crosses the NECB ≥3-storey threshold for "General Area" zones, so the simulator assigns System 6 — a built-up multi-zone VAV air handler (one per storey), CHW cooling, HW/electric central heat, VAV reheat terminals (closest to ASHRAE 90.1 System 7).' },
     LargeOffice:   { primary: 6, secondary: null,
-                     note: 'Large Office (≥3 storeys) → NECB assigns System 6 (built-up VAV with reheat + chiller + boiler) for all general office zones.' },
-    LowRise:       { primary: 1, secondary: 6,
-                     note: 'Low-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has ≥3 storeys.' },
-    MidRise:       { primary: 1, secondary: 6,
-                     note: 'Mid-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has ≥3 storeys.' },
-    HighRise:      { primary: 1, secondary: 6,
-                     note: 'High-Rise Apartment: dwelling units use System 1 (PTAC + baseboards); corridors / amenity / common areas use System 6 because the building has ≥3 storeys.' }
+                     note: 'Large Office (≥3 storeys) → NECB assigns System 6 — a built-up multi-zone VAV air handler (one per storey), CHW cooling, HW/electric central heat, VAV reheat terminals (closest to ASHRAE 90.1 System 7).' },
+    LowRise:       { primary: 1, secondary: 4,
+                     note: 'Low-Rise Apartment: dwelling units use System 1 (PTAC + HW/electric baseboards). Corridors use System 4 — an optional central single-zone CAV make-up air unit (no reheat) + HW/electric baseboards.' },
+    MidRise:       { primary: 1, secondary: 4,
+                     note: 'Mid-Rise Apartment: dwelling units use System 1 (PTAC + HW/electric baseboards). Corridors use System 4 — an optional central single-zone CAV make-up air unit (no reheat) + HW/electric baseboards.' },
+    HighRise:      { primary: 1, secondary: 4,
+                     note: 'High-Rise Apartment: dwelling units use System 1 (PTAC + HW/electric baseboards). Corridors use System 4 — an optional central single-zone CAV make-up air unit (no reheat) + HW/electric baseboards.' }
 };
 
 const NECB_SYSTEM_INFO = {
     1: {
-        label: 'System 1 — PTAC + baseboards',
-        archetype: 'Packaged Terminal Air Conditioner (PTAC) — closest to ASHRAE 90.1 System 1',
-        primary: 'Through-wall PTAC per zone + hydronic/electric perimeter baseboards (typical dwelling/hotel layout)',
-        distribution: 'PTAC unit under each window for cooling + baseboards along perimeter walls for heating',
+        label: 'System 1 - PTAC + baseboards',
+        archetype: 'Packaged Terminal Air Conditioner (PTAC) - closest to ASHRAE 90.1 System 1',
+        primary: 'Through-wall PTAC per zone + HW/electric perimeter baseboards (typical dwelling / hotel suite layout)',
+        distribution: 'PTAC unit under each window for cooling + HW or electric baseboards along perimeter walls for heating',
         cls: 'necb-sys-1'
     },
     3: {
-        label: 'System 3 — PSZ-AC',
-        archetype: 'Packaged Single-Zone constant-volume rooftop unit — closest to ASHRAE 90.1 System 3',
-        primary: 'Packaged Single-Zone rooftop unit (PSZ-AC) with DX cooling and gas/electric/hot-water heating + perimeter baseboards',
-        distribution: 'Ducted constant-volume supply from rooftop unit + perimeter baseboards',
+        label: 'System 3 - PSZ-AC',
+        archetype: 'Packaged Single-Zone constant-volume rooftop unit - closest to ASHRAE 90.1 System 3',
+        primary: 'Packaged Single-Zone rooftop unit (PSZ-AC) with DX cooling and gas / electric / hot-water heating + perimeter baseboards',
+        distribution: 'Single-duct CV diffuser from rooftop unit + HW or electric perimeter baseboards',
         cls: 'necb-sys-3'
     },
+    4: {
+        label: 'System 4 - PSZ single-zone MAU (no reheat)',
+        archetype: 'Packaged Single-Zone constant-volume make-up air unit (no reheat) - closest to ASHRAE 90.1 System 4',
+        primary: 'Single-zone CAV make-up air unit (no reheat) with DX cooling and gas / electric heating + HW/electric baseboards',
+        distribution: 'CV diffuser from a single-zone CAV MAU (no reheat) + HW or electric baseboards',
+        cls: 'necb-sys-4'
+    },
     6: {
-        label: 'System 6 — Built-up VAV with reheat',
-        archetype: 'Built-up multi-zone VAV with hydronic reheat — closest to ASHRAE 90.1 System 7',
-        primary: 'Built-up VAV air handler (one per storey) with CHW cooling, HW reheat, central chiller + cooling tower + boiler',
-        distribution: 'VAV terminal box with reheat coil per zone + perimeter baseboards; central CHW chiller, cooling tower and HW boiler',
+        label: 'System 6 - Built-up VAV with reheat',
+        archetype: 'Built-up multi-zone VAV air handler (one per storey) with reheat - closest to ASHRAE 90.1 System 7',
+        primary: 'Built-up multi-zone VAV air handler (one per storey) with CHW cooling, HW/electric central heat, and VAV reheat terminals',
+        distribution: 'VAV terminal per zone + HW or electric reheat coil + HW or electric perimeter baseboards',
         cls: 'necb-sys-6'
     }
 };
@@ -282,7 +292,7 @@ const HVAC_DIAGRAM_SVG = `
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 3 — PSZ-AC (packaged single-zone rooftop)         -->
+    <!-- NECB SYSTEM 3 - PSZ-AC (packaged single-zone rooftop)         -->
     <!-- Equipment-flow schematic: RTU → supply duct → zone → return  -->
     <!-- ============================================================ -->
     <g class="sys-necb-3">
@@ -340,7 +350,7 @@ const HVAC_DIAGRAM_SVG = `
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 6 — Built-up VAV w/ reheat + central plant        -->
+    <!-- NECB SYSTEM 6 - Built-up VAV w/ reheat + central plant        -->
     <!-- AHU → supply trunk → VAV+RH terminals → zones; plant below   -->
     <!-- ============================================================ -->
     <g class="sys-necb-6">
@@ -445,7 +455,7 @@ const HVAC_DIAGRAM_SVG = `
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB SYSTEM 1 — PTAC + perimeter baseboards (per-zone)        -->
+    <!-- NECB SYSTEM 1 - PTAC + perimeter baseboards (per-zone)        -->
     <!-- Three independent dwelling-style zones (no central plant)    -->
     <!-- ============================================================ -->
     <g class="sys-necb-1">
@@ -494,14 +504,14 @@ const HVAC_DIAGRAM_SVG = `
     </g>
 
     <!-- ============================================================ -->
-    <!-- NECB MIXED (Sys 1 + Sys 6) — apartments                       -->
+    <!-- NECB MIXED (Sys 1 + Sys 4) - apartments                       -->
     <!-- TOP: dwelling units (PTAC + BB)                               -->
-    <!-- BOTTOM: common areas (AHU + VAV + plant)                      -->
+    <!-- BOTTOM: corridors / common areas (single-zone CAV MAU + BB)   -->
     <!-- ============================================================ -->
     <g class="sys-necb-mixed">
         <!-- ===== SECTION A: DWELLING UNITS (System 1) ===== -->
         <text x="18" y="26" font-size="7.5" fill="#1a3a6c" font-weight="700"
-              font-family="Consolas, monospace">DWELLING UNITS — SYSTEM 1 (PTAC + BB, per suite)</text>
+              font-family="Consolas, monospace">DWELLING UNITS - SYSTEM 1 (PTAC + BB, per suite)</text>
 
         <!-- Suite A1 -->
         <rect x="18" y="30" width="160" height="38" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
@@ -538,84 +548,63 @@ const HVAC_DIAGRAM_SVG = `
         <!-- Divider -->
         <line x1="18" y1="118" x2="344" y2="118" stroke="#7a8ba0" stroke-width="0.5" stroke-dasharray="5 3"/>
 
-        <!-- ===== SECTION B: COMMON AREAS (System 6) ===== -->
+        <!-- ===== SECTION B: CORRIDORS / COMMON AREAS (System 4) ===== -->
         <text x="18" y="130" font-size="7.5" fill="#1a3a6c" font-weight="700"
-              font-family="Consolas, monospace">COMMON AREAS — SYSTEM 6 (VAV + reheat + plant)</text>
+              font-family="Consolas, monospace">CORRIDORS - SYSTEM 4 (single-zone CAV MAU, no reheat)</text>
 
-        <!-- AHU -->
-        <rect x="18" y="135" width="84" height="26" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.1"/>
-        <rect x="22" y="138" width="7" height="20" fill="#e6f0ff" stroke="#2e6da6" stroke-width="0.4"/>
-        <rect x="31" y="138" width="7" height="20" fill="#fff" stroke="#7a8ba0" stroke-width="0.4"/>
-        <line x1="31" y1="138" x2="38" y2="158" stroke="#7a8ba0" stroke-width="0.3"/>
-        <line x1="31" y1="158" x2="38" y2="138" stroke="#7a8ba0" stroke-width="0.3"/>
-        <rect x="40" y="138" width="9" height="20" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.4"/>
-        <rect x="51" y="138" width="9" height="20" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
+        <!-- Rooftop MAU: OA damper → filter → DX cooling → gas/elec heat coil → supply fan -->
+        <rect x="18" y="135" width="114" height="26" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.1"/>
+        <!-- OA intake -->
+        <rect x="22" y="138" width="10" height="20" fill="#e6f0ff" stroke="#2e6da6" stroke-width="0.4"/>
+        <text x="27" y="169" text-anchor="middle" font-size="5" fill="#2e6da6"
+              font-family="Consolas, monospace">OA</text>
+        <!-- Filter -->
+        <rect x="34" y="138" width="10" height="20" fill="#fff" stroke="#7a8ba0" stroke-width="0.4"/>
+        <line x1="34" y1="138" x2="44" y2="158" stroke="#7a8ba0" stroke-width="0.3"/>
+        <line x1="34" y1="158" x2="44" y2="138" stroke="#7a8ba0" stroke-width="0.3"/>
+        <!-- DX cooling coil -->
+        <rect x="46" y="138" width="12" height="20" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.4"/>
+        <text x="52" y="169" text-anchor="middle" font-size="5" fill="#2e6da6"
+              font-family="Consolas, monospace">DX</text>
+        <!-- Heating coil (gas/elec) -->
+        <rect x="60" y="138" width="12" height="20" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
+        <text x="66" y="169" text-anchor="middle" font-size="5" fill="#a06000"
+              font-family="Consolas, monospace">HC</text>
+        <!-- Supply fan (CV, no reheat downstream) -->
         <g class="ahu-fan">
-            <circle cx="83" cy="148" r="9" fill="none" stroke="#1a3a6c" stroke-width="0.7"/>
-            <line x1="74" y1="148" x2="92" y2="148" stroke="#1a3a6c" stroke-width="0.9"/>
-            <line x1="83" y1="139" x2="83" y2="157" stroke="#1a3a6c" stroke-width="0.9"/>
-            <line x1="76" y1="141" x2="90" y2="155" stroke="#1a3a6c" stroke-width="0.9"/>
-            <line x1="90" y1="141" x2="76" y2="155" stroke="#1a3a6c" stroke-width="0.9"/>
-            <circle cx="83" cy="148" r="1.5" fill="#1a3a6c"/>
+            <circle cx="105" cy="148" r="10" fill="none" stroke="#1a3a6c" stroke-width="0.7"/>
+            <line x1="95" y1="148" x2="115" y2="148" stroke="#1a3a6c" stroke-width="0.9"/>
+            <line x1="105" y1="138" x2="105" y2="158" stroke="#1a3a6c" stroke-width="0.9"/>
+            <line x1="97" y1="140" x2="113" y2="156" stroke="#1a3a6c" stroke-width="0.9"/>
+            <line x1="113" y1="140" x2="97" y2="156" stroke="#1a3a6c" stroke-width="0.9"/>
+            <circle cx="105" cy="148" r="1.5" fill="#1a3a6c"/>
         </g>
-        <text x="60" y="170" text-anchor="middle" font-size="7" fill="#1a3a6c"
-              font-weight="700" font-family="Consolas, monospace">AHU</text>
+        <text x="75" y="169" text-anchor="middle" font-size="7" fill="#1a3a6c"
+              font-weight="700" font-family="Consolas, monospace">MAU (CV, no reheat)</text>
 
-        <!-- Supply duct + return -->
-        <line x1="102" y1="142" x2="148" y2="142" stroke="#c0392b" stroke-width="2"
+        <!-- Straight CV supply duct into corridor (no VAV terminal, no reheat coil) -->
+        <line x1="132" y1="146" x2="195" y2="146" stroke="#c0392b" stroke-width="2"
               marker-end="url(#hvac-arrow-red)"/>
-        <line x1="148" y1="155" x2="102" y2="155" stroke="#2e6da6" stroke-width="1.5"
-              stroke-dasharray="3 2" marker-end="url(#hvac-arrow-blue)"/>
 
-        <!-- VAV + reheat -->
-        <rect x="148" y="137" width="24" height="13" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
-        <rect x="168" y="139" width="3" height="9" fill="#fff7e6" stroke="#a06000" stroke-width="0.4"/>
-        <text x="159" y="146" text-anchor="middle" font-size="5" fill="#a06000" font-weight="700"
-              font-family="Consolas, monospace">VAV</text>
-        <line x1="172" y1="143" x2="195" y2="143" stroke="#c0392b" stroke-width="1.5"/>
-
-        <!-- Lobby / corridor zone -->
-        <rect x="195" y="135" width="84" height="55" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
-        <text x="237" y="146" text-anchor="middle" font-size="6" fill="#7a8ba0"
-              font-family="Consolas, monospace">LOBBY / CORRIDOR</text>
-        <rect x="200" y="183" width="74" height="3" fill="#f39c12"/>
-
-        <!-- Plant (compact) -->
-        <!-- CT -->
-        <rect x="285" y="133" width="22" height="22" rx="1" fill="#fff" stroke="#1a3a6c" stroke-width="0.9"/>
-        <g class="ct-fan">
-            <circle cx="296" cy="144" r="7" fill="none" stroke="#1a3a6c" stroke-width="0.6"/>
-            <line x1="289" y1="144" x2="303" y2="144" stroke="#1a3a6c" stroke-width="0.8"/>
-            <line x1="296" y1="137" x2="296" y2="151" stroke="#1a3a6c" stroke-width="0.8"/>
-            <line x1="291" y1="139" x2="301" y2="149" stroke="#1a3a6c" stroke-width="0.8"/>
-            <line x1="301" y1="139" x2="291" y2="149" stroke="#1a3a6c" stroke-width="0.8"/>
+        <!-- Corridor / common area zone -->
+        <rect x="195" y="135" width="149" height="55" rx="2" fill="#fffef5" stroke="#cfd8e3" stroke-width="0.6"/>
+        <text x="270" y="146" text-anchor="middle" font-size="6" fill="#7a8ba0"
+              font-family="Consolas, monospace">CORRIDOR / COMMON AREA</text>
+        <!-- CV diffusers from MAU (three drops off the supply main) -->
+        <line x1="195" y1="156" x2="340" y2="156" stroke="#c0392b" stroke-width="1.5"/>
+        <g fill="#c0392b">
+            <polygon points="215,156 227,156 221,164"/>
+            <polygon points="260,156 272,156 266,164"/>
+            <polygon points="305,156 317,156 311,164"/>
         </g>
-        <text x="296" y="165" text-anchor="middle" font-size="6" fill="#1a3a6c"
-              font-weight="700" font-family="Consolas, monospace">CT</text>
-
-        <!-- Chiller -->
-        <rect x="285" y="170" width="22" height="22" rx="1" fill="#fff" stroke="#2e6da6" stroke-width="0.9"/>
-        <circle cx="291" cy="181" r="4" fill="#e6f4ff" stroke="#2e6da6" stroke-width="0.5"/>
-        <text x="299" y="204" text-anchor="middle" font-size="6" fill="#2e6da6"
-              font-weight="700" font-family="Consolas, monospace">CHW</text>
-
-        <!-- Boiler -->
-        <rect x="315" y="170" width="22" height="22" rx="1" fill="#fff" stroke="#a06000" stroke-width="0.9"/>
-        <circle cx="321" cy="181" r="4" fill="#fff7e6" stroke="#a06000" stroke-width="0.5"/>
-        <path d="M319,185 L319,178 L323,181 L323,185 Z M319,178 L323,175 L323,181 Z"
-              fill="#e67e22" class="flame-shape"/>
-        <text x="329" y="204" text-anchor="middle" font-size="6" fill="#a06000"
-              font-weight="700" font-family="Consolas, monospace">Boiler</text>
-
-        <!-- Plant pipes -->
-        <path d="M285,144 L307,144" stroke="#7a8ba0" stroke-width="0.7" fill="none" stroke-dasharray="3 2"/>
-        <path d="M299,170 Q280,120 102,142" stroke="#2e6da6" stroke-width="0.8" fill="none"/>
-        <path d="M329,170 Q330,90 100,150" stroke="#a06000" stroke-width="0.8" fill="none"/>
-        <path d="M148,143 L148,148" stroke="#a06000" stroke-width="0.6" fill="none"/>
+        <!-- Perimeter baseboard in corridor -->
+        <rect x="200" y="183" width="139" height="3" fill="#f39c12"/>
+        <text x="340" y="200" text-anchor="end" font-size="6" fill="#a06000"
+              font-weight="700" font-family="Consolas, monospace">BB = HW or electric baseboard</text>
     </g>
 
     <!-- ============================================================ -->
-    <!-- HEAT PUMP — outdoor unit + refrigerant lines                  -->
+    <!-- HEAT PUMP - outdoor unit + refrigerant lines                  -->
     <!-- ============================================================ -->
     <g class="hp-unit">
         <rect x="20" y="120" width="100" height="80" rx="3" fill="#fff" stroke="#1a3a6c" stroke-width="1.5"/>
@@ -742,26 +731,26 @@ function renderHvacSummary() {
                             ? NECB_SYSTEM_INFO[necbMapping.secondary] : null;
 
     // ---- Primary heating ----
-    let primary = '—';
+    let primary = '-';
     if (family === 'CCASHP')           primary = 'Cold Climate Air Source Heat Pump (electric refrigerant cycle)';
     else if (family === 'ASHP')        primary = 'Air Source Heat Pump (electric refrigerant cycle)';
     else if (isNECB) {
         if (primarySys && secondarySys) {
             // Mixed-use building (e.g. apartments): both systems apply.
-            const fuelTag = fuel === 'NaturalGas'   ? ' — natural gas fuelled'
-                          : fuel === 'Electricity'  ? ' — electrically fuelled'
+            const fuelTag = fuel === 'NaturalGas'   ? ' - natural gas fuelled'
+                          : fuel === 'Electricity'  ? ' - electrically fuelled'
                           : '';
-            primary = `${primarySys.label} (dwelling units) + ${secondarySys.label} (common areas)${fuelTag}. `
-                    + `Suites: ${primarySys.primary}. Common areas: ${secondarySys.primary}.`;
+            primary = `${primarySys.label} (dwelling units) + ${secondarySys.label} (corridors / common areas)${fuelTag}. `
+                    + `Suites: ${primarySys.primary}. Corridors: ${secondarySys.primary}.`;
         } else if (primarySys) {
-            const fuelTag = fuel === 'NaturalGas'   ? ' — natural gas fuelled'
-                          : fuel === 'Electricity'  ? ' — electrically fuelled'
+            const fuelTag = fuel === 'NaturalGas'   ? ' - natural gas fuelled'
+                          : fuel === 'Electricity'  ? ' - electrically fuelled'
                           : '';
             primary = `${primarySys.label}${fuelTag}. ${primarySys.primary}.`;
         } else if (fuel === 'NaturalGas') {
-            primary = 'Natural Gas boiler / furnace (NECB default — select a building archetype to see the exact system)';
+            primary = 'Natural Gas boiler / furnace (NECB default - select a building archetype to see the exact system)';
         } else if (fuel === 'Electricity') {
-            primary = 'Electric heating (NECB default — select a building archetype to see the exact system)';
+            primary = 'Electric heating (NECB default - select a building archetype to see the exact system)';
         } else {
             primary = 'NECB default (pick a building archetype and fuel)';
         }
@@ -773,7 +762,7 @@ function renderHvacSummary() {
         Baseboard: 'Hydronic / electric baseboards',
         PTHP:      'Packaged Terminal Heat Pump (PTHP)'
     };
-    let distribution = '—';
+    let distribution = '-';
     if (isHP && type)              distribution = typeLabels[type] || type;
     else if (isNECB && primarySys && secondarySys) {
         distribution = `Dwelling units: ${primarySys.distribution}. `
@@ -783,25 +772,25 @@ function renderHvacSummary() {
     else if (isNECB)               distribution = 'NECB default zoning (depends on building archetype)';
 
     // ---- Backup heating + derived fuel value ----
-    let backup       = '—';
-    let derivedFuel  = '—';
+    let backup       = '-';
+    let derivedFuel  = '-';
     let note         = '';
     if (fuel === 'NaturalGas') {
         if (isHP) {
-            backup      = 'Natural Gas — boiler / furnace loop (used during very cold hours)';
+            backup      = 'Natural Gas - boiler / furnace loop (used during very cold hours)';
             derivedFuel = 'NaturalGasHPGasBackup (auto-derived)';
             note        = 'The heat pump remains the primary heating source. Natural gas is the supplementary backup, used when the heat pump cannot meet load.';
         } else {
-            backup      = 'N/A — natural gas is the primary heat source';
+            backup      = 'N/A - natural gas is the primary heat source';
             derivedFuel = 'NaturalGas';
         }
     } else if (fuel === 'Electricity') {
         if (isHP) {
-            backup      = 'Electric resistance — supplementary heating during very cold hours';
+            backup      = 'Electric resistance - supplementary heating during very cold hours';
             derivedFuel = 'ElectricityHPElecBackup (auto-derived)';
             note        = 'The heat pump remains the primary heating source. Electric resistance is the supplementary backup.';
         } else {
-            backup      = 'N/A — electricity is the primary heat source';
+            backup      = 'N/A - electricity is the primary heat source';
             derivedFuel = 'Electricity';
         }
     }
@@ -810,7 +799,7 @@ function renderHvacSummary() {
     // system note for mixed-use buildings like apartments).
     if (isNECB && necbMapping) {
         const extra = secondarySys
-            ? `${necbMapping.note} Common areas use ${secondarySys.label}.`
+            ? `${necbMapping.note} Corridors use ${secondarySys.label}.`
             : necbMapping.note;
         note = note ? `${note} ${extra}` : extra;
     } else if (isNECB && !buildingType) {
@@ -825,7 +814,7 @@ function renderHvacSummary() {
         'Natural Gas Direct Vent with Electric Ignition':      'Natural Gas Direct Vent',
         'Natural Gas Power Vent with Electric Ignition':       'Natural Gas Power Vent'
     };
-    const shwDisplay = shw ? (shwLabels[shw] || shw) : '—';
+    const shwDisplay = shw ? (shwLabels[shw] || shw) : '-';
 
     // ---- Write to the DOM ----
     const set = (id, val) => {
@@ -836,7 +825,7 @@ function renderHvacSummary() {
     set('hvacSummaryDistribution', distribution);
     set('hvacSummaryBackup',       backup);
     set('hvacSummarySHW',          shwDisplay);
-    set('hvacSummaryEcm',          (ecmHidden && ecmHidden.value) || '—');
+    set('hvacSummaryEcm',          (ecmHidden && ecmHidden.value) || '-');
     set('hvacSummaryFuel',         derivedFuel);
     set('hvacSummaryNote',         note);
 
@@ -871,7 +860,7 @@ function renderHvacSummary() {
         if (titleEl) {
             let title = 'HVAC Schematic';
             if (isHP)                       title = `${family} + ${typeLabels[type] || 'distribution'}`;
-            else if (isNECB && secondarySys) title = `NECB Default → System ${necbMapping.primary} (suites) + System ${necbMapping.secondary} (common)`;
+            else if (isNECB && secondarySys) title = `NECB Default → System ${necbMapping.primary} (suites) + System ${necbMapping.secondary} (corridors)`;
             else if (isNECB && primarySys)  title = `NECB Default → ${primarySys.label}`;
             else if (isNECB)                title = 'NECB Default (pick an archetype)';
             titleEl.textContent = title;
@@ -909,7 +898,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Re-render the summary whenever any contributing field changes.
     // `building_type` is included so the NECB-default summary updates with
     // the selected archetype (the archetype cards dispatch a 'change' on
-    // the hidden #building_type select — see surrogate-wizard.js).
+    // the hidden #building_type select - see surrogate-wizard.js).
     ['primary_heating_fuel', 'shw_eff', 'building_type'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', renderHvacSummary);
