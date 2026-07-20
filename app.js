@@ -340,7 +340,7 @@ const HVAC_DIAGRAM_SVG = `
         <rect x="8" y="32" width="364" height="260" rx="4" fill="#fff" stroke="#a5b5cc" stroke-width="1.2"/>
         <rect x="8" y="32" width="364" height="20" fill="#2a5298"/>
         <text x="190" y="46" text-anchor="middle" font-size="10.5" fill="#fff" font-weight="600">
-            Sys 4 · Make-up Air Unit (CV, no reheat) &#8594; Corridor + Baseboards
+            Sys 4 · Make-up Air Unit (CAV, no reheat) &#8594; Corridor + Baseboards
         </text>
 
         <!-- Building outline (corridor style) -->
@@ -366,7 +366,7 @@ const HVAC_DIAGRAM_SVG = `
         <!-- Supply duct dropping down + straight CV main -->
         <rect x="185" y="127" width="12" height="30" fill="#c0392b" opacity="0.85"/>
         <rect x="55" y="157" width="285" height="8" fill="#c0392b" opacity="0.85"/>
-        <text x="60" y="154" font-size="8.5" fill="#c0392b" font-weight="600">CV supply main</text>
+        <text x="60" y="154" font-size="8.5" fill="#c0392b" font-weight="600">CAV supply main</text>
 
         <g fill="#c0392b">
             <polygon points="80,165 100,165 90,177"/>
@@ -585,7 +585,7 @@ const HVAC_DIAGRAM_SVG = `
             Corridors &#183; Sys 4
         </text>
         <text x="282" y="63" text-anchor="middle" font-size="8.5" fill="#4a5b76" font-style="italic">
-            Rooftop MAU + CV supply + baseboards
+            Rooftop MAU + CAV supply + baseboards
         </text>
 
         <!-- Rooftop MAU on top -->
@@ -611,7 +611,7 @@ const HVAC_DIAGRAM_SVG = `
         <rect x="269" y="110" width="12" height="60" fill="#c0392b" opacity="0.85"/>
         <text x="288" y="138" font-size="7" fill="#c0392b" font-weight="600">supply riser</text>
         <rect x="208" y="170" width="148" height="8" fill="#c0392b" opacity="0.85"/>
-        <text x="212" y="167" font-size="7.5" fill="#c0392b" font-weight="600">CV supply main</text>
+        <text x="212" y="167" font-size="7.5" fill="#c0392b" font-weight="600">CAV supply main</text>
 
         <!-- Ceiling diffusers along corridor -->
         <g fill="#c0392b">
