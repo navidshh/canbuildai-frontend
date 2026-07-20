@@ -295,7 +295,6 @@ const HVAC_DIAGRAM_SVG = `
         <!-- Building outline -->
         <rect x="40" y="120" width="300" height="140" rx="3" fill="#fdfefe" stroke="#8a99b0" stroke-width="1.4"/>
         <line x1="40" y1="120" x2="340" y2="120" stroke="#8a99b0" stroke-width="1.4"/>
-        <text x="45" y="255" font-size="9" fill="#6a7891" font-style="italic">Single-zone conditioned space</text>
 
         <!-- Rooftop unit (RTU) sitting on the roof -->
         <rect x="135" y="75" width="110" height="45" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.8"/>
@@ -314,7 +313,7 @@ const HVAC_DIAGRAM_SVG = `
         <!-- Supply duct dropping down + horizontal trunk + diffusers -->
         <rect x="163" y="120" width="14" height="35" fill="#c0392b" opacity="0.85"/>
         <rect x="60" y="150" width="280" height="10" fill="#c0392b" opacity="0.85"/>
-        <text x="345" y="157" font-size="8.5" fill="#c0392b" font-weight="600">Supply</text>
+        <text x="60" y="147" font-size="8.5" fill="#c0392b" font-weight="600">Supply air trunk</text>
         <g fill="#c0392b">
             <polygon points="80,160 100,160 90,173"/>
             <polygon points="140,160 160,160 150,173"/>
@@ -323,13 +322,14 @@ const HVAC_DIAGRAM_SVG = `
         </g>
 
         <!-- Return path -->
-        <path d="M50,175 L50,190 L340,190 L340,120" stroke="#2e6da6" stroke-width="1.4"
+        <path d="M50,200 L50,215 L340,215 L340,120" stroke="#2e6da6" stroke-width="1.4"
               fill="none" stroke-dasharray="4 3" marker-end="url(#hvac-arrow-blue)"/>
-        <text x="180" y="188" font-size="8.5" fill="#2e6da6" font-weight="600">Return air</text>
+        <text x="190" y="212" text-anchor="middle" font-size="8.5" fill="#2e6da6" font-weight="600">Return air</text>
 
         <!-- Perimeter baseboards -->
-        <rect x="50" y="242" width="280" height="4" fill="#f39c12"/>
-        <text x="55" y="240" font-size="8.5" fill="#a06000" font-weight="600">Perimeter baseboards</text>
+        <rect x="50" y="236" width="280" height="4" fill="#f39c12"/>
+        <text x="190" y="232" text-anchor="middle" font-size="8.5" fill="#a06000" font-weight="600">Perimeter baseboards</text>
+        <text x="190" y="254" text-anchor="middle" font-size="9" fill="#6a7891" font-style="italic">Single-zone conditioned space</text>
     </g>
 
     <!-- ============================================================ -->
@@ -346,7 +346,6 @@ const HVAC_DIAGRAM_SVG = `
         <!-- Building outline (corridor style) -->
         <rect x="40" y="130" width="300" height="130" rx="3" fill="#fdfefe" stroke="#8a99b0" stroke-width="1.4"/>
         <line x1="40" y1="130" x2="340" y2="130" stroke="#8a99b0" stroke-width="1.4"/>
-        <text x="45" y="255" font-size="9" fill="#6a7891" font-style="italic">Long corridor / common space (single zone)</text>
 
         <!-- Rooftop MAU (simpler than RTU) -->
         <rect x="150" y="82" width="90" height="45" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.8"/>
@@ -367,7 +366,7 @@ const HVAC_DIAGRAM_SVG = `
         <!-- Supply duct dropping down + straight CV main -->
         <rect x="185" y="127" width="12" height="30" fill="#c0392b" opacity="0.85"/>
         <rect x="55" y="157" width="285" height="8" fill="#c0392b" opacity="0.85"/>
-        <text x="345" y="163" font-size="8.5" fill="#c0392b" font-weight="600">CV Supply</text>
+        <text x="60" y="154" font-size="8.5" fill="#c0392b" font-weight="600">CV supply main</text>
 
         <g fill="#c0392b">
             <polygon points="80,165 100,165 90,177"/>
@@ -376,8 +375,9 @@ const HVAC_DIAGRAM_SVG = `
         </g>
 
         <!-- Perimeter baseboards -->
-        <rect x="50" y="245" width="290" height="4" fill="#f39c12"/>
-        <text x="55" y="243" font-size="8.5" fill="#a06000" font-weight="600">Perimeter hydronic baseboards</text>
+        <rect x="50" y="236" width="290" height="4" fill="#f39c12"/>
+        <text x="190" y="232" text-anchor="middle" font-size="8.5" fill="#a06000" font-weight="600">Perimeter hydronic baseboards</text>
+        <text x="190" y="254" text-anchor="middle" font-size="9" fill="#6a7891" font-style="italic">Long corridor / common space (single zone)</text>
     </g>
 
     <!-- ============================================================ -->
@@ -395,14 +395,13 @@ const HVAC_DIAGRAM_SVG = `
         <rect x="90" y="58" width="240" height="150" rx="3" fill="#fdfefe" stroke="#8a99b0" stroke-width="1.4"/>
         <line x1="90" y1="106" x2="330" y2="106" stroke="#cfd8e3" stroke-width="0.8" stroke-dasharray="4 2"/>
         <line x1="90" y1="158" x2="330" y2="158" stroke="#cfd8e3" stroke-width="0.8" stroke-dasharray="4 2"/>
-        <text x="335" y="80"  font-size="8" fill="#6a7891">Fl 3</text>
-        <text x="335" y="130" font-size="8" fill="#6a7891">Fl 2</text>
-        <text x="335" y="180" font-size="8" fill="#6a7891">Fl 1</text>
+        <text x="326" y="102" text-anchor="end" font-size="8" fill="#6a7891" font-style="italic">Floor 3</text>
+        <text x="326" y="154" text-anchor="end" font-size="8" fill="#6a7891" font-style="italic">Floor 2</text>
+        <text x="326" y="174" text-anchor="end" font-size="8" fill="#6a7891" font-style="italic">Floor 1</text>
 
         <!-- AHU riser: supply (red) + return (blue) -->
         <rect x="100" y="60" width="8" height="145" fill="#c0392b" opacity="0.85"/>
         <rect x="112" y="60" width="8" height="145" fill="#2e6da6" opacity="0.75"/>
-        <text x="93" y="56" font-size="9" fill="#1a3a6c" font-weight="600">AHU riser</text>
 
         <!-- VAV + reheat per floor -->
         <g font-size="7.5" fill="#a06000">
@@ -433,8 +432,8 @@ const HVAC_DIAGRAM_SVG = `
         <rect x="98" y="200" width="228" height="3" fill="#f39c12"/>
 
         <!-- Central plant row -->
-        <text x="190" y="222" text-anchor="middle" font-size="9" fill="#1a3a6c" font-weight="600">Central plant</text>
         <!-- Cooling tower -->
+        <text x="50" y="225" text-anchor="middle" font-size="8.5" fill="#2e6da6" font-weight="600">Cooling Tower</text>
         <rect x="20" y="228" width="60" height="55" rx="2" fill="#fff" stroke="#2e6da6" stroke-width="1.4"/>
         <g stroke="#2e6da6" stroke-width="0.6" opacity="0.7">
             <line x1="25" y1="236" x2="75" y2="236"/>
@@ -445,20 +444,19 @@ const HVAC_DIAGRAM_SVG = `
         <line x1="50" y1="254" x2="50" y2="274" stroke="#2e6da6" stroke-width="1"/>
         <line x1="43" y1="257" x2="57" y2="271" stroke="#2e6da6" stroke-width="1"/>
         <line x1="57" y1="257" x2="43" y2="271" stroke="#2e6da6" stroke-width="1"/>
-        <text x="50" y="293" text-anchor="middle" font-size="8" fill="#2e6da6" font-weight="600">Tower</text>
 
         <!-- Chiller -->
+        <text x="190" y="225" text-anchor="middle" font-size="8.5" fill="#2e6da6" font-weight="600">Chiller (CHW)</text>
         <rect x="150" y="228" width="80" height="55" rx="2" fill="#e6f4ff" stroke="#2e6da6" stroke-width="1.4"/>
         <circle cx="170" cy="256" r="12" fill="#fff" stroke="#2e6da6" stroke-width="1.2"/>
         <rect x="188" y="242" width="36" height="28" fill="none" stroke="#2e6da6" stroke-width="0.6" opacity="0.5"/>
-        <text x="190" y="293" text-anchor="middle" font-size="8" fill="#2e6da6" font-weight="600">Chiller (CHW)</text>
 
         <!-- Boiler -->
+        <text x="325" y="225" text-anchor="middle" font-size="8.5" fill="#c07030" font-weight="600">Boiler (HW)</text>
         <rect x="285" y="228" width="80" height="55" rx="2" fill="#fff7e6" stroke="#c07030" stroke-width="1.4"/>
         <circle cx="305" cy="256" r="12" fill="#fff" stroke="#c07030" stroke-width="1.2"/>
         <path d="M300,264 L300,250 L308,257 L308,264 Z M300,250 L308,242 L308,257 Z" fill="#e67e22"/>
         <rect x="323" y="242" width="36" height="28" fill="none" stroke="#c07030" stroke-width="0.6" opacity="0.5"/>
-        <text x="325" y="293" text-anchor="middle" font-size="8" fill="#c07030" font-weight="600">Boiler (HW)</text>
     </g>
 
     <!-- ============================================================ -->
@@ -478,9 +476,9 @@ const HVAC_DIAGRAM_SVG = `
         <line x1="40" y1="208" x2="340" y2="208" stroke="#cfd8e3" stroke-width="0.8"/>
 
         <!-- Suite labels -->
-        <text x="315" y="76"  font-size="8" fill="#6a7891" font-style="italic">Suite 3</text>
-        <text x="315" y="150" font-size="8" fill="#6a7891" font-style="italic">Suite 2</text>
-        <text x="315" y="224" font-size="8" fill="#6a7891" font-style="italic">Suite 1</text>
+        <text x="335" y="76"  text-anchor="end" font-size="8" fill="#6a7891" font-style="italic">Suite 3</text>
+        <text x="335" y="150" text-anchor="end" font-size="8" fill="#6a7891" font-style="italic">Suite 2</text>
+        <text x="335" y="224" text-anchor="end" font-size="8" fill="#6a7891" font-style="italic">Suite 1</text>
 
         <!-- Suite 1 (top) - windows + PTAC + baseboards -->
         <rect x="55" y="72" width="34" height="24" fill="#e6f4ff" stroke="#8a99b0" stroke-width="0.8"/>
@@ -493,12 +491,12 @@ const HVAC_DIAGRAM_SVG = `
             <line x1="82" y1="103" x2="82" y2="114"/><line x1="86" y1="103" x2="86" y2="114"/>
         </g>
         <text x="95" y="112" font-size="8.5" fill="#1a3a6c" font-weight="600">PTAC (through-wall)</text>
-        <path d="M96,90 L140,90" stroke="#c0392b" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#hvac-arrow-red)"/>
-        <path d="M140,105 L96,105" stroke="#2e6da6" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#hvac-arrow-blue)"/>
-        <text x="145" y="90"  font-size="7.5" fill="#c0392b">warm air</text>
-        <text x="145" y="102" font-size="7.5" fill="#2e6da6">cool air</text>
+        <path d="M96,86 L140,86" stroke="#c0392b" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#hvac-arrow-red)"/>
+        <path d="M140,128 L96,128" stroke="#2e6da6" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#hvac-arrow-blue)"/>
+        <text x="145" y="84"  font-size="7.5" fill="#c0392b">warm air</text>
+        <text x="145" y="141" font-size="7.5" fill="#2e6da6">cool air</text>
         <rect x="95" y="120" width="230" height="4" fill="#f39c12"/>
-        <text x="205" y="132" font-size="7.5" fill="#a06000">Perimeter baseboard (hydronic or electric)</text>
+        <text x="100" y="132" font-size="7.5" fill="#a06000">Perimeter baseboard</text>
 
         <!-- Suite 2 (middle) -->
         <rect x="55" y="146" width="34" height="24" fill="#e6f4ff" stroke="#8a99b0" stroke-width="0.8"/>
@@ -544,8 +542,8 @@ const HVAC_DIAGRAM_SVG = `
         <!-- Building outline (2 stacked suites) -->
         <rect x="20" y="72" width="156" height="212" rx="3" fill="#fdfefe" stroke="#8a99b0" stroke-width="1.2"/>
         <line x1="20" y1="178" x2="176" y2="178" stroke="#cfd8e3" stroke-width="0.8"/>
-        <text x="162" y="90"  font-size="7.5" fill="#6a7891" font-style="italic">Suite A</text>
-        <text x="162" y="196" font-size="7.5" fill="#6a7891" font-style="italic">Suite B</text>
+        <text x="170" y="84"  text-anchor="end" font-size="7.5" fill="#6a7891" font-style="italic">Suite A</text>
+        <text x="170" y="190" text-anchor="end" font-size="7.5" fill="#6a7891" font-style="italic">Suite B</text>
 
         <!-- Suite A: window + PTAC + baseboard + warm/cool arrows -->
         <rect x="32" y="88" width="34" height="24" fill="#e6f4ff" stroke="#8a99b0" stroke-width="0.8"/>
@@ -591,6 +589,7 @@ const HVAC_DIAGRAM_SVG = `
         </text>
 
         <!-- Rooftop MAU on top -->
+        <text x="275" y="74" text-anchor="middle" font-size="9" fill="#1a3a6c" font-weight="600">Make-up Air Unit (rooftop)</text>
         <rect x="230" y="76" width="90" height="34" rx="2" fill="#fff" stroke="#1a3a6c" stroke-width="1.6"/>
         <g stroke="#2e6da6" stroke-width="0.8">
             <line x1="234" y1="82" x2="242" y2="82"/>
@@ -598,21 +597,21 @@ const HVAC_DIAGRAM_SVG = `
             <line x1="234" y1="94" x2="242" y2="94"/>
             <line x1="234" y1="100" x2="242" y2="100"/>
         </g>
-        <text x="228" y="80" font-size="7" fill="#2e6da6" font-weight="600">OA</text>
+        <text x="246" y="82" font-size="7" fill="#2e6da6" font-weight="600">OA</text>
         <circle cx="298" cy="93" r="7" fill="none" stroke="#1a3a6c" stroke-width="1.1"/>
         <line x1="291" y1="93" x2="305" y2="93" stroke="#1a3a6c" stroke-width="1"/>
         <line x1="298" y1="86" x2="298" y2="100" stroke="#1a3a6c" stroke-width="1"/>
         <line x1="293" y1="88" x2="303" y2="98" stroke="#1a3a6c" stroke-width="1"/>
         <line x1="303" y1="88" x2="293" y2="98" stroke="#1a3a6c" stroke-width="1"/>
-        <text x="275" y="122" text-anchor="middle" font-size="8.5" fill="#1a3a6c" font-weight="600">Make-up Air Unit</text>
 
         <!-- Building corridor block -->
         <rect x="200" y="140" width="164" height="144" rx="3" fill="#fdfefe" stroke="#8a99b0" stroke-width="1.2"/>
 
         <!-- Supply riser from MAU into corridor + horizontal supply -->
         <rect x="269" y="110" width="12" height="60" fill="#c0392b" opacity="0.85"/>
+        <text x="288" y="138" font-size="7" fill="#c0392b" font-weight="600">supply riser</text>
         <rect x="208" y="170" width="148" height="8" fill="#c0392b" opacity="0.85"/>
-        <text x="212" y="167" font-size="7.5" fill="#c0392b" font-weight="600">CV supply</text>
+        <text x="212" y="167" font-size="7.5" fill="#c0392b" font-weight="600">CV supply main</text>
 
         <!-- Ceiling diffusers along corridor -->
         <g fill="#c0392b">
@@ -664,8 +663,7 @@ const HVAC_DIAGRAM_SVG = `
               stroke-dasharray="6 3" fill="none" marker-end="url(#hvac-arrow-red)"/>
         <path d="M200,175 L150,175" stroke="#2e6da6" stroke-width="2.4"
               stroke-dasharray="6 3" fill="none" marker-end="url(#hvac-arrow-blue)"/>
-        <text x="175" y="134" text-anchor="middle" font-size="7.5" fill="#c0392b" font-weight="600">refrigerant supply</text>
-        <text x="175" y="186" text-anchor="middle" font-size="7.5" fill="#2e6da6" font-weight="600">refrigerant return</text>
+        <text x="175" y="160" text-anchor="middle" font-size="7" fill="#4a5b76" font-style="italic">refrigerant loop</text>
     </g>
 
     <!-- HP distribution: VRF ceiling cassettes -->
@@ -707,8 +705,7 @@ const HVAC_DIAGRAM_SVG = `
             <rect x="266" y="220" width="28" height="9" rx="1"/>
             <rect x="316" y="220" width="28" height="9" rx="1"/>
         </g>
-        <text x="282" y="130" text-anchor="middle" font-size="7.5" fill="#a06000">Cassette (per zone)</text>
-        <text x="282" y="260" text-anchor="middle" font-size="8" fill="#6a7891" font-style="italic">Ducted or ductless indoor units</text>
+        <text x="282" y="74" text-anchor="middle" font-size="7.5" fill="#a06000" font-weight="600">Cassette (per zone)</text>
     </g>
 
     <!-- HP distribution: hydronic baseboards -->
@@ -737,7 +734,7 @@ const HVAC_DIAGRAM_SVG = `
         <rect x="222" y="130" width="120" height="5" fill="#f39c12"/>
         <rect x="222" y="198" width="120" height="5" fill="#f39c12"/>
         <rect x="222" y="258" width="120" height="5" fill="#f39c12"/>
-        <text x="282" y="128" text-anchor="middle" font-size="7.5" fill="#a06000">Baseboard per zone</text>
+        <text x="282" y="170" text-anchor="middle" font-size="8" fill="#a06000" font-weight="600">Baseboard per zone</text>
     </g>
 
     <!-- HP distribution: PTHP per zone -->
@@ -774,7 +771,7 @@ const HVAC_DIAGRAM_SVG = `
             <rect x="312" y="228" width="28" height="16" fill="#e6f4ff" stroke="#8a99b0" stroke-width="0.8"/>
             <rect x="312" y="248" width="28" height="14" fill="#fff" stroke="#1a3a6c" stroke-width="1.2"/>
         </g>
-        <text x="282" y="140" text-anchor="middle" font-size="7.5" fill="#1a3a6c" font-weight="600">PTHP + window (typ.)</text>
+        <text x="282" y="74" text-anchor="middle" font-size="7.5" fill="#1a3a6c" font-weight="600">PTHP under each window</text>
     </g>
 
     <!-- HP backup: NG boiler (small badge overlaid on the outdoor panel) -->
