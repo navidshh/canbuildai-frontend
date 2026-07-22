@@ -827,7 +827,12 @@
                 });
             }
 
-            function formatValueForPreview(v) {
+            function formatValueForPreview(v, paramKey) {
+                // Use the shared param-value formatter (e.g. HVAC codes → labels)
+                // when available so the preview matches the results screen.
+                if (paramKey && typeof window.formatParamValue === 'function') {
+                    return window.formatParamValue(paramKey, v);
+                }
                 if (typeof v === 'number') return v.toString();
                 return v;
             }
@@ -910,14 +915,14 @@
                     if (error) {
                         previewText.textContent = error;
                     } else {
-                        const shown = values.slice(0, 12).map(formatValueForPreview);
+                        const shown = values.slice(0, 12).map(v => formatValueForPreview(v, paramKey));
                         if (values.length > 12) shown.push(`… (${values.length} total)`);
                         previewText.textContent = `${values.length} values: ${shown.join(', ')}`;
                     }
                 } else {
                     customSection.style.display = 'none';
                     defaultPreview.style.display = 'block';
-                    const shown = meta.defaults.slice(0, 12).map(formatValueForPreview);
+                    const shown = meta.defaults.slice(0, 12).map(v => formatValueForPreview(v, paramKey));
                     if (meta.defaults.length > 12) shown.push(`… (${meta.defaults.length} total)`);
                     defaultText.textContent = `${meta.defaults.length} values → ${shown.join(', ')}`;
                 }

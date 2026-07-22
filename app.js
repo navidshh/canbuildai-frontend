@@ -212,6 +212,35 @@ const HVAC_SYSTEM_OPTIONS = {
     }
 };
 
+// Reverse lookup: backend ecm_system_name -> friendly display string that
+// matches the wording used in the step-2 cascading dropdowns. Used by results
+// (table, scatter tooltip, PDF) so users never see raw codes like
+// "HS13_ASHP_VRF".
+function formatHvacName(backendValue) {
+    if (backendValue === undefined || backendValue === null || backendValue === '') return '—';
+    // Find the (family|type) key that maps to this backend value
+    const map = HVAC_SYSTEM_OPTIONS.backendValue;
+    const key = Object.keys(map).find(k => map[k] === backendValue);
+    if (!key) return backendValue; // Unknown code — show raw so it's at least visible
+
+    const [family, type] = key.split('|');
+    const familyLabel = (HVAC_SYSTEM_OPTIONS.families.find(f => f.value === family) || {}).label || family;
+    if (!type) return familyLabel;
+
+    const typeList = HVAC_SYSTEM_OPTIONS.typesByFamily[family] || [];
+    const typeLabel = (typeList.find(t => t.value === type) || {}).label || type;
+    return `${familyLabel} — ${typeLabel}`;
+}
+
+// Format a parameter value for user-facing display in results. Dispatches to
+// parameter-specific formatters (e.g. HVAC codes → friendly names) and falls
+// back to the raw value for numeric / free-text parameters.
+function formatParamValue(paramKey, value) {
+    if (value === undefined || value === null || value === '') return '—';
+    if (paramKey === 'ecm_system_name') return formatHvacName(value);
+    return typeof value === 'number' ? value : String(value);
+}
+
 function setupHvacCascade(familyId, typeId, hiddenId) {
     const familySel = document.getElementById(familyId);
     const typeSel = document.getElementById(typeId);
@@ -2073,6 +2102,8 @@ function displayCostAnalysisResults(results) {
     };
     
     const parameterDisplayName = parameterNames[parameter] || parameter;
+    const baselineDisplay = formatParamValue(parameter, baselineValue);
+    const improvedDisplay = formatParamValue(parameter, improvedValue);
     
     // Determine if this is a good investment
     const isFeasible = economics.totalAnnualSavings > 0 && economics.retrofitCost > 0;
@@ -2192,7 +2223,7 @@ function displayCostAnalysisResults(results) {
             <div class="result-card" style="text-align: center;">
                 <h4>📉 Baseline</h4>
                 <div style="font-size: 1.1em; color: #666; margin: 10px 0;">
-                    <strong>${parameterDisplayName}:</strong> ${baselineValue}
+                    <strong>${parameterDisplayName}:</strong> ${baselineDisplay}
                 </div>
                 <div class="value" style="font-size: 1.5em;">${baselineResults.total_energy_eui_electricity_kwh_per_m_sq.toFixed(2)}</div>
                 <div class="unit">kWh/m² (Electricity)</div>
@@ -2203,7 +2234,7 @@ function displayCostAnalysisResults(results) {
             <div class="result-card" style="text-align: center; background: linear-gradient(135deg, #48bb7820 0%, #38a16920 100%);">
                 <h4>✨ After Retrofit</h4>
                 <div style="font-size: 1.1em; color: #666; margin: 10px 0;">
-                    <strong>${parameterDisplayName}:</strong> ${improvedValue}
+                    <strong>${parameterDisplayName}:</strong> ${improvedDisplay}
                 </div>
                 <div class="value" style="font-size: 1.5em; color: #48bb78;">${improvedResults.total_energy_eui_electricity_kwh_per_m_sq.toFixed(2)}</div>
                 <div class="unit">kWh/m² (Electricity)</div>
@@ -2311,7 +2342,7 @@ function displayAlternativeResults(results) {
 
         // Legacy single-value field for chart labels / back-compat
         const paramValue = variableParameters.length
-            ? variableParameters.map(p => paramValues[p]).join(' / ')
+            ? variableParameters.map(p => formatParamValue(p, paramValues[p])).join(' / ')
             : (i + 1);
 
         configs.push({
@@ -2347,8 +2378,7 @@ function displayAlternativeResults(results) {
     function renderRow(config, idx) {
         const rowBg = idx % 2 === 0 ? '#f8f9ff' : 'white';
         const paramCells = variableParameters.map(p => {
-            const val = config.paramValues[p];
-            const display = typeof val === 'number' ? val : (val ?? '—');
+            const display = formatParamValue(p, config.paramValues[p]);
             return `<td style="padding: 12px;">${display}</td>`;
         }).join('');
         return `
@@ -2746,8 +2776,7 @@ function _showScatterTooltip(idx, x, y) {
         paramsHtml = st.variableParameters
             .map((p, i) => {
                 const label = st.parameterLabels[i] || p;
-                const val = c.paramValues[p];
-                const shown = typeof val === 'number' ? val : (val ?? '—');
+                const shown = formatParamValue(p, c.paramValues[p]);
                 return `<div style="opacity:.85; font-size:12px;">${label}: <strong>${shown}</strong></div>`;
             })
             .join('');
@@ -3480,8 +3509,8 @@ async function downloadPDFReport() {
 
         doc.text(`${config.index}`, colX.config + 2, yPos + 5);
         paramKeys.forEach((k, i) => {
-            const val = config.paramValues ? config.paramValues[k] : config.paramValue;
-            const str = val === undefined || val === null ? '—' : String(val);
+            const raw = config.paramValues ? config.paramValues[k] : config.paramValue;
+            const str = formatParamValue(k, raw);
             const truncated = doc.splitTextToSize(str, paramColWidth - 3)[0] || str;
             doc.text(truncated, colX['p' + i] + 2, yPos + 5);
         });
@@ -3535,7 +3564,7 @@ async function downloadPDFReport() {
         doc.setFont('helvetica', 'bold');
         const paramSummary = (globalVariableParameters && globalVariableParameters.length && config.paramValues)
             ? globalVariableParameters
-                .map((k, i) => `${(globalParameterLabels[i] || k)}: ${config.paramValues[k]}`)
+                .map((k, i) => `${(globalParameterLabels[i] || k)}: ${formatParamValue(k, config.paramValues[k])}`)
                 .join('  |  ')
             : `Parameter Value: ${config.paramValue}`;
         doc.text(`Configuration ${config.index} — ${paramSummary}`, 20, yPos + 5.5);
