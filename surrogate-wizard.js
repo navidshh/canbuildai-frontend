@@ -193,15 +193,19 @@
             if (!bt || !bt.value) return 'Please choose a building archetype.';
         }
 
-        // Step-5 specific: when "alternative" analysis is selected, require a
-        // parameter; when "cost", require parameter + baseline + improved.
+        // Step-5 specific: when "alternative" analysis is selected, require at
+        // least one configured parameter; when "cost", require parameter +
+        // baseline + improved.
         if (n === 5) {
             const analysisType = (document.querySelector(
                 'input[name="analysisType"]:checked'
             ) || {}).value;
             if (analysisType === 'alternative') {
-                const v = $('#variableParameter');
-                if (!v || !v.value) return 'Choose a parameter to vary.';
+                if (!window.altConfig || typeof window.altConfig.collect !== 'function') {
+                    return 'Alternative configuration UI not ready. Please refresh.';
+                }
+                const collected = window.altConfig.collect();
+                if (!collected.ok) return collected.error;
             } else if (analysisType === 'cost') {
                 const costParam = $('#costParameter');
                 if (!costParam || !costParam.value)

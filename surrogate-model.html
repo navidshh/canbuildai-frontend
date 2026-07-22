@@ -503,62 +503,66 @@
                     </div>
 
                     <div id="parameterSelection" class="form-group" style="display: none; margin-top: 20px;">
-                        <label for="variableParameter">
-                            Select Parameter to Vary
-                            <span class="tooltip" data-tooltip="Choose which parameter to analyze across different values">ℹ️</span>
-                        </label>
-                        <select id="variableParameter" name="variableParameter">
-                            <option value="">Select parameter...</option>
-                            <option value="ecm_system_name">Dominant HVAC System</option>
-                            <option value="ext_wall_cond">External Wall Thermal Conductance (W/m²·K)</option>
-                            <option value="ext_roof_cond">External Roof Thermal Conductance (W/m²·K)</option>
-                            <option value="fixed_window_cond">Window Thermal Conductance (W/m²·K)</option>
-                            <option value="fixed_wind_solar_trans">Window Solar Heat Gain Coefficient</option>
-                            <option value="fdwr_set">Window-to-Wall Ratio (%)</option>
-                            <option value="srr_set">Skylight-to-Roof Ratio (%)</option>
-                            <option value="boiler_eff">Boiler Efficiency</option>
-                            <option value="furnace_eff">Furnace Efficiency</option>
-                            <option value="shw_eff">Service Hot Water Efficiency</option>
-                        </select>
-                    </div>
-
-                    <div id="rangeTypeSelection" class="form-group" style="display: none; margin-top: 20px;">
                         <label>
-                            Value Range Selection
-                            <span class="tooltip" data-tooltip="Choose to use predefined default values or define a custom range">ℹ️</span>
+                            Parameters to Vary
+                            <span class="tooltip" data-tooltip="Add one or more parameters. All combinations of the chosen values will be predicted.">ℹ️</span>
                         </label>
-                        <div style="display: flex; gap: 20px; margin-top: 10px;">
-                            <label style="display: flex; align-items: center; cursor: pointer;">
-                                <input type="radio" name="rangeType" value="default" checked style="margin-right: 8px;">
-                                <span>Use Default Values</span>
-                            </label>
-                            <label style="display: flex; align-items: center; cursor: pointer;">
-                                <input type="radio" name="rangeType" value="custom" style="margin-right: 8px;">
-                                <span>Define Custom Range</span>
-                            </label>
+                        <div id="parameterConfigContainer"></div>
+                        <div style="margin-top: 15px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+                            <button type="button" id="addParameterBtn" class="btn btn-secondary" style="padding: 8px 16px;">
+                                ➕ Add Parameter
+                            </button>
+                            <div id="combinationsSummary" style="font-size: 14px; color: #2a5298; font-weight: 600;"></div>
                         </div>
                     </div>
 
-                    <div id="customRangeInputs" class="form-group" style="display: none; margin-top: 20px; background-color: #f8f9ff; padding: 20px; border-radius: 8px; border: 1px solid #667eea;">
-                        <h4 style="margin-top: 0; color: #2a5298;">Custom Range Configuration</h4>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
-                            <div>
-                                <label for="customMin">Minimum Value</label>
-                                <input type="number" id="customMin" name="customMin" step="any" placeholder="Min" style="width: 100%;">
+                    <!-- Template for each parameter row (cloned by altConfig JS) -->
+                    <template id="parameterRowTemplate">
+                        <div class="param-config-row" style="background-color: #f8f9ff; padding: 15px 15px 15px 15px; border-radius: 8px; border: 1px solid #dbeafe; margin-top: 12px; position: relative;">
+                            <button type="button" class="param-row-remove" title="Remove parameter" style="position: absolute; top: 6px; right: 8px; background: transparent; border: none; font-size: 20px; line-height: 1; cursor: pointer; color: #ef4444; padding: 4px 8px;">×</button>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label>Parameter</label>
+                                <select class="param-select">
+                                    <option value="">Select parameter...</option>
+                                </select>
                             </div>
-                            <div>
-                                <label for="customMax">Maximum Value</label>
-                                <input type="number" id="customMax" name="customMax" step="any" placeholder="Max" style="width: 100%;">
+                            <div class="param-range-type form-group" style="display: none; margin-bottom: 12px;">
+                                <label>Value Range Selection</label>
+                                <div style="display: flex; gap: 20px; margin-top: 6px; flex-wrap: wrap;">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="radio" class="range-type-radio" value="default" checked style="margin-right: 8px;">
+                                        <span>Use Default Values</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="radio" class="range-type-radio" value="custom" style="margin-right: 8px;">
+                                        <span>Define Custom Range</span>
+                                    </label>
+                                </div>
                             </div>
-                            <div>
-                                <label for="customStep">Step Size</label>
-                                <input type="number" id="customStep" name="customStep" step="any" placeholder="Step" style="width: 100%;">
+                            <div class="param-custom-range form-group" style="display: none; margin-bottom: 4px; background-color: white; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                                    <div>
+                                        <label>Minimum</label>
+                                        <input type="number" class="custom-min" step="any" placeholder="Min" style="width: 100%;">
+                                    </div>
+                                    <div>
+                                        <label>Maximum</label>
+                                        <input type="number" class="custom-max" step="any" placeholder="Max" style="width: 100%;">
+                                    </div>
+                                    <div>
+                                        <label>Step</label>
+                                        <input type="number" class="custom-step" step="any" placeholder="Step" style="width: 100%;">
+                                    </div>
+                                </div>
+                                <div class="range-preview" style="margin-top: 10px; padding: 8px 10px; background-color: #f8fafc; border-radius: 4px; font-size: 13px;">
+                                    <strong>Preview:</strong> <span class="range-preview-text">Configure range to see preview</span>
+                                </div>
+                            </div>
+                            <div class="param-default-preview" style="display: none; margin-top: 4px; font-size: 13px; color: #475569;">
+                                <strong>Default values:</strong> <span class="default-preview-text"></span>
                             </div>
                         </div>
-                        <div id="rangePreview" style="margin-top: 15px; padding: 10px; background-color: white; border-radius: 5px; font-size: 14px;">
-                            <strong>Preview:</strong> <span id="rangePreviewText">Configure range to see preview</span>
-                        </div>
-                    </div>
+                    </template>
 
                     <!-- Cost Analysis Section -->
                     <div id="costAnalysisSection" class="form-group" style="display: none; margin-top: 20px;">
@@ -767,131 +771,294 @@
         document.querySelectorAll('input[name="analysisType"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 const parameterSelection = document.getElementById('parameterSelection');
-                const rangeTypeSelection = document.getElementById('rangeTypeSelection');
                 const costAnalysisSection = document.getElementById('costAnalysisSection');
-                
+
                 if (this.value === 'alternative') {
                     parameterSelection.style.display = 'block';
                     costAnalysisSection.style.display = 'none';
+                    window.altConfig.ensureAtLeastOneRow();
                 } else if (this.value === 'cost') {
                     parameterSelection.style.display = 'none';
-                    rangeTypeSelection.style.display = 'none';
-                    document.getElementById('customRangeInputs').style.display = 'none';
                     costAnalysisSection.style.display = 'block';
                 } else {
                     parameterSelection.style.display = 'none';
-                    rangeTypeSelection.style.display = 'none';
-                    document.getElementById('customRangeInputs').style.display = 'none';
                     costAnalysisSection.style.display = 'none';
                 }
             });
         });
 
-        // Handle parameter selection change
-        document.getElementById('variableParameter').addEventListener('change', function() {
-            const rangeTypeSelection = document.getElementById('rangeTypeSelection');
-            const customRangeInputs = document.getElementById('customRangeInputs');
-            
-            if (this.value) {
-                rangeTypeSelection.style.display = 'block';
-                // Reset to default when parameter changes
-                document.querySelector('input[name="rangeType"][value="default"]').checked = true;
-                customRangeInputs.style.display = 'none';
-                
-                // Set suggested ranges when parameter is selected
-                updateSuggestedRanges(this.value);
-            } else {
-                rangeTypeSelection.style.display = 'none';
-                customRangeInputs.style.display = 'none';
-            }
-        });
+        // ---------------------------------------------------------------------
+        // Alternative Configuration Analysis — multi-parameter row manager
+        // ---------------------------------------------------------------------
+        window.altConfig = (function () {
+            const META = window.ALTERNATIVE_PARAM_METADATA || {};
+            const MAX = window.ALTERNATIVE_MAX_COMBINATIONS || 100;
+            const container = () => document.getElementById('parameterConfigContainer');
+            const summaryEl = () => document.getElementById('combinationsSummary');
+            const template = () => document.getElementById('parameterRowTemplate');
+            let rowCounter = 0;
 
-        // Handle range type radio button change
-        document.querySelectorAll('input[name="rangeType"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const customRangeInputs = document.getElementById('customRangeInputs');
-                if (this.value === 'custom') {
-                    customRangeInputs.style.display = 'block';
-                    updateRangePreview();
+            function currentRows() {
+                return Array.from(container().querySelectorAll('.param-config-row'));
+            }
+
+            function selectedParameters(excludeRow) {
+                return currentRows()
+                    .filter(r => r !== excludeRow)
+                    .map(r => r.querySelector('.param-select').value)
+                    .filter(v => v);
+            }
+
+            function refreshParameterOptions() {
+                currentRows().forEach(row => {
+                    const select = row.querySelector('.param-select');
+                    const current = select.value;
+                    const taken = selectedParameters(row);
+                    // Rebuild options
+                    select.innerHTML = '<option value="">Select parameter...</option>';
+                    Object.keys(META).forEach(paramKey => {
+                        if (taken.includes(paramKey) && paramKey !== current) return;
+                        const opt = document.createElement('option');
+                        opt.value = paramKey;
+                        opt.textContent = META[paramKey].label;
+                        if (paramKey === current) opt.selected = true;
+                        select.appendChild(opt);
+                    });
+                });
+            }
+
+            function formatValueForPreview(v) {
+                if (typeof v === 'number') return v.toString();
+                return v;
+            }
+
+            function computeRowValues(row) {
+                const paramKey = row.querySelector('.param-select').value;
+                if (!paramKey || !META[paramKey]) return { paramKey: null, values: [], error: null };
+
+                const rangeTypeRadio = row.querySelector('.range-type-radio:checked');
+                const rangeType = rangeTypeRadio ? rangeTypeRadio.value : 'default';
+                const meta = META[paramKey];
+
+                if (rangeType === 'default' || meta.type !== 'numeric') {
+                    return { paramKey, values: [...meta.defaults], error: null };
+                }
+
+                // Custom numeric range
+                const min = parseFloat(row.querySelector('.custom-min').value);
+                const max = parseFloat(row.querySelector('.custom-max').value);
+                const step = parseFloat(row.querySelector('.custom-step').value);
+                if (isNaN(min) || isNaN(max) || isNaN(step)) {
+                    return { paramKey, values: [], error: 'Please enter valid min, max, and step values' };
+                }
+                if (min >= max) return { paramKey, values: [], error: 'Minimum must be less than maximum' };
+                if (step <= 0) return { paramKey, values: [], error: 'Step must be greater than zero' };
+
+                const values = [];
+                for (let v = min; v <= max + 1e-9; v += step) {
+                    values.push(parseFloat(v.toFixed(6)));
+                    if (values.length > 200) { values.length = 200; break; }
+                }
+                return { paramKey, values, error: null };
+            }
+
+            function updateRowPreview(row) {
+                const paramKey = row.querySelector('.param-select').value;
+                const rangeSection = row.querySelector('.param-range-type');
+                const customSection = row.querySelector('.param-custom-range');
+                const defaultPreview = row.querySelector('.param-default-preview');
+                const defaultText = row.querySelector('.default-preview-text');
+                const previewText = row.querySelector('.range-preview-text');
+
+                if (!paramKey) {
+                    rangeSection.style.display = 'none';
+                    customSection.style.display = 'none';
+                    defaultPreview.style.display = 'none';
+                    return;
+                }
+
+                const meta = META[paramKey];
+                const isNumeric = meta.type === 'numeric';
+                rangeSection.style.display = isNumeric ? 'block' : 'none';
+                if (!isNumeric) {
+                    // Force default on non-numeric params
+                    const defRadio = row.querySelector('.range-type-radio[value="default"]');
+                    if (defRadio) defRadio.checked = true;
+                    customSection.style.display = 'none';
+                }
+
+                const rangeTypeRadio = row.querySelector('.range-type-radio:checked');
+                const rangeType = rangeTypeRadio ? rangeTypeRadio.value : 'default';
+
+                if (rangeType === 'custom' && isNumeric) {
+                    customSection.style.display = 'block';
+                    defaultPreview.style.display = 'none';
+                    // Seed suggested values if empty
+                    const minInp = row.querySelector('.custom-min');
+                    const maxInp = row.querySelector('.custom-max');
+                    const stepInp = row.querySelector('.custom-step');
+                    if (meta.suggested) {
+                        if (minInp.value === '') minInp.value = meta.suggested.min;
+                        if (maxInp.value === '') maxInp.value = meta.suggested.max;
+                        if (stepInp.value === '') stepInp.value = meta.suggested.step;
+                        minInp.setAttribute('min', meta.suggested.absMin);
+                        minInp.setAttribute('max', meta.suggested.absMax);
+                        maxInp.setAttribute('min', meta.suggested.absMin);
+                        maxInp.setAttribute('max', meta.suggested.absMax);
+                    }
+                    const { values, error } = computeRowValues(row);
+                    if (error) {
+                        previewText.textContent = error;
+                    } else {
+                        const shown = values.slice(0, 12).map(formatValueForPreview);
+                        if (values.length > 12) shown.push(`… (${values.length} total)`);
+                        previewText.textContent = `${values.length} values: ${shown.join(', ')}`;
+                    }
                 } else {
-                    customRangeInputs.style.display = 'none';
-                }
-            });
-        });
-
-        // Update suggested ranges based on parameter with validation limits
-        function updateSuggestedRanges(parameter) {
-            const ranges = {
-                'ext_wall_cond': { min: 0.15, max: 0.35, step: 0.05, absMin: 0.10, absMax: 0.50 },
-                'ext_roof_cond': { min: 0.10, max: 0.25, step: 0.03, absMin: 0.08, absMax: 0.35 },
-                'fixed_window_cond': { min: 1.5, max: 4.0, step: 0.5, absMin: 0.8, absMax: 6.0 },
-                'fixed_wind_solar_trans': { min: 0.2, max: 0.7, step: 0.1, absMin: 0.1, absMax: 0.9 },
-                'fdwr_set': { min: 0.1, max: 0.7, step: 0.1, absMin: 0.05, absMax: 0.9 },
-                'srr_set': { min: 0.03, max: 0.15, step: 0.02, absMin: 0.0, absMax: 0.2 }
-            };
-            
-            const minInput = document.getElementById('customMin');
-            const maxInput = document.getElementById('customMax');
-            const stepInput = document.getElementById('customStep');
-            
-            if (ranges[parameter]) {
-                // Set suggested values
-                minInput.value = ranges[parameter].min;
-                maxInput.value = ranges[parameter].max;
-                stepInput.value = ranges[parameter].step;
-                
-                // Set absolute limits
-                minInput.setAttribute('min', ranges[parameter].absMin);
-                minInput.setAttribute('max', ranges[parameter].absMax);
-                maxInput.setAttribute('min', ranges[parameter].absMin);
-                maxInput.setAttribute('max', ranges[parameter].absMax);
-                stepInput.setAttribute('min', '0.001');
-                stepInput.setAttribute('max', ranges[parameter].absMax - ranges[parameter].absMin);
-                
-                updateRangePreview();
-            } else {
-                // Clear limits for non-numeric parameters
-                minInput.removeAttribute('min');
-                minInput.removeAttribute('max');
-                maxInput.removeAttribute('min');
-                maxInput.removeAttribute('max');
-            }
-        }
-
-        // Update range preview
-        function updateRangePreview() {
-            const min = parseFloat(document.getElementById('customMin').value);
-            const max = parseFloat(document.getElementById('customMax').value);
-            const step = parseFloat(document.getElementById('customStep').value);
-            
-            if (isNaN(min) || isNaN(max) || isNaN(step) || step <= 0) {
-                document.getElementById('rangePreviewText').textContent = 'Please enter valid min, max, and step values';
-                return;
-            }
-            
-            if (min >= max) {
-                document.getElementById('rangePreviewText').textContent = 'Minimum must be less than maximum';
-                return;
-            }
-            
-            const values = [];
-            for (let v = min; v <= max; v += step) {
-                values.push(v.toFixed(3));
-                if (values.length > 20) {
-                    values.push('...');
-                    break;
+                    customSection.style.display = 'none';
+                    defaultPreview.style.display = 'block';
+                    const shown = meta.defaults.slice(0, 12).map(formatValueForPreview);
+                    if (meta.defaults.length > 12) shown.push(`… (${meta.defaults.length} total)`);
+                    defaultText.textContent = `${meta.defaults.length} values → ${shown.join(', ')}`;
                 }
             }
-            
-            const numValues = Math.floor((max - min) / step) + 1;
-            document.getElementById('rangePreviewText').textContent = 
-                `${numValues} values: ${values.join(', ')}`;
-        }
 
-        // Add event listeners for range inputs
-        ['customMin', 'customMax', 'customStep'].forEach(id => {
-            document.getElementById(id).addEventListener('input', updateRangePreview);
-        });
+            function updateSummary() {
+                let total = 1;
+                let hasValid = false;
+                let hasError = false;
+                currentRows().forEach(row => {
+                    const { paramKey, values, error } = computeRowValues(row);
+                    if (!paramKey) return;
+                    if (error) { hasError = true; return; }
+                    if (values.length > 0) {
+                        total *= values.length;
+                        hasValid = true;
+                    }
+                });
+                const el = summaryEl();
+                if (!hasValid) {
+                    el.textContent = '';
+                    el.style.color = '#2a5298';
+                } else if (hasError) {
+                    el.textContent = 'Fix errors above to see combination count.';
+                    el.style.color = '#ef4444';
+                } else if (total > MAX) {
+                    el.textContent = `⚠ ${total} combinations — exceeds limit of ${MAX}. Reduce ranges or remove a parameter.`;
+                    el.style.color = '#ef4444';
+                } else {
+                    el.textContent = `Total configurations to generate: ${total}`;
+                    el.style.color = '#2a5298';
+                }
+            }
+
+            function updateRemoveButtons() {
+                const rows = currentRows();
+                rows.forEach((row, idx) => {
+                    const btn = row.querySelector('.param-row-remove');
+                    // Always show — user can also remove the only row (they can re-add)
+                    btn.style.display = rows.length > 1 ? 'block' : 'none';
+                });
+            }
+
+            function attachRowHandlers(row) {
+                const select = row.querySelector('.param-select');
+                select.addEventListener('change', () => {
+                    refreshParameterOptions();
+                    // Reset per-row values on parameter change
+                    row.querySelector('.custom-min').value = '';
+                    row.querySelector('.custom-max').value = '';
+                    row.querySelector('.custom-step').value = '';
+                    const defRadio = row.querySelector('.range-type-radio[value="default"]');
+                    if (defRadio) defRadio.checked = true;
+                    updateRowPreview(row);
+                    updateSummary();
+                });
+
+                row.querySelectorAll('.range-type-radio').forEach(r => {
+                    r.addEventListener('change', () => {
+                        updateRowPreview(row);
+                        updateSummary();
+                    });
+                });
+
+                ['.custom-min', '.custom-max', '.custom-step'].forEach(sel => {
+                    const el = row.querySelector(sel);
+                    el.addEventListener('input', () => {
+                        updateRowPreview(row);
+                        updateSummary();
+                    });
+                });
+
+                row.querySelector('.param-row-remove').addEventListener('click', () => {
+                    row.remove();
+                    refreshParameterOptions();
+                    updateRemoveButtons();
+                    updateSummary();
+                });
+            }
+
+            function addRow() {
+                const tmpl = template();
+                const frag = tmpl.content.cloneNode(true);
+                const row = frag.querySelector('.param-config-row');
+                rowCounter += 1;
+                row.dataset.rowIndex = String(rowCounter);
+                // Radios in the same row need a shared name to behave as a group
+                row.querySelectorAll('.range-type-radio').forEach(r => {
+                    r.name = 'rangeType_' + rowCounter;
+                });
+                container().appendChild(frag);
+                const inserted = container().lastElementChild;
+                attachRowHandlers(inserted);
+                refreshParameterOptions();
+                updateRowPreview(inserted);
+                updateRemoveButtons();
+                updateSummary();
+                return inserted;
+            }
+
+            function ensureAtLeastOneRow() {
+                if (currentRows().length === 0) addRow();
+            }
+
+            function reset() {
+                container().innerHTML = '';
+                rowCounter = 0;
+                summaryEl().textContent = '';
+            }
+
+            function collect() {
+                const specs = [];
+                let total = 1;
+                for (const row of currentRows()) {
+                    const { paramKey, values, error } = computeRowValues(row);
+                    if (!paramKey) {
+                        return { ok: false, error: 'Please select a parameter for every row (or remove empty rows).' };
+                    }
+                    if (error) {
+                        return { ok: false, error: `${META[paramKey].label}: ${error}` };
+                    }
+                    if (!values || values.length === 0) {
+                        return { ok: false, error: `${META[paramKey].label} has no values configured.` };
+                    }
+                    specs.push({ parameter: paramKey, values });
+                    total *= values.length;
+                }
+                if (specs.length === 0) {
+                    return { ok: false, error: 'Please add at least one parameter to vary.' };
+                }
+                if (total > MAX) {
+                    return { ok: false, error: `Combinations (${total}) exceed maximum of ${MAX}. Reduce ranges.` };
+                }
+                return { ok: true, specs, totalCombinations: total };
+            }
+
+            // Wire up the Add button
+            document.getElementById('addParameterBtn').addEventListener('click', () => addRow());
+
+            return { addRow, ensureAtLeastOneRow, reset, collect, updateSummary };
+        })();
 
         // Handle cost parameter selection change (toggle between numeric and dropdown inputs)
         document.getElementById('costParameter').addEventListener('change', function() {
@@ -934,9 +1101,8 @@
         document.getElementById('buildingForm').addEventListener('reset', function() {
             setTimeout(() => {
                 document.getElementById('parameterSelection').style.display = 'none';
-                document.getElementById('rangeTypeSelection').style.display = 'none';
-                document.getElementById('customRangeInputs').style.display = 'none';
                 document.getElementById('costAnalysisSection').style.display = 'none';
+                if (window.altConfig) window.altConfig.reset();
             }, 0);
         });
         

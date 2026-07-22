@@ -6,6 +6,95 @@ const AWS_REGION = 'ca-central-1';
 // Global storage for input parameters (for PDF reports)
 let globalInputConfig = null;
 
+// -----------------------------------------------------------------------------
+// Alternative Configuration Analysis — parameter metadata
+// Shared between the wizard UI (inline script in surrogate-model.html) and the
+// prediction pipeline in this file. Update in one place to affect both.
+// -----------------------------------------------------------------------------
+const ALTERNATIVE_PARAM_METADATA = {
+    ecm_system_name: {
+        label: 'Dominant HVAC System',
+        type: 'categorical',
+        defaults: [
+            'NECB_Default',
+            'HS08_CCASHP_VRF',
+            'HS09_CCASHP_Baseboard',
+            'HS11_ASHP_PTHP',
+            'HS12_ASHP_Baseboard',
+            'HS13_ASHP_VRF'
+        ]
+    },
+    ext_wall_cond: {
+        label: 'External Wall Thermal Conductance (W/m²·K)',
+        type: 'numeric',
+        defaults: [0.183, 0.210, 0.247, 0.278, 0.314],
+        suggested: { min: 0.15, max: 0.35, step: 0.05, absMin: 0.10, absMax: 0.50 }
+    },
+    ext_roof_cond: {
+        label: 'External Roof Thermal Conductance (W/m²·K)',
+        type: 'numeric',
+        defaults: [0.121, 0.138, 0.142, 0.162, 0.183, 0.193, 0.227],
+        suggested: { min: 0.10, max: 0.25, step: 0.03, absMin: 0.08, absMax: 0.35 }
+    },
+    fixed_window_cond: {
+        label: 'Window Thermal Conductance (W/m²·K)',
+        type: 'numeric',
+        defaults: [1.6, 2.2, 2.4],
+        suggested: { min: 1.5, max: 4.0, step: 0.5, absMin: 0.8, absMax: 6.0 }
+    },
+    fixed_wind_solar_trans: {
+        label: 'Window Solar Heat Gain Coefficient',
+        type: 'numeric',
+        defaults: [0.2, 0.3, 0.4, 0.5, 0.6],
+        suggested: { min: 0.2, max: 0.7, step: 0.1, absMin: 0.1, absMax: 0.9 }
+    },
+    fdwr_set: {
+        label: 'Window-to-Wall Ratio (%)',
+        type: 'numeric',
+        defaults: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.69],
+        suggested: { min: 0.1, max: 0.7, step: 0.1, absMin: 0.05, absMax: 0.9 }
+    },
+    srr_set: {
+        label: 'Skylight-to-Roof Ratio (%)',
+        type: 'numeric',
+        defaults: ['NECB_Default', 0.03, 0.05, 0.08, 0.1],
+        suggested: { min: 0.03, max: 0.15, step: 0.02, absMin: 0.0, absMax: 0.2 }
+    },
+    boiler_eff: {
+        label: 'Boiler Efficiency',
+        type: 'categorical',
+        defaults: [
+            'NECB_Default',
+            'NECB 88% Efficient Condensing Boiler',
+            'Viessmann Vitocrossal 300 CT3-17 96.2% Efficient Condensing Gas Boiler'
+        ]
+    },
+    furnace_eff: {
+        label: 'Furnace Efficiency',
+        type: 'categorical',
+        defaults: [
+            'NECB_Default',
+            'NECB 85% Efficient Condensing Gas Furnace'
+        ]
+    },
+    shw_eff: {
+        label: 'Service Hot Water Efficiency',
+        type: 'categorical',
+        defaults: [
+            'NECB_Default',
+            'Natural Gas Direct Vent with Electric Ignition',
+            'Natural Gas Power Vent with Electric Ignition'
+        ]
+    }
+};
+
+// Max number of configurations (cartesian combinations) allowed per request.
+const ALTERNATIVE_MAX_COMBINATIONS = 100;
+
+// Expose for the wizard UI (loaded after app.js).
+window.ALTERNATIVE_PARAM_METADATA = ALTERNATIVE_PARAM_METADATA;
+window.ALTERNATIVE_MAX_COMBINATIONS = ALTERNATIVE_MAX_COMBINATIONS;
+
 // Per-archetype geometry overrides. The default values in
 // defaults_from_excel.json describe a MidriseApartment, so without these
 // overrides every prediction would be run with MidRise geometry no matter
@@ -1095,32 +1184,70 @@ document.getElementById('buildingForm').addEventListener('submit', async (e) => 
     
     // Get analysis type
     const analysisType = formData.get('analysisType');
-    const variableParameter = formData.get('variableParameter');
-    const rangeType = formData.get('rangeType');
-    const customMin = formData.get('customMin');
-    const customMax = formData.get('customMax');
-    const customStep = formData.get('customStep');
-    
-    // Get cost analysis parameters
+
+    // Cost analysis parameters (still form-based)
     const costParameter = formData.get('costParameter');
     let baselineValue = formData.get('baselineValue');
     let improvedValue = formData.get('improvedValue');
-    
+
     // If HVAC system is selected, use the select dropdowns instead of numeric inputs
     if (costParameter === 'ecm_system_name') {
         baselineValue = formData.get('baselineValueSelect');
         improvedValue = formData.get('improvedValueSelect');
     }
-    
+
     const electricityRate = formData.get('electricityRate');
     const gasRate = formData.get('gasRate');
     const analysisYears = formData.get('analysisYears');
-    
+
+    // Alternative analysis parameters come from the multi-row wizard UI
+    let alternativeSpecs = null;
+    if (analysisType === 'alternative') {
+        if (window.altConfig && typeof window.altConfig.collect === 'function') {
+            const collected = window.altConfig.collect();
+            if (!collected.ok) {
+                alert(collected.error);
+                return;
+            }
+            alternativeSpecs = collected.specs;
+            console.log('Alternative parameter specs:', alternativeSpecs,
+                        'Total combinations:', collected.totalCombinations);
+        } else {
+            // Legacy single-parameter fallback (index.html — no wizard).
+            const legacyParam = formData.get('variableParameter');
+            if (!legacyParam) {
+                alert('Please select a parameter to vary.');
+                return;
+            }
+            const meta = (window.ALTERNATIVE_PARAM_METADATA || {})[legacyParam];
+            let values;
+            const rangeType = formData.get('rangeType');
+            if (rangeType === 'custom') {
+                const min = parseFloat(formData.get('customMin'));
+                const max = parseFloat(formData.get('customMax'));
+                const step = parseFloat(formData.get('customStep'));
+                if (isNaN(min) || isNaN(max) || isNaN(step) || min >= max || step <= 0) {
+                    alert('Please enter valid custom range values.');
+                    return;
+                }
+                values = [];
+                for (let v = min; v <= max + 1e-9; v += step) {
+                    values.push(parseFloat(v.toFixed(6)));
+                    if (values.length > 200) break;
+                }
+            } else if (meta) {
+                values = [...meta.defaults];
+            } else {
+                alert(`No defaults defined for parameter: ${legacyParam}`);
+                return;
+            }
+            alternativeSpecs = [{ parameter: legacyParam, values }];
+        }
+    }
+
     console.log('Building Configuration:', buildingConfig);
     console.log('Analysis Type:', analysisType);
-    console.log('Variable Parameter:', variableParameter);
-    console.log('Range Type:', rangeType);
-    
+
     // Store input configuration globally for PDF reports
     globalInputConfig = { ...buildingConfig };
     // Remove ':' prefix for cleaner display
@@ -1131,7 +1258,7 @@ document.getElementById('buildingForm').addEventListener('submit', async (e) => 
             delete globalInputConfig[key];
         }
     });
-    
+
     // Validate cost analysis inputs
     if (analysisType === 'cost') {
         if (!costParameter) {
@@ -1156,53 +1283,17 @@ document.getElementById('buildingForm').addEventListener('submit', async (e) => 
             }
         }
     }
-    
-    // Validate alternative analysis selection
-    if (analysisType === 'alternative' && !variableParameter) {
-        alert('Please select a parameter to vary for alternative configuration analysis.');
-        return;
-    }
-    
-    // Validate custom range inputs
-    if (analysisType === 'alternative' && rangeType === 'custom') {
-        if (!customMin || !customMax || !customStep) {
-            alert('Please enter minimum, maximum, and step values for custom range.');
-            return;
-        }
-        const min = parseFloat(customMin);
-        const max = parseFloat(customMax);
-        const step = parseFloat(customStep);
-        
-        if (isNaN(min) || isNaN(max) || isNaN(step)) {
-            alert('Please enter valid numeric values for min, max, and step.');
-            return;
-        }
-        if (min >= max) {
-            alert('Minimum value must be less than maximum value.');
-            return;
-        }
-        if (step <= 0) {
-            alert('Step value must be greater than zero.');
-            return;
-        }
-        
-        const numValues = Math.floor((max - min) / step) + 1;
-        if (numValues > 50) {
-            alert(`Your custom range would generate ${numValues} configurations. Please limit to 50 or fewer by adjusting your step size.`);
-            return;
-        }
-    }
-    
+
     // Show loading overlay
     showLoading();
-    
+
     try {
         let results;
-        
+
         if (analysisType === 'single') {
             // Generate Excel file from configuration
             const excelBlob = await generateExcelFile(buildingConfig);
-            
+
             // Upload to API
             results = await uploadAndPredict(excelBlob);
             results.analysisType = 'single';
@@ -1211,35 +1302,33 @@ document.getElementById('buildingForm').addEventListener('submit', async (e) => 
             // For numeric parameters, parse as float; for string parameters (HVAC), use as-is
             const baselineVal = costParameter === 'ecm_system_name' ? baselineValue : parseFloat(baselineValue);
             const improvedVal = costParameter === 'ecm_system_name' ? improvedValue : parseFloat(improvedValue);
-            
+
             results = await performCostAnalysis(
-                buildingConfig, 
-                costParameter, 
-                baselineVal, 
+                buildingConfig,
+                costParameter,
+                baselineVal,
                 improvedVal,
                 parseFloat(electricityRate),
                 parseFloat(gasRate),
                 parseInt(analysisYears || 25)
             );
         } else {
-            // Alternative configuration analysis
-            const customRange = rangeType === 'custom' ? {
-                min: parseFloat(customMin),
-                max: parseFloat(customMax),
-                step: parseFloat(customStep)
-            } : null;
-            
-            const excelBlob = await generateMultiConfigExcelFile(buildingConfig, variableParameter, customRange);
-            
+            // Alternative configuration analysis — cartesian product of all parameter values
+            const excelBlob = await generateCombinationsExcelFile(buildingConfig, alternativeSpecs);
+
             // Upload to API
             results = await uploadAndPredict(excelBlob);
             results.analysisType = 'alternative';
-            results.variableParameter = variableParameter;
+            results.variableParameters = alternativeSpecs.map(s => s.parameter);
+            // Back-compat: keep singular field if only one param
+            if (alternativeSpecs.length === 1) {
+                results.variableParameter = alternativeSpecs[0].parameter;
+            }
         }
-        
+
         // Display results
         displayResults(results);
-        
+
     } catch (error) {
         console.error('Error:', error);
         displayError(error.message);
@@ -1319,8 +1408,18 @@ async function generateExcelFile(config) {
     return blob;
 }
 
-// Generate Excel file with multiple configurations for alternative analysis
-async function generateMultiConfigExcelFile(config, variableParameter, customRange = null) {
+// Generate Excel file with all cartesian-product combinations of the given
+// parameter specs for alternative-configuration analysis.
+//
+//   config       – the base building configuration (as collected from the form)
+//   paramSpecs   – array of { parameter: 'ecm_system_name', values: [...] }
+//
+// Returns an .xlsx Blob containing one row per combination.
+async function generateCombinationsExcelFile(config, paramSpecs) {
+    if (!Array.isArray(paramSpecs) || paramSpecs.length === 0) {
+        throw new Error('No parameter specifications provided for alternative analysis.');
+    }
+
     // Load ALL default values from the first row of the sample Input.xlsx
     let allDefaults;
     try {
@@ -1333,119 +1432,60 @@ async function generateMultiConfigExcelFile(config, variableParameter, customRan
         console.error('Error loading defaults:', error);
         throw new Error(`Failed to load configuration defaults: ${error.message}`);
     }
-    
-    console.log('Generating configurations for parameter:', variableParameter);
-    console.log('Custom range:', customRange);
-    
-    let variations;
-    
-    if (customRange) {
-        // Generate custom range values
-        variations = [];
-        for (let v = customRange.min; v <= customRange.max + 0.0001; v += customRange.step) {
-            // Round to avoid floating point precision issues
-            variations.push(parseFloat(v.toFixed(6)));
-        }
-        console.log(`Generated ${variations.length} custom values:`, variations);
-    } else {
-        // Use predefined default variations
-        const parameterVariations = {
-            'ecm_system_name': [
-                'NECB_Default',
-                'HS08_CCASHP_VRF',
-                'HS09_CCASHP_Baseboard',
-                'HS11_ASHP_PTHP',
-                'HS12_ASHP_Baseboard',
-                'HS13_ASHP_VRF'
-            ],
-            'ext_wall_cond': [0.183, 0.210, 0.247, 0.278, 0.314],
-            'ext_roof_cond': [0.121, 0.138, 0.142, 0.162, 0.183, 0.193, 0.227],
-            'fixed_window_cond': [1.6, 2.2, 2.4],
-            'fixed_wind_solar_trans': [0.2, 0.3, 0.4, 0.5, 0.6],
-            'fdwr_set': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.69],
-            'srr_set': ['NECB_Default', 0.03, 0.05, 0.08, 0.1],
-            'boiler_eff': [
-                'NECB_Default',
-                'NECB 88% Efficient Condensing Boiler',
-                'Viessmann Vitocrossal 300 CT3-17 96.2% Efficient Condensing Gas Boiler'
-            ],
-            'furnace_eff': [
-                'NECB_Default',
-                'NECB 85% Efficient Condensing Gas Furnace'
-            ],
-            'shw_eff': [
-                'NECB_Default',
-                'Natural Gas Direct Vent with Electric Ignition',
-                'Natural Gas Power Vent with Electric Ignition'
-            ]
-        };
-        
-        variations = parameterVariations[variableParameter];
-        if (!variations) {
-            throw new Error(`No variations defined for parameter: ${variableParameter}`);
-        }
-    }
-    
-    const rows = [];
-    const numConfigs = variations.length;
-    
-    console.log(`Creating ${numConfigs} configurations for ${variableParameter}`);
-    
-    // Create configurations based on the number of variations available
-    for (let i = 0; i < numConfigs; i++) {
-        // Create a copy of all defaults
+
+    // Build cartesian product of all parameter value arrays
+    const combinations = paramSpecs.reduce(
+        (acc, spec) => acc.flatMap(prev => spec.values.map(v => [...prev, v])),
+        [[]]
+    );
+
+    console.log(`Generating ${combinations.length} combinations for parameters: ` +
+                paramSpecs.map(s => s.parameter).join(', '));
+
+    const userParams = [
+        'ecm_system_name', 'primary_heating_fuel', 'boiler_eff', 'furnace_eff', 'shw_eff',
+        'dcv_type', 'erv_package', 'airloop_economizer_type', 'nv_type',
+        'ext_wall_cond', 'ext_roof_cond', 'fixed_window_cond', 'fixed_wind_solar_trans', 'fdwr_set',
+        'srr_set', 'building_type', 'rotation_degrees', 'epw_file', 'pv_ground_type'
+    ];
+
+    const rows = combinations.map((combo, i) => {
+        // Start from defaults and overlay the user's base configuration
         const row = { ...allDefaults };
-        
-        // Override with user-selected values (the 19 configurable parameters)
-        const userParams = [
-            'ecm_system_name', 'primary_heating_fuel', 'boiler_eff', 'furnace_eff', 'shw_eff',
-            'dcv_type', 'erv_package', 'airloop_economizer_type', 'nv_type',
-            'ext_wall_cond', 'ext_roof_cond', 'fixed_window_cond', 'fixed_wind_solar_trans', 'fdwr_set',
-            'srr_set', 'building_type', 'rotation_degrees', 'epw_file', 'pv_ground_type'
-        ];
-        
+
         userParams.forEach(param => {
             const key = ':' + param;
-            if (config[key] !== undefined) {
-                row[key] = config[key];
-            }
+            if (config[key] !== undefined) row[key] = config[key];
         });
 
-        // Keep the legacy ComStock column in sync with the user's selection so the
-        // backend's auto config selection doesn't pick the stale default value.
         if (config[':building_type'] !== undefined) {
             row['bldg_standards_building_type'] = config[':building_type'];
         }
-
-        // Inject per-archetype geometry so the surrogate model receives
-        // the right geometry for the chosen archetype.
         applyArchetypeGeometry(row, config[':building_type']);
 
-        // Override the variable parameter with the specific variation value
-        const variableKey = ':' + variableParameter;
-        row[variableKey] = variations[i];
-        
-        console.log(`Configuration ${i + 1}: ${variableParameter} = ${variations[i]}`);
-        
-        rows.push(row);
-    }
-    
-    // Create worksheet from the data (5 rows)
-    const ws = XLSX.utils.json_to_sheet(rows);
-    
+        // Override each varying parameter with its combination value
+        paramSpecs.forEach((spec, j) => {
+            row[':' + spec.parameter] = combo[j];
+        });
+
+        if (i < 20 || i === combinations.length - 1) {
+            console.log(
+                `Config ${i + 1}:`,
+                paramSpecs.map((s, j) => `${s.parameter}=${combo[j]}`).join(', ')
+            );
+        }
+        return row;
+    });
+
     // Create workbook
+    const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-    
-    // Generate Excel file as binary
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    
-    // Convert to Blob
-    const blob = new Blob([excelBuffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+
+    return new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
-    
-    return blob;
 }
 
 // Perform cost analysis comparing baseline vs improved configuration
@@ -2166,9 +2206,9 @@ function displayCostAnalysisResults(results) {
 function displayAlternativeResults(results) {
     const resultsSection = document.getElementById('results');
     const resultsContent = document.getElementById('resultsContent');
-    
+
     console.log('Displaying alternative configuration results');
-    
+
     if (!results.energy_aggregated_results || !results.costing_results ||
         results.energy_aggregated_results.length === 0 || results.costing_results.length === 0) {
         resultsContent.innerHTML = `
@@ -2180,33 +2220,53 @@ function displayAlternativeResults(results) {
         resultsSection.style.display = 'block';
         return;
     }
-    
+
     const numConfigs = results.energy_aggregated_results.length;
     console.log(`Processing ${numConfigs} configurations`);
-    
+
+    // Determine which parameters were varied (array of param keys)
+    const variableParameters = Array.isArray(results.variableParameters) && results.variableParameters.length
+        ? results.variableParameters
+        : (results.variableParameter ? [results.variableParameter] : []);
+
+    const META = window.ALTERNATIVE_PARAM_METADATA || {};
+    const paramLabels = variableParameters.map(p => (META[p] && META[p].label) || p);
+
     // Extract data for all configurations
     const configs = [];
     for (let i = 0; i < numConfigs; i++) {
         const energyData = results.energy_aggregated_results[i];
         const costData = results.costing_results[i];
-        
+
         const electricityGJ = energyData["Predicted Electricity Energy Total (Gigajoules per square meter)"] || 0;
         const gasGJ = energyData["Predicted Gas Energy Total (Gigajoules per square meter)"] || 0;
         const totalEnergyGJ = electricityGJ + gasGJ;
-        
+
         const envelopeCost = costData["Predicted cost_equipment_envelope_total_cost_per_m_sq"] || 0;
         const hvacCost = costData["Predicted cost_equipment_heating_and_cooling_total_cost_per_m_sq"] || 0;
         const lightingCost = costData["Predicted cost_equipment_lighting_total_cost_per_m_sq"] || 0;
         const ventilationCost = costData["Predicted cost_equipment_ventilation_total_cost_per_m_sq"] || 0;
         const shwCost = costData["Predicted cost_equipment_shw_total_cost_per_m_sq"] || 0;
         const totalCost = envelopeCost + hvacCost + lightingCost + ventilationCost + shwCost;
-        
-        // Get parameter value
-        const paramValue = energyData[':' + results.variableParameter] || costData[':' + results.variableParameter] || i + 1;
-        
+
+        // Collect the values of every varied parameter for this config
+        const paramValues = {};
+        variableParameters.forEach(p => {
+            const key = ':' + p;
+            paramValues[p] = (energyData[key] !== undefined)
+                ? energyData[key]
+                : (costData[key] !== undefined ? costData[key] : '—');
+        });
+
+        // Legacy single-value field for chart labels / back-compat
+        const paramValue = variableParameters.length
+            ? variableParameters.map(p => paramValues[p]).join(' / ')
+            : (i + 1);
+
         configs.push({
             index: i + 1,
-            paramValue: paramValue,
+            paramValue,
+            paramValues,
             totalEnergy: totalEnergyGJ,
             electricity: electricityGJ,
             gas: gasGJ,
@@ -2218,61 +2278,61 @@ function displayAlternativeResults(results) {
             shwCost: shwCost
         });
     }
-    
+
     console.log('Configurations:', configs);
-    
-    // Get parameter display name
-    const parameterNames = {
-        'ext_wall_cond': 'External Wall Thermal Conductance (W/m²·K)',
-        'ext_roof_cond': 'External Roof Thermal Conductance (W/m²·K)',
-        'fixed_window_cond': 'Window Thermal Conductance (W/m²·K)',
-        'fixed_wind_solar_trans': 'Window Solar Heat Gain Coefficient',
-        'fdwr_set': 'Window-to-Wall Ratio (%)',
-        'srr_set': 'Skylight-to-Roof Ratio (%)',
-        'boiler_eff': 'Boiler Efficiency',
-        'furnace_eff': 'Furnace Efficiency',
-        'shw_eff': 'Service Hot Water Efficiency'
-    };
-    
-    const parameterDisplayName = parameterNames[results.variableParameter] || results.variableParameter;
-    
-    // Build HTML
+
+    const analysisTitle = variableParameters.length > 1
+        ? `Alternative Configuration Analysis: ${paramLabels.join(' × ')}`
+        : `Alternative Configuration Analysis: ${paramLabels[0] || ''}`;
+
+    // Build one <th> per varied parameter, plus Energy and Cost columns
+    const paramHeaders = paramLabels.map(l =>
+        `<th style="padding: 15px; text-align: left;">${l}</th>`
+    ).join('');
+    const detailsColspan = 2 + paramLabels.length; // Config + params + energy + cost
+
     let htmlContent = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0;">Alternative Configuration Analysis: ${parameterDisplayName}</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h3 style="margin: 0;">${analysisTitle}</h3>
             <button onclick="downloadPDFReport()" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">
                 📄 Download PDF Report
             </button>
         </div>
-        
+
         <!-- Configuration Comparison Table -->
         <div style="overflow-x: auto; margin-bottom: 30px;">
             <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <thead>
                     <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                         <th style="padding: 15px; text-align: left;">Configuration</th>
-                        <th style="padding: 15px; text-align: left;">Parameter Value</th>
+                        ${paramHeaders}
                         <th style="padding: 15px; text-align: right;">Total Energy (GJ/m²)</th>
                         <th style="padding: 15px; text-align: right;">Total Cost (CAD/m²)</th>
                     </tr>
                 </thead>
                 <tbody>
     `;
-    
+
     configs.forEach((config, idx) => {
         const rowBg = idx % 2 === 0 ? '#f8f9ff' : 'white';
+        const paramCells = variableParameters.map(p => {
+            const val = config.paramValues[p];
+            const display = typeof val === 'number' ? val : (val ?? '—');
+            return `<td style="padding: 12px;">${display}</td>`;
+        }).join('');
+
         htmlContent += `
-            <tr style="background: ${rowBg}; border-bottom: 1px solid #e1e8ed; cursor: pointer; transition: background 0.2s;" 
-                onmouseover="this.style.background='#e6f2ff'" 
+            <tr style="background: ${rowBg}; border-bottom: 1px solid #e1e8ed; cursor: pointer; transition: background 0.2s;"
+                onmouseover="this.style.background='#e6f2ff'"
                 onmouseout="this.style.background='${rowBg}'"
                 onclick="toggleConfigDetails(${config.index})">
                 <td style="padding: 12px; font-weight: bold;">Config ${config.index} <span style="color: #667eea; font-size: 12px;">▼</span></td>
-                <td style="padding: 12px;">${config.paramValue}</td>
+                ${paramCells}
                 <td style="padding: 12px; text-align: right; font-family: monospace;">${config.totalEnergy.toFixed(6)}</td>
                 <td style="padding: 12px; text-align: right;">$${config.totalCost.toFixed(2)}</td>
             </tr>
             <tr id="details-${config.index}" style="display: none; background: #f0f4ff;">
-                <td colspan="4" style="padding: 20px;">
+                <td colspan="${detailsColspan + 1}" style="padding: 20px;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
                             <h5 style="margin: 0 0 10px 0; color: #2d3748;">⚡ Energy Breakdown</h5>
@@ -2294,12 +2354,12 @@ function displayAlternativeResults(results) {
             </tr>
         `;
     });
-    
+
     htmlContent += `
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Visualization Charts -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; max-width: 100%;">
             <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); min-width: 0; max-width: 100%;">
@@ -2318,16 +2378,16 @@ function displayAlternativeResults(results) {
             </div>
         </div>
     `;
-    
+
     resultsContent.innerHTML = htmlContent;
     resultsSection.style.display = 'block';
-    
+
     // Smooth scroll to results
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
+
     // Store configs globally for PDF generation
-    storeConfigsForPDF(configs, parameterDisplayName, results);
-    
+    storeConfigsForPDF(configs, analysisTitle.replace(/^Alternative Configuration Analysis: /, ''), results, variableParameters, paramLabels);
+
     // Draw charts with hover functionality
     drawEnergyChart(configs);
     drawCostChart(configs);
@@ -2629,6 +2689,8 @@ function drawCostChart(configs) {
 // Store configs globally for PDF generation
 let globalConfigs = null;
 let globalParameterDisplayName = null;
+let globalVariableParameters = [];
+let globalParameterLabels = [];
 let globalResults = null;
 let globalSinglePrediction = null;
 
@@ -2821,9 +2883,11 @@ function drawHighResCostChart(ctx, configs, width, height, padding, chartWidth, 
 
 
 // Update the displayAlternativeResults to store configs globally
-function storeConfigsForPDF(configs, parameterDisplayName, results) {
+function storeConfigsForPDF(configs, parameterDisplayName, results, variableParameters = [], parameterLabels = []) {
     globalConfigs = configs;
     globalParameterDisplayName = parameterDisplayName;
+    globalVariableParameters = variableParameters;
+    globalParameterLabels = parameterLabels;
     globalResults = results;
 }
 
@@ -3266,7 +3330,10 @@ async function downloadPDFReport() {
     doc.setFont('helvetica', 'normal');
     doc.text(`Generated: ${new Date().toLocaleString()}`, 15, yPos);
     yPos += 5;
-    doc.text(`Parameter Analyzed: ${globalParameterDisplayName}`, 15, yPos);
+    const paramsLine = (globalParameterLabels && globalParameterLabels.length)
+        ? globalParameterLabels.join(' × ')
+        : (globalParameterDisplayName || 'N/A');
+    doc.text(`Parameters Analyzed: ${paramsLine}`, 15, yPos);
     yPos += 10;
     
     // Building Information Section
@@ -3318,19 +3385,45 @@ async function downloadPDFReport() {
     doc.setFont('helvetica', 'bold');
     doc.text('Configuration Comparison', 15, yPos);
     yPos += 7;
-    
-    // Table headers
+
+    // Layout: dynamic columns — Config | <one column per varied parameter> | Energy | Cost
+    const paramKeys = globalVariableParameters && globalVariableParameters.length
+        ? globalVariableParameters
+        : [];
+    const paramLabelsPdf = globalParameterLabels && globalParameterLabels.length
+        ? globalParameterLabels
+        : paramKeys;
+
+    const contentLeft = 15;
+    const contentRight = pageWidth - 15;
+    const contentWidth = contentRight - contentLeft;
+    const fixedCols = { config: 15, energy: 32, cost: 28 };
+    const paramColsWidth = Math.max(20, contentWidth - fixedCols.config - fixedCols.energy - fixedCols.cost);
+    const paramColWidth = paramKeys.length > 0 ? paramColsWidth / paramKeys.length : paramColsWidth;
+
+    // Column x positions (left edges)
+    const colX = { config: contentLeft };
+    paramKeys.forEach((k, i) => {
+        colX['p' + i] = contentLeft + fixedCols.config + i * paramColWidth;
+    });
+    colX.energy = contentLeft + fixedCols.config + paramKeys.length * paramColWidth;
+    colX.cost = colX.energy + fixedCols.energy;
+
+    // Header row
     doc.setFillColor(102, 126, 234);
     doc.setTextColor(255, 255, 255);
-    doc.rect(15, yPos, pageWidth - 30, 8, 'F');
+    doc.rect(contentLeft, yPos, contentWidth, 8, 'F');
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('Config', 20, yPos + 5.5);
-    doc.text('Parameter Value', 50, yPos + 5.5);
-    doc.text('Energy (GJ/m²)', 110, yPos + 5.5);
-    doc.text('Cost (CAD/m²)', 155, yPos + 5.5);
+    doc.text('Config', colX.config + 2, yPos + 5.5);
+    paramLabelsPdf.forEach((lbl, i) => {
+        const truncated = doc.splitTextToSize(lbl, paramColWidth - 3)[0] || lbl;
+        doc.text(truncated, colX['p' + i] + 2, yPos + 5.5);
+    });
+    doc.text('Energy (GJ/m²)', colX.energy + 2, yPos + 5.5);
+    doc.text('Cost (CAD/m²)', colX.cost + 2, yPos + 5.5);
     yPos += 8;
-    
+
     // Table rows
     doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'normal');
@@ -3339,15 +3432,20 @@ async function downloadPDFReport() {
             doc.addPage();
             yPos = 20;
         }
-        
+
         const bgColor = idx % 2 === 0 ? [248, 249, 255] : [255, 255, 255];
         doc.setFillColor(...bgColor);
-        doc.rect(15, yPos, pageWidth - 30, 7, 'F');
-        
-        doc.text(`${config.index}`, 20, yPos + 5);
-        doc.text(`${config.paramValue}`, 50, yPos + 5);
-        doc.text(`${config.totalEnergy.toFixed(6)}`, 110, yPos + 5);
-        doc.text(`$${config.totalCost.toFixed(2)}`, 155, yPos + 5);
+        doc.rect(contentLeft, yPos, contentWidth, 7, 'F');
+
+        doc.text(`${config.index}`, colX.config + 2, yPos + 5);
+        paramKeys.forEach((k, i) => {
+            const val = config.paramValues ? config.paramValues[k] : config.paramValue;
+            const str = val === undefined || val === null ? '—' : String(val);
+            const truncated = doc.splitTextToSize(str, paramColWidth - 3)[0] || str;
+            doc.text(truncated, colX['p' + i] + 2, yPos + 5);
+        });
+        doc.text(`${config.totalEnergy.toFixed(6)}`, colX.energy + 2, yPos + 5);
+        doc.text(`$${config.totalCost.toFixed(2)}`, colX.cost + 2, yPos + 5);
         yPos += 7;
     });
     
@@ -3400,7 +3498,12 @@ async function downloadPDFReport() {
         doc.rect(15, yPos, pageWidth - 30, 8, 'F');
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text(`Configuration ${config.index} - Parameter Value: ${config.paramValue}`, 20, yPos + 5.5);
+        const paramSummary = (globalVariableParameters && globalVariableParameters.length && config.paramValues)
+            ? globalVariableParameters
+                .map((k, i) => `${(globalParameterLabels[i] || k)}: ${config.paramValues[k]}`)
+                .join('  |  ')
+            : `Parameter Value: ${config.paramValue}`;
+        doc.text(`Configuration ${config.index} — ${paramSummary}`, 20, yPos + 5.5);
         yPos += 13;
         
         doc.setTextColor(0, 0, 0);
