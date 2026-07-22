@@ -1313,11 +1313,21 @@ document.getElementById('buildingForm').addEventListener('submit', async (e) => 
                 parseInt(analysisYears || 25)
             );
         } else {
-            // Alternative configuration analysis — cartesian product of all parameter values
-            const excelBlob = await generateCombinationsExcelFile(buildingConfig, alternativeSpecs);
-
-            // Upload to API
-            results = await uploadAndPredict(excelBlob);
+            // Alternative configuration analysis — cartesian product of all
+            // parameter values, chunked into batches to stay under API Gateway
+            // response-size limits.
+            results = await runAlternativeAnalysisBatched(
+                buildingConfig,
+                alternativeSpecs,
+                ({ batch, totalBatches, completed, total }) => {
+                    if (totalBatches > 1) {
+                        updateLoadingSubtext(
+                            `Processing batch ${batch} of ${totalBatches} ` +
+                            `(${completed}/${total} configurations complete)…`
+                        );
+                    }
+                }
+            );
             results.analysisType = 'alternative';
             results.variableParameters = alternativeSpecs.map(s => s.parameter);
             // Back-compat: keep singular field if only one param
@@ -1408,19 +1418,14 @@ async function generateExcelFile(config) {
     return blob;
 }
 
-// Generate Excel file with all cartesian-product combinations of the given
-// parameter specs for alternative-configuration analysis.
-//
-//   config       – the base building configuration (as collected from the form)
-//   paramSpecs   – array of { parameter: 'ecm_system_name', values: [...] }
-//
-// Returns an .xlsx Blob containing one row per combination.
-async function generateCombinationsExcelFile(config, paramSpecs) {
+// Build all cartesian-product row objects for alternative-configuration
+// analysis. Separated from the Excel packing step so callers can chunk large
+// batches before uploading.
+async function buildCombinationRows(config, paramSpecs) {
     if (!Array.isArray(paramSpecs) || paramSpecs.length === 0) {
         throw new Error('No parameter specifications provided for alternative analysis.');
     }
 
-    // Load ALL default values from the first row of the sample Input.xlsx
     let allDefaults;
     try {
         const defaultsResponse = await fetch('./defaults_from_excel.json');
@@ -1433,7 +1438,7 @@ async function generateCombinationsExcelFile(config, paramSpecs) {
         throw new Error(`Failed to load configuration defaults: ${error.message}`);
     }
 
-    // Build cartesian product of all parameter value arrays
+    // Cartesian product of every parameter's values
     const combinations = paramSpecs.reduce(
         (acc, spec) => acc.flatMap(prev => spec.values.map(v => [...prev, v])),
         [[]]
@@ -1449,43 +1454,89 @@ async function generateCombinationsExcelFile(config, paramSpecs) {
         'srr_set', 'building_type', 'rotation_degrees', 'epw_file', 'pv_ground_type'
     ];
 
-    const rows = combinations.map((combo, i) => {
-        // Start from defaults and overlay the user's base configuration
+    return combinations.map(combo => {
         const row = { ...allDefaults };
-
         userParams.forEach(param => {
             const key = ':' + param;
             if (config[key] !== undefined) row[key] = config[key];
         });
-
         if (config[':building_type'] !== undefined) {
             row['bldg_standards_building_type'] = config[':building_type'];
         }
         applyArchetypeGeometry(row, config[':building_type']);
-
-        // Override each varying parameter with its combination value
         paramSpecs.forEach((spec, j) => {
             row[':' + spec.parameter] = combo[j];
         });
-
-        if (i < 20 || i === combinations.length - 1) {
-            console.log(
-                `Config ${i + 1}:`,
-                paramSpecs.map((s, j) => `${s.parameter}=${combo[j]}`).join(', ')
-            );
-        }
         return row;
     });
+}
 
-    // Create workbook
+// Pack an array of row objects into an .xlsx Blob for upload.
+function rowsToExcelBlob(rows) {
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-
     return new Blob([excelBuffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
+}
+
+// Generate Excel file with all combinations in a single blob. Kept for
+// backward compatibility / single-batch callers.
+async function generateCombinationsExcelFile(config, paramSpecs) {
+    const rows = await buildCombinationRows(config, paramSpecs);
+    return rowsToExcelBlob(rows);
+}
+
+// Chunk size for the API round-trip. Each config produces ~100 KB of JSON
+// output and API Gateway caps responses at 10 MB, so we cap batches well below
+// that ceiling and merge results client-side.
+const ALTERNATIVE_BATCH_SIZE = 30;
+
+// Run an alternative-configuration analysis in one or more batches, merging
+// energy_aggregated_results and costing_results into a single response object.
+async function runAlternativeAnalysisBatched(config, paramSpecs, onProgress) {
+    const rows = await buildCombinationRows(config, paramSpecs);
+    const total = rows.length;
+
+    const batches = [];
+    for (let i = 0; i < total; i += ALTERNATIVE_BATCH_SIZE) {
+        batches.push(rows.slice(i, i + ALTERNATIVE_BATCH_SIZE));
+    }
+
+    console.log(`Running ${total} configurations in ${batches.length} batch(es) of up to ${ALTERNATIVE_BATCH_SIZE}`);
+
+    let merged = null;
+    let completed = 0;
+    for (let b = 0; b < batches.length; b++) {
+        if (typeof onProgress === 'function') {
+            onProgress({
+                batch: b + 1,
+                totalBatches: batches.length,
+                completed,
+                total
+            });
+        }
+
+        const blob = rowsToExcelBlob(batches[b]);
+        const batchResult = await uploadAndPredict(blob);
+
+        if (!merged) {
+            merged = {
+                ...batchResult,
+                energy_aggregated_results: [...(batchResult.energy_aggregated_results || [])],
+                costing_results: [...(batchResult.costing_results || [])]
+            };
+        } else {
+            merged.energy_aggregated_results.push(...(batchResult.energy_aggregated_results || []));
+            merged.costing_results.push(...(batchResult.costing_results || []));
+            // building_metadata is identical across batches for the same building.
+        }
+        completed += batches[b].length;
+    }
+
+    return merged;
 }
 
 // Perform cost analysis comparing baseline vs improved configuration
@@ -3575,11 +3626,22 @@ function displayError(message) {
 }
 
 // Show loading overlay
-function showLoading() {
+function showLoading(subtext) {
     document.getElementById('loadingOverlay').style.display = 'flex';
+    if (subtext !== undefined) updateLoadingSubtext(subtext);
 }
 
 // Hide loading overlay
 function hideLoading() {
     document.getElementById('loadingOverlay').style.display = 'none';
+    // Restore default subtext for next time
+    updateLoadingSubtext('This may take a few moments');
+}
+
+// Update the loading overlay's subtext (progress messages, etc.)
+function updateLoadingSubtext(text) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (!overlay) return;
+    const sub = overlay.querySelector('.loading-subtext');
+    if (sub) sub.textContent = text;
 }
