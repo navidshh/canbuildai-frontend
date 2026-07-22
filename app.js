@@ -89,7 +89,7 @@ const ALTERNATIVE_PARAM_METADATA = {
 };
 
 // Max number of configurations (cartesian combinations) allowed per request.
-const ALTERNATIVE_MAX_COMBINATIONS = 100;
+const ALTERNATIVE_MAX_COMBINATIONS = 500;
 
 // Expose for the wizard UI (loaded after app.js).
 window.ALTERNATIVE_PARAM_METADATA = ALTERNATIVE_PARAM_METADATA;
