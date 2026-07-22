@@ -2341,6 +2341,57 @@ function displayAlternativeResults(results) {
         `<th style="padding: 15px; text-align: left;">${l}</th>`
     ).join('');
     const detailsColspan = 2 + paramLabels.length; // Config + params + energy + cost
+    const totalColumns = detailsColspan + 1; // for the details <td colspan>
+
+    // Helper — render one config's summary + hidden details row
+    function renderRow(config, idx) {
+        const rowBg = idx % 2 === 0 ? '#f8f9ff' : 'white';
+        const paramCells = variableParameters.map(p => {
+            const val = config.paramValues[p];
+            const display = typeof val === 'number' ? val : (val ?? '—');
+            return `<td style="padding: 12px;">${display}</td>`;
+        }).join('');
+        return `
+            <tr data-config-index="${config.index}" style="background: ${rowBg}; border-bottom: 1px solid #e1e8ed; cursor: pointer; transition: background 0.2s;"
+                onmouseover="this.style.background='#e6f2ff'"
+                onmouseout="this.style.background='${rowBg}'"
+                onclick="toggleConfigDetails(${config.index})">
+                <td style="padding: 12px; font-weight: bold;">Config ${config.index} <span style="color: #667eea; font-size: 12px;">▼</span></td>
+                ${paramCells}
+                <td style="padding: 12px; text-align: right; font-family: monospace;">${config.totalEnergy.toFixed(6)}</td>
+                <td style="padding: 12px; text-align: right;">$${config.totalCost.toFixed(2)}</td>
+            </tr>
+            <tr id="details-${config.index}" style="display: none; background: #f0f4ff;">
+                <td colspan="${totalColumns}" style="padding: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">⚡ Energy Breakdown</h5>
+                            <p style="margin: 5px 0; font-size: 14px;">Electricity: <strong>${config.electricity.toFixed(6)} GJ/m²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Natural Gas: <strong>${config.gas.toFixed(6)} GJ/m²</strong></p>
+                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #667eea;">Total: <strong>${config.totalEnergy.toFixed(6)} GJ/m²</strong></p>
+                        </div>
+                        <div>
+                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">💰 Cost Breakdown</h5>
+                            <p style="margin: 5px 0; font-size: 14px;">Envelope: <strong>$${config.envelopeCost.toFixed(2)}/m²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">HVAC: <strong>$${config.hvacCost.toFixed(2)}/m²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Lighting: <strong>$${config.lightingCost.toFixed(2)}/m²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Ventilation: <strong>$${config.ventilationCost.toFixed(2)}/m²</strong></p>
+                            <p style="margin: 5px 0; font-size: 14px;">Hot Water: <strong>$${config.shwCost.toFixed(2)}/m²</strong></p>
+                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #48bb78;">Total: <strong>$${config.totalCost.toFixed(2)}/m²</strong></p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+
+    // Split rows: show first 10 + last 10 with a collapsible middle when > 20
+    const HEAD_TAIL = 10;
+    const totalRows = configs.length;
+    const useTrimmed = totalRows > (HEAD_TAIL * 2);
+    const headRows = useTrimmed ? configs.slice(0, HEAD_TAIL) : configs;
+    const tailRows = useTrimmed ? configs.slice(-HEAD_TAIL) : [];
+    const middleRows = useTrimmed ? configs.slice(HEAD_TAIL, totalRows - HEAD_TAIL) : [];
 
     let htmlContent = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
@@ -2362,70 +2413,48 @@ function displayAlternativeResults(results) {
                     </tr>
                 </thead>
                 <tbody>
+                    ${headRows.map((c, i) => renderRow(c, i)).join('')}
+                </tbody>
     `;
 
-    configs.forEach((config, idx) => {
-        const rowBg = idx % 2 === 0 ? '#f8f9ff' : 'white';
-        const paramCells = variableParameters.map(p => {
-            const val = config.paramValues[p];
-            const display = typeof val === 'number' ? val : (val ?? '—');
-            return `<td style="padding: 12px;">${display}</td>`;
-        }).join('');
-
+    if (useTrimmed) {
         htmlContent += `
-            <tr style="background: ${rowBg}; border-bottom: 1px solid #e1e8ed; cursor: pointer; transition: background 0.2s;"
-                onmouseover="this.style.background='#e6f2ff'"
-                onmouseout="this.style.background='${rowBg}'"
-                onclick="toggleConfigDetails(${config.index})">
-                <td style="padding: 12px; font-weight: bold;">Config ${config.index} <span style="color: #667eea; font-size: 12px;">▼</span></td>
-                ${paramCells}
-                <td style="padding: 12px; text-align: right; font-family: monospace;">${config.totalEnergy.toFixed(6)}</td>
-                <td style="padding: 12px; text-align: right;">$${config.totalCost.toFixed(2)}</td>
-            </tr>
-            <tr id="details-${config.index}" style="display: none; background: #f0f4ff;">
-                <td colspan="${detailsColspan + 1}" style="padding: 20px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div>
-                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">⚡ Energy Breakdown</h5>
-                            <p style="margin: 5px 0; font-size: 14px;">Electricity: <strong>${config.electricity.toFixed(6)} GJ/m²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Natural Gas: <strong>${config.gas.toFixed(6)} GJ/m²</strong></p>
-                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #667eea;">Total: <strong>${config.totalEnergy.toFixed(6)} GJ/m²</strong></p>
-                        </div>
-                        <div>
-                            <h5 style="margin: 0 0 10px 0; color: #2d3748;">💰 Cost Breakdown</h5>
-                            <p style="margin: 5px 0; font-size: 14px;">Envelope: <strong>$${config.envelopeCost.toFixed(2)}/m²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">HVAC: <strong>$${config.hvacCost.toFixed(2)}/m²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Lighting: <strong>$${config.lightingCost.toFixed(2)}/m²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Ventilation: <strong>$${config.ventilationCost.toFixed(2)}/m²</strong></p>
-                            <p style="margin: 5px 0; font-size: 14px;">Hot Water: <strong>$${config.shwCost.toFixed(2)}/m²</strong></p>
-                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #48bb78;">Total: <strong>$${config.totalCost.toFixed(2)}/m²</strong></p>
-                        </div>
-                    </div>
-                </td>
-            </tr>
+                <tbody>
+                    <tr style="background: #eef2ff;">
+                        <td colspan="${totalColumns}" style="padding: 12px; text-align: center;">
+                            <button type="button" id="toggle-hidden-configs"
+                                onclick="toggleHiddenConfigs()"
+                                style="background: transparent; border: 1px dashed #667eea; color: #4c51bf; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                                ▼ Show ${middleRows.length} hidden configurations
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody id="tbody-hidden-configs" style="display: none;">
+                    ${middleRows.map((c, i) => renderRow(c, i + HEAD_TAIL)).join('')}
+                </tbody>
+                <tbody>
+                    ${tailRows.map((c, i) => renderRow(c, i + HEAD_TAIL + middleRows.length)).join('')}
+                </tbody>
         `;
-    });
+    }
 
     htmlContent += `
-                </tbody>
             </table>
         </div>
 
-        <!-- Visualization Charts -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; max-width: 100%;">
-            <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); min-width: 0; max-width: 100%;">
-                <h4 style="margin: 0 0 20px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">📊 Energy Use Intensity Comparison</h4>
-                <div style="position: relative; width: 100%; height: 350px;">
-                    <canvas id="energyChart" style="width: 100%; height: 100%; cursor: pointer;"></canvas>
-                    <div id="energyTooltip" style="display: none; position: absolute; background: rgba(0,0,0,0.85); color: white; padding: 12px 16px; border-radius: 8px; pointer-events: none; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; white-space: nowrap;"></div>
-                </div>
-            </div>
-            <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); min-width: 0; max-width: 100%;">
-                <h4 style="margin: 0 0 20px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">💰 Cost Comparison</h4>
-                <div style="position: relative; width: 100%; height: 350px;">
-                    <canvas id="costChart" style="width: 100%; height: 100%; cursor: pointer;"></canvas>
-                    <div id="costTooltip" style="display: none; position: absolute; background: rgba(0,0,0,0.85); color: white; padding: 12px 16px; border-radius: 8px; pointer-events: none; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; white-space: nowrap;"></div>
-                </div>
+        <!-- Scatter plot: Cost (x) vs Energy (y) -->
+        <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px;">
+            <h4 style="margin: 0 0 10px 0; color: #2d3748; text-align: center; font-size: 18px; font-weight: 600;">
+                📈 Energy vs Cost — one dot per configuration
+            </h4>
+            <p style="margin: 0 0 15px 0; text-align: center; color: #718096; font-size: 13px;">
+                Hover a dot for details, click to jump to that configuration in the table above.
+                Ideal designs sit toward the <strong>lower-left</strong> (low energy, low cost).
+            </p>
+            <div style="position: relative; width: 100%; height: 500px;">
+                <canvas id="scatterChart" style="width: 100%; height: 100%; cursor: pointer;"></canvas>
+                <div id="scatterTooltip" style="display: none; position: absolute; background: rgba(15, 23, 42, 0.95); color: white; padding: 10px 14px; border-radius: 8px; pointer-events: none; font-size: 13px; box-shadow: 0 6px 18px rgba(0,0,0,0.3); z-index: 1000; max-width: 320px; line-height: 1.5;"></div>
             </div>
         </div>
     `;
@@ -2439,9 +2468,8 @@ function displayAlternativeResults(results) {
     // Store configs globally for PDF generation
     storeConfigsForPDF(configs, analysisTitle.replace(/^Alternative Configuration Analysis: /, ''), results, variableParameters, paramLabels);
 
-    // Draw charts with hover functionality
-    drawEnergyChart(configs);
-    drawCostChart(configs);
+    // Draw the scatter plot with hover + click behaviour
+    drawScatterPlot(configs, variableParameters, paramLabels);
 }
 
 // Toggle configuration details
@@ -2464,277 +2492,331 @@ function toggleConfigDetails(configIndex) {
     }
 }
 
-// Draw energy comparison chart
-function drawEnergyChart(configs) {
-    const canvas = document.getElementById('energyChart');
-    const ctx = canvas.getContext('2d');
-    
-    // Set canvas size with device pixel ratio for crisp rendering
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    
-    const width = rect.width;
-    const height = rect.height;
-    const padding = { top: 50, right: 30, bottom: 60, left: 70 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
-    
-    // Find max value for scaling
-    const maxEnergy = Math.max(...configs.map(c => c.totalEnergy)) * 1.15;
-    const minEnergy = Math.min(...configs.map(c => c.totalEnergy)) * 0.95;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-    
-    // Draw background grid
-    ctx.strokeStyle = '#f0f0f0';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 5; i++) {
-        const y = padding.top + (chartHeight / 5) * i;
-        ctx.beginPath();
-        ctx.moveTo(padding.left, y);
-        ctx.lineTo(padding.left + chartWidth, y);
-        ctx.stroke();
+// Show/hide the middle "hidden" configurations tbody used when the results
+// table is trimmed (first 10 + last 10) for readability.
+function toggleHiddenConfigs() {
+    const hidden = document.getElementById('tbody-hidden-configs');
+    const btn = document.getElementById('toggle-hidden-configs');
+    if (!hidden) return;
+    if (hidden.style.display === 'none') {
+        hidden.style.display = '';
+        if (btn) btn.textContent = '▲ Hide middle configurations';
+    } else {
+        hidden.style.display = 'none';
+        if (btn) {
+            const count = hidden.querySelectorAll('tr[data-config-index]').length;
+            btn.textContent = `▼ Show ${count} hidden configurations`;
+        }
     }
-    
-    // Draw bars
-    const barWidth = (chartWidth / configs.length) * 0.65;
-    const barSpacing = chartWidth / configs.length;
-    
-    configs.forEach((config, i) => {
-        const barHeight = ((config.totalEnergy - minEnergy) / (maxEnergy - minEnergy)) * chartHeight;
-        const x = padding.left + i * barSpacing + (barSpacing - barWidth) / 2;
-        const y = padding.top + chartHeight - barHeight;
-        
-        // Draw shadow
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 4;
-        
-        // Draw bar
-        const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
-        gradient.addColorStop(0, '#667eea');
-        gradient.addColorStop(1, '#764ba2');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x, y, barWidth, barHeight);
-        
-        // Reset shadow
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        
-        // Draw value on top with smaller font and 4 decimals
-        ctx.fillStyle = '#2d3748';
-        ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(config.totalEnergy.toFixed(4), x + barWidth / 2, y - 8);
-        
-        // Draw label
-        ctx.fillStyle = '#4a5568';
-        ctx.font = 'bold 14px Arial';
-        ctx.fillText(`${config.index}`, x + barWidth / 2, padding.top + chartHeight + 25);
-    });
-    
-    // Draw axes
-    ctx.strokeStyle = '#a0aec0';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(padding.left, padding.top);
-    ctx.lineTo(padding.left, padding.top + chartHeight);
-    ctx.lineTo(padding.left + chartWidth, padding.top + chartHeight);
-    ctx.stroke();
-    
-    // Y-axis label
-    ctx.save();
-    ctx.translate(15, height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle = '#4a5568';
-    ctx.font = 'bold 14px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Energy Use Intensity (GJ/m²)', 0, 0);
-    ctx.restore();
-    
-    // Add hover detection
-    canvas.onmousemove = function(e) {
+}
+
+// -----------------------------------------------------------------------------
+// Scatter plot — Cost (x) vs Energy (y), one dot per configuration.
+// Hover shows a tooltip with parameter values; click focuses the corresponding
+// row in the comparison table above (expanding hidden rows if necessary).
+// -----------------------------------------------------------------------------
+let __scatterState = null;
+
+function drawScatterPlot(configs, variableParameters = [], parameterLabels = []) {
+    const canvas = document.getElementById('scatterChart');
+    if (!canvas) return;
+
+    const layout = _computeScatterLayout(canvas);
+    __scatterState = {
+        configs,
+        variableParameters,
+        parameterLabels,
+        layout,
+        selectedIndex: null,
+        hoveredIndex: null
+    };
+
+    _renderScatter();
+
+    // ---- Mouse interactions ----
+    canvas.onmousemove = function (e) {
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        const tooltip = document.getElementById('energyTooltip');
-        let hoveredConfig = null;
-        
-        // Check if mouse is over any bar
-        configs.forEach((config, i) => {
-            const barWidth = (chartWidth / configs.length) * 0.65;
-            const barSpacing = chartWidth / configs.length;
-            const barHeight = ((config.totalEnergy - minEnergy) / (maxEnergy - minEnergy)) * chartHeight;
-            const barX = padding.left + i * barSpacing + (barSpacing - barWidth) / 2;
-            const barY = padding.top + chartHeight - barHeight;
-            
-            if (x >= barX && x <= barX + barWidth && y >= barY && y <= barY + barHeight) {
-                hoveredConfig = config;
-            }
-        });
-        
-        if (hoveredConfig) {
-            tooltip.innerHTML = `
-                <strong>Configuration ${hoveredConfig.index}</strong><br/>
-                Electricity: ${hoveredConfig.electricity.toFixed(4)} GJ/m²<br/>
-                Gas: ${hoveredConfig.gas.toFixed(4)} GJ/m²<br/>
-                <strong>Total: ${hoveredConfig.totalEnergy.toFixed(4)} GJ/m²</strong>
-            `;
-            tooltip.style.display = 'block';
-            tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
-            tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const idx = _pickNearestPoint(mx, my);
+        if (idx !== __scatterState.hoveredIndex) {
+            __scatterState.hoveredIndex = idx;
+            _renderScatter();
+        }
+        if (idx !== null) {
+            _showScatterTooltip(idx, e.clientX - rect.left, e.clientY - rect.top);
         } else {
-            tooltip.style.display = 'none';
+            _hideScatterTooltip();
         }
     };
-    
-    canvas.onmouseleave = function() {
-        document.getElementById('energyTooltip').style.display = 'none';
+    canvas.onmouseleave = function () {
+        __scatterState.hoveredIndex = null;
+        _hideScatterTooltip();
+        _renderScatter();
+    };
+    canvas.onclick = function (e) {
+        const rect = canvas.getBoundingClientRect();
+        const idx = _pickNearestPoint(e.clientX - rect.left, e.clientY - rect.top);
+        if (idx === null) return;
+        __scatterState.selectedIndex = idx;
+        _renderScatter();
+        focusConfigInTable(__scatterState.configs[idx].index);
     };
 }
 
-// Draw cost comparison chart
-function drawCostChart(configs) {
-    const canvas = document.getElementById('costChart');
-    const ctx = canvas.getContext('2d');
-    
-    // Set canvas size with device pixel ratio for crisp rendering
+function _computeScatterLayout(canvas) {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
-    
-    const width = rect.width;
-    const height = rect.height;
-    const padding = { top: 50, right: 30, bottom: 60, left: 70 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
-    
-    // Find max value for scaling
-    const maxCost = Math.max(...configs.map(c => c.totalCost)) * 1.15;
-    const minCost = Math.min(...configs.map(c => c.totalCost)) * 0.95;
-    
-    // Clear canvas
+
+    return {
+        ctx,
+        dpr,
+        width: rect.width,
+        height: rect.height,
+        padding: { top: 30, right: 30, bottom: 60, left: 80 }
+    };
+}
+
+function _scatterAxes(configs, layout) {
+    const costs = configs.map(c => c.totalCost);
+    const energies = configs.map(c => c.totalEnergy);
+    const minCost = Math.min(...costs);
+    const maxCost = Math.max(...costs);
+    const minEnergy = Math.min(...energies);
+    const maxEnergy = Math.max(...energies);
+    // Pad ranges (5% each side, non-zero minimum)
+    const costPad = Math.max((maxCost - minCost) * 0.08, maxCost * 0.02, 0.01);
+    const energyPad = Math.max((maxEnergy - minEnergy) * 0.08, maxEnergy * 0.02, 0.001);
+
+    return {
+        xMin: minCost - costPad,
+        xMax: maxCost + costPad,
+        yMin: Math.max(0, minEnergy - energyPad),
+        yMax: maxEnergy + energyPad,
+        chartWidth: layout.width - layout.padding.left - layout.padding.right,
+        chartHeight: layout.height - layout.padding.top - layout.padding.bottom
+    };
+}
+
+function _pointToPixel(cost, energy, layout, axes) {
+    const x = layout.padding.left +
+        ((cost - axes.xMin) / (axes.xMax - axes.xMin)) * axes.chartWidth;
+    const y = layout.padding.top +
+        axes.chartHeight -
+        ((energy - axes.yMin) / (axes.yMax - axes.yMin)) * axes.chartHeight;
+    return { x, y };
+}
+
+function _pickNearestPoint(mx, my) {
+    const st = __scatterState;
+    if (!st) return null;
+    const axes = _scatterAxes(st.configs, st.layout);
+    const threshold = 14; // px
+    let best = null;
+    let bestDist = threshold * threshold;
+    st.configs.forEach((c, i) => {
+        const { x, y } = _pointToPixel(c.totalCost, c.totalEnergy, st.layout, axes);
+        const dx = x - mx;
+        const dy = y - my;
+        const d = dx * dx + dy * dy;
+        if (d < bestDist) {
+            bestDist = d;
+            best = i;
+        }
+    });
+    return best;
+}
+
+function _renderScatter() {
+    const st = __scatterState;
+    if (!st) return;
+    const { ctx, width, height, padding } = st.layout;
+    const axes = _scatterAxes(st.configs, st.layout);
+
+    // Clear
     ctx.clearRect(0, 0, width, height);
-    
-    // Draw background grid
-    ctx.strokeStyle = '#f0f0f0';
+
+    // Chart background
+    ctx.fillStyle = '#fafbff';
+    ctx.fillRect(padding.left, padding.top, axes.chartWidth, axes.chartHeight);
+
+    // Grid + axis ticks (5 divisions each)
+    ctx.strokeStyle = '#e2e8f0';
     ctx.lineWidth = 1;
-    for (let i = 0; i <= 5; i++) {
-        const y = padding.top + (chartHeight / 5) * i;
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px "Segoe UI", Arial, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    const nTicks = 5;
+    for (let i = 0; i <= nTicks; i++) {
+        const y = padding.top + (axes.chartHeight / nTicks) * i;
         ctx.beginPath();
         ctx.moveTo(padding.left, y);
-        ctx.lineTo(padding.left + chartWidth, y);
+        ctx.lineTo(padding.left + axes.chartWidth, y);
         ctx.stroke();
+        const yValue = axes.yMax - ((axes.yMax - axes.yMin) / nTicks) * i;
+        ctx.fillText(yValue.toFixed(3), padding.left - 8, y);
     }
-    
-    // Draw bars
-    const barWidth = (chartWidth / configs.length) * 0.65;
-    const barSpacing = chartWidth / configs.length;
-    
-    configs.forEach((config, i) => {
-        const barHeight = ((config.totalCost - minCost) / (maxCost - minCost)) * chartHeight;
-        const x = padding.left + i * barSpacing + (barSpacing - barWidth) / 2;
-        const y = padding.top + chartHeight - barHeight;
-        
-        // Draw shadow
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 4;
-        
-        // Draw bar
-        const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
-        gradient.addColorStop(0, '#48bb78');
-        gradient.addColorStop(1, '#2f855a');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x, y, barWidth, barHeight);
-        
-        // Reset shadow
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        
-        // Draw value on top with smaller font
-        ctx.fillStyle = '#2d3748';
-        ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('$' + config.totalCost.toFixed(2), x + barWidth / 2, y - 8);
-        
-        // Draw label
-        ctx.fillStyle = '#4a5568';
-        ctx.font = 'bold 14px Arial';
-        ctx.fillText(`${config.index}`, x + barWidth / 2, padding.top + chartHeight + 25);
-    });
-    
-    // Draw axes
-    ctx.strokeStyle = '#a0aec0';
-    ctx.lineWidth = 2;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (let i = 0; i <= nTicks; i++) {
+        const x = padding.left + (axes.chartWidth / nTicks) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, padding.top);
+        ctx.lineTo(x, padding.top + axes.chartHeight);
+        ctx.stroke();
+        const xValue = axes.xMin + ((axes.xMax - axes.xMin) / nTicks) * i;
+        ctx.fillText('$' + xValue.toFixed(2), x, padding.top + axes.chartHeight + 8);
+    }
+
+    // Axis lines
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(padding.left, padding.top);
-    ctx.lineTo(padding.left, padding.top + chartHeight);
-    ctx.lineTo(padding.left + chartWidth, padding.top + chartHeight);
+    ctx.lineTo(padding.left, padding.top + axes.chartHeight);
+    ctx.lineTo(padding.left + axes.chartWidth, padding.top + axes.chartHeight);
     ctx.stroke();
-    
-    // Y-axis label
-    ctx.save();
-    ctx.translate(15, height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle = '#4a5568';
-    ctx.font = 'bold 14px Arial';
+
+    // Axis titles
+    ctx.fillStyle = '#334155';
+    ctx.font = 'bold 13px "Segoe UI", Arial, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Equipment Cost (CAD/m²)', 0, 0);
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(
+        'Total Equipment Cost (CAD / m²)',
+        padding.left + axes.chartWidth / 2,
+        height - 12
+    );
+    ctx.save();
+    ctx.translate(18, padding.top + axes.chartHeight / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Total Energy Use Intensity (GJ / m²)', 0, 0);
     ctx.restore();
-    
-    // Add hover detection
-    canvas.onmousemove = function(e) {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        const tooltip = document.getElementById('costTooltip');
-        let hoveredConfig = null;
-        
-        // Check if mouse is over any bar
-        configs.forEach((config, i) => {
-            const barWidth = (chartWidth / configs.length) * 0.65;
-            const barSpacing = chartWidth / configs.length;
-            const barHeight = ((config.totalCost - minCost) / (maxCost - minCost)) * chartHeight;
-            const barX = padding.left + i * barSpacing + (barSpacing - barWidth) / 2;
-            const barY = padding.top + chartHeight - barHeight;
-            
-            if (x >= barX && x <= barX + barWidth && y >= barY && y <= barY + barHeight) {
-                hoveredConfig = config;
-            }
+
+    // Draw dots — hovered/selected drawn last so they sit on top
+    const drawOrder = st.configs.map((_, i) => i)
+        .sort((a, b) => {
+            const rank = (i) =>
+                (i === st.selectedIndex ? 2 : 0) + (i === st.hoveredIndex ? 1 : 0);
+            return rank(a) - rank(b);
         });
-        
-        if (hoveredConfig) {
-            tooltip.innerHTML = `
-                <strong>Configuration ${hoveredConfig.index}</strong><br/>
-                Envelope: $${hoveredConfig.envelopeCost.toFixed(2)}/m²<br/>
-                HVAC: $${hoveredConfig.hvacCost.toFixed(2)}/m²<br/>
-                Lighting: $${hoveredConfig.lightingCost.toFixed(2)}/m²<br/>
-                Ventilation: $${hoveredConfig.ventilationCost.toFixed(2)}/m²<br/>
-                Hot Water: $${hoveredConfig.shwCost.toFixed(2)}/m²<br/>
-                <strong>Total: $${hoveredConfig.totalCost.toFixed(2)}/m²</strong>
-            `;
-            tooltip.style.display = 'block';
-            tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
-            tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
-        } else {
-            tooltip.style.display = 'none';
+
+    drawOrder.forEach(i => {
+        const c = st.configs[i];
+        const { x, y } = _pointToPixel(c.totalCost, c.totalEnergy, st.layout, axes);
+        const isSelected = i === st.selectedIndex;
+        const isHovered = i === st.hoveredIndex;
+        const radius = isSelected ? 8 : (isHovered ? 7 : 5);
+
+        // Halo for selected/hovered
+        if (isSelected || isHovered) {
+            ctx.fillStyle = isSelected
+                ? 'rgba(239, 68, 68, 0.25)'
+                : 'rgba(102, 126, 234, 0.25)';
+            ctx.beginPath();
+            ctx.arc(x, y, radius + 5, 0, Math.PI * 2);
+            ctx.fill();
         }
-    };
-    
-    canvas.onmouseleave = function() {
-        document.getElementById('costTooltip').style.display = 'none';
-    };
+
+        // Dot
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = isSelected ? '#ef4444' : '#667eea';
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = 'white';
+        ctx.stroke();
+    });
+}
+
+function _showScatterTooltip(idx, x, y) {
+    const st = __scatterState;
+    const c = st.configs[idx];
+    const tooltip = document.getElementById('scatterTooltip');
+    if (!tooltip || !c) return;
+
+    let paramsHtml = '';
+    if (st.variableParameters.length > 0 && c.paramValues) {
+        paramsHtml = st.variableParameters
+            .map((p, i) => {
+                const label = st.parameterLabels[i] || p;
+                const val = c.paramValues[p];
+                const shown = typeof val === 'number' ? val : (val ?? '—');
+                return `<div style="opacity:.85; font-size:12px;">${label}: <strong>${shown}</strong></div>`;
+            })
+            .join('');
+    }
+
+    tooltip.innerHTML = `
+        <div style="font-weight:700; font-size:14px; margin-bottom:6px;">
+            Configuration ${c.index}
+        </div>
+        ${paramsHtml}
+        <div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.15);">
+            <div>Total Energy: <strong>${c.totalEnergy.toFixed(4)} GJ/m²</strong></div>
+            <div>Total Cost: <strong>$${c.totalCost.toFixed(2)} / m²</strong></div>
+        </div>
+        <div style="margin-top:6px; font-size:11px; opacity:.7;">Click for full details</div>
+    `;
+    tooltip.style.display = 'block';
+
+    // Position — keep the tooltip inside the chart container
+    const parent = tooltip.parentElement;
+    const parentRect = parent.getBoundingClientRect();
+    let px = x + 15;
+    let py = y - 10;
+    // Show tooltip after measuring size
+    requestAnimationFrame(() => {
+        const tRect = tooltip.getBoundingClientRect();
+        if (px + tRect.width > parentRect.width) px = x - tRect.width - 15;
+        if (py + tRect.height > parentRect.height) py = parentRect.height - tRect.height - 5;
+        if (py < 0) py = 5;
+        tooltip.style.left = px + 'px';
+        tooltip.style.top = py + 'px';
+    });
+}
+
+function _hideScatterTooltip() {
+    const tooltip = document.getElementById('scatterTooltip');
+    if (tooltip) tooltip.style.display = 'none';
+}
+
+// Scroll the comparison table to a given config's row and expand its details.
+// If the row is inside a collapsed "middle" section, expand that section first.
+function focusConfigInTable(configIndex) {
+    const hidden = document.getElementById('tbody-hidden-configs');
+    const toggleBtn = document.getElementById('toggle-hidden-configs');
+    const row = document.querySelector(`tr[data-config-index="${configIndex}"]`);
+    if (!row) return;
+
+    // If the target row is inside the hidden tbody, expand it first
+    if (hidden && hidden.contains(row) && hidden.style.display === 'none') {
+        hidden.style.display = '';
+        if (toggleBtn) {
+            toggleBtn.textContent = `▲ Hide middle configurations`;
+        }
+    }
+
+    // Expand the details row for this config
+    const detailsRow = document.getElementById(`details-${configIndex}`);
+    if (detailsRow) {
+        document.querySelectorAll('[id^="details-"]').forEach(r => {
+            if (r.id !== `details-${configIndex}`) r.style.display = 'none';
+        });
+        detailsRow.style.display = 'table-row';
+    }
+
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Brief highlight flash
+    const originalBg = row.style.background;
+    row.style.background = '#fff3cd';
+    setTimeout(() => { row.style.background = originalBg || ''; }, 900);
 }
 
 // Store configs globally for PDF generation
@@ -2745,191 +2827,99 @@ let globalParameterLabels = [];
 let globalResults = null;
 let globalSinglePrediction = null;
 
-// Helper function to create high-resolution chart image for PDF
-function getHighResChartImage(canvasId, drawFunction, configs, scale = 3) {
-    // Create a temporary high-resolution canvas
-    const originalCanvas = document.getElementById(canvasId);
+// Render the scatter plot to a high-resolution offscreen canvas and return
+// a PNG data URL suitable for embedding in the PDF report.
+function getScatterPlotImage(configs, scale = 3) {
+    const baseWidth = 800;
+    const baseHeight = 500;
     const tempCanvas = document.createElement('canvas');
-    const ctx = tempCanvas.getContext('2d');
-    
-    // Set high-resolution dimensions (3x or 4x for print quality)
-    const baseWidth = 800;  // Standard width for PDF
-    const baseHeight = 400; // Standard height for PDF
     tempCanvas.width = baseWidth * scale;
     tempCanvas.height = baseHeight * scale;
-    
-    // Scale the context to draw at high resolution
+    const ctx = tempCanvas.getContext('2d');
     ctx.scale(scale, scale);
-    
-    const width = baseWidth;
-    const height = baseHeight;
-    const padding = { top: 50, right: 30, bottom: 60, left: 70 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
-    
-    // Determine which type of chart to draw
-    if (canvasId === 'energyChart') {
-        drawHighResEnergyChart(ctx, configs, width, height, padding, chartWidth, chartHeight);
-    } else if (canvasId === 'costChart') {
-        drawHighResCostChart(ctx, configs, width, height, padding, chartWidth, chartHeight);
+
+    const layout = {
+        ctx,
+        dpr: 1,
+        width: baseWidth,
+        height: baseHeight,
+        padding: { top: 30, right: 30, bottom: 60, left: 80 }
+    };
+    const axes = _scatterAxes(configs, layout);
+
+    // Background
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, baseWidth, baseHeight);
+    ctx.fillStyle = '#fafbff';
+    ctx.fillRect(layout.padding.left, layout.padding.top, axes.chartWidth, axes.chartHeight);
+
+    // Grid + tick labels
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#64748b';
+    ctx.font = '12px Arial, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    const nTicks = 5;
+    for (let i = 0; i <= nTicks; i++) {
+        const y = layout.padding.top + (axes.chartHeight / nTicks) * i;
+        ctx.beginPath();
+        ctx.moveTo(layout.padding.left, y);
+        ctx.lineTo(layout.padding.left + axes.chartWidth, y);
+        ctx.stroke();
+        const yValue = axes.yMax - ((axes.yMax - axes.yMin) / nTicks) * i;
+        ctx.fillText(yValue.toFixed(3), layout.padding.left - 8, y);
     }
-    
-    // Return the high-resolution image data
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (let i = 0; i <= nTicks; i++) {
+        const x = layout.padding.left + (axes.chartWidth / nTicks) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, layout.padding.top);
+        ctx.lineTo(x, layout.padding.top + axes.chartHeight);
+        ctx.stroke();
+        const xValue = axes.xMin + ((axes.xMax - axes.xMin) / nTicks) * i;
+        ctx.fillText('$' + xValue.toFixed(2), x, layout.padding.top + axes.chartHeight + 8);
+    }
+
+    // Axis lines
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(layout.padding.left, layout.padding.top);
+    ctx.lineTo(layout.padding.left, layout.padding.top + axes.chartHeight);
+    ctx.lineTo(layout.padding.left + axes.chartWidth, layout.padding.top + axes.chartHeight);
+    ctx.stroke();
+
+    // Axis titles
+    ctx.fillStyle = '#334155';
+    ctx.font = 'bold 13px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(
+        'Total Equipment Cost (CAD / m²)',
+        layout.padding.left + axes.chartWidth / 2,
+        baseHeight - 12
+    );
+    ctx.save();
+    ctx.translate(18, layout.padding.top + axes.chartHeight / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Total Energy Use Intensity (GJ / m²)', 0, 0);
+    ctx.restore();
+
+    // Dots
+    configs.forEach(c => {
+        const { x, y } = _pointToPixel(c.totalCost, c.totalEnergy, layout, axes);
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#667eea';
+        ctx.fill();
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = 'white';
+        ctx.stroke();
+    });
+
     return tempCanvas.toDataURL('image/png', 1.0);
-}
-
-// Draw high-resolution energy chart
-function drawHighResEnergyChart(ctx, configs, width, height, padding, chartWidth, chartHeight) {
-    const maxEnergy = Math.max(...configs.map(c => c.totalEnergy)) * 1.15;
-    const minEnergy = Math.min(...configs.map(c => c.totalEnergy)) * 0.95;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-    
-    // Draw background grid
-    ctx.strokeStyle = '#f0f0f0';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 5; i++) {
-        const y = padding.top + (chartHeight / 5) * i;
-        ctx.beginPath();
-        ctx.moveTo(padding.left, y);
-        ctx.lineTo(padding.left + chartWidth, y);
-        ctx.stroke();
-    }
-    
-    // Draw bars
-    const barWidth = (chartWidth / configs.length) * 0.65;
-    const barSpacing = chartWidth / configs.length;
-    
-    configs.forEach((config, i) => {
-        const barHeight = ((config.totalEnergy - minEnergy) / (maxEnergy - minEnergy)) * chartHeight;
-        const x = padding.left + i * barSpacing + (barSpacing - barWidth) / 2;
-        const y = padding.top + chartHeight - barHeight;
-        
-        // Draw shadow
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 4;
-        
-        // Draw bar
-        const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
-        gradient.addColorStop(0, '#667eea');
-        gradient.addColorStop(1, '#764ba2');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x, y, barWidth, barHeight);
-        
-        // Reset shadow
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        
-        // Draw value on top
-        ctx.fillStyle = '#2d3748';
-        ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(config.totalEnergy.toFixed(4), x + barWidth / 2, y - 8);
-        
-        // Draw label
-        ctx.fillStyle = '#4a5568';
-        ctx.font = 'bold 14px Arial';
-        ctx.fillText(`${config.index}`, x + barWidth / 2, padding.top + chartHeight + 25);
-    });
-    
-    // Draw axes
-    ctx.strokeStyle = '#a0aec0';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(padding.left, padding.top);
-    ctx.lineTo(padding.left, padding.top + chartHeight);
-    ctx.lineTo(padding.left + chartWidth, padding.top + chartHeight);
-    ctx.stroke();
-    
-    // Y-axis label
-    ctx.save();
-    ctx.translate(15, height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle = '#4a5568';
-    ctx.font = 'bold 14px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Energy Use Intensity (GJ/m²)', 0, 0);
-    ctx.restore();
-}
-
-// Draw high-resolution cost chart
-function drawHighResCostChart(ctx, configs, width, height, padding, chartWidth, chartHeight) {
-    const maxCost = Math.max(...configs.map(c => c.totalCost)) * 1.15;
-    const minCost = Math.min(...configs.map(c => c.totalCost)) * 0.95;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-    
-    // Draw background grid
-    ctx.strokeStyle = '#f0f0f0';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 5; i++) {
-        const y = padding.top + (chartHeight / 5) * i;
-        ctx.beginPath();
-        ctx.moveTo(padding.left, y);
-        ctx.lineTo(padding.left + chartWidth, y);
-        ctx.stroke();
-    }
-    
-    // Draw bars
-    const barWidth = (chartWidth / configs.length) * 0.65;
-    const barSpacing = chartWidth / configs.length;
-    
-    configs.forEach((config, i) => {
-        const barHeight = ((config.totalCost - minCost) / (maxCost - minCost)) * chartHeight;
-        const x = padding.left + i * barSpacing + (barSpacing - barWidth) / 2;
-        const y = padding.top + chartHeight - barHeight;
-        
-        // Draw shadow
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 4;
-        
-        // Draw bar
-        const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
-        gradient.addColorStop(0, '#48bb78');
-        gradient.addColorStop(1, '#2f855a');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x, y, barWidth, barHeight);
-        
-        // Reset shadow
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        
-        // Draw value on top
-        ctx.fillStyle = '#2d3748';
-        ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('$' + config.totalCost.toFixed(2), x + barWidth / 2, y - 8);
-        
-        // Draw label
-        ctx.fillStyle = '#4a5568';
-        ctx.font = 'bold 14px Arial';
-        ctx.fillText(`${config.index}`, x + barWidth / 2, padding.top + chartHeight + 25);
-    });
-    
-    // Draw axes
-    ctx.strokeStyle = '#a0aec0';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(padding.left, padding.top);
-    ctx.lineTo(padding.left, padding.top + chartHeight);
-    ctx.lineTo(padding.left + chartWidth, padding.top + chartHeight);
-    ctx.stroke();
-    
-    // Y-axis label
-    ctx.save();
-    ctx.translate(15, height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle = '#4a5568';
-    ctx.font = 'bold 14px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Equipment Cost (CAD/m²)', 0, 0);
-    ctx.restore();
 }
 
 
@@ -3501,32 +3491,26 @@ async function downloadPDFReport() {
     });
     
     yPos += 5;
-    
-    // Add new page for charts
+
+    // Add new page for the scatter plot
     doc.addPage();
     yPos = 20;
-    
-    // Add Energy Chart
+
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Energy Use Intensity Comparison', 15, yPos);
-    yPos += 10;
-    
-    // Use high-resolution chart image
-    const energyImgData = getHighResChartImage('energyChart', null, globalConfigs, 3);
-    doc.addImage(energyImgData, 'PNG', 15, yPos, 180, 80);
-    yPos += 90;
-    
-    // Add Cost Chart
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Cost Comparison', 15, yPos);
-    yPos += 10;
-    
-    // Use high-resolution chart image
-    const costImgData = getHighResChartImage('costChart', null, globalConfigs, 3);
-    doc.addImage(costImgData, 'PNG', 15, yPos, 180, 80);
-    yPos += 90;
+    doc.text('Energy vs Cost — one dot per configuration', 15, yPos);
+    yPos += 6;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(100, 116, 139);
+    doc.text('Ideal designs sit toward the lower-left (low energy, low cost).', 15, yPos);
+    doc.setTextColor(0, 0, 0);
+    yPos += 6;
+
+    // Scatter plot image — sized to fit on-page (A4 usable width ≈ 180 mm)
+    const scatterImg = getScatterPlotImage(globalConfigs, 3);
+    doc.addImage(scatterImg, 'PNG', 15, yPos, 180, 112);
+    yPos += 120;
     
     // Add detailed breakdowns on new page
     doc.addPage();
