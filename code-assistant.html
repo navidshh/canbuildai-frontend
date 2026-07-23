@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- KaTeX for LaTeX math rendering (inline $...$, display $$...$$) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <style>
         .chat-wrapper {
             display: grid;
@@ -291,9 +295,9 @@
         <header style="position: relative;">
             <img src="Logo.jpg" alt="CanBuildAI Logo" class="company-logo" onerror="this.style.display='none'">
             <div class="header-content">
-                <h1>🤖 Building Energy Code &amp; Standards Assistant</h1>
+                <h1>🤖 Building Codes &amp; Standards Assistant</h1>
                 <p class="tagline">
-                    Ask plain-language questions about the National Energy Code for Buildings (NECB) &mdash; grounded, cited, and edition-aware.
+                    Ask plain-language questions about Canadian building codes &mdash; NECB (energy) and NBC (buildings) &mdash; grounded, cited, and edition-aware.
                 </p>
             </div>
             <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
@@ -327,14 +331,14 @@
                 </div>
                 <div class="chat-messages" id="chatMessages">
                     <div class="msg assistant">
-                        <p>👋 Hi &mdash; I'm your building energy code assistant. Ask me anything about NECB 2020 or 2025. I answer only from the source documents and cite section &amp; page numbers for every claim.</p>
+                        <p>👋 Hi &mdash; I'm your building codes assistant. Ask me anything about NECB 2020/2025 or the NBC 2025. I answer only from the source documents and cite section &amp; page numbers for every claim.</p>
                     </div>
                 </div>
                 <div class="example-questions" id="exampleQuestions">
                     <div style="margin-bottom: 4px;"><strong>Try:</strong></div>
-                    <span class="ex-chip" onclick="useExample(this)">What is the maximum U-value for windows in Climate Zone 7?</span>
+                    <span class="ex-chip" onclick="useExample(this)">What is the maximum U-value for walls in Climate Zone 4 (NECB 2020)?</span>
                     <span class="ex-chip" onclick="useExample(this)">Compare the fan-power limits between NECB 2020 and 2025.</span>
-                    <span class="ex-chip" onclick="useExample(this)">What are the minimum insulation requirements for a below-grade wall in Climate Zone 6?</span>
+                    <span class="ex-chip" onclick="useExample(this)">What are the minimum exit width requirements in the NBC?</span>
                 </div>
                 <div class="chat-input-bar">
                     <div class="chat-input-row">
@@ -554,6 +558,7 @@
                             assistantBox.scrollIntoView({ behavior: 'smooth', block: 'end' });
                         } else if (evt.type === 'done') {
                             assistantBox.innerHTML = renderAssistantContent(textAcc) + renderCitations(citations);
+                            renderMath(assistantBox);
                         } else if (evt.type === 'error') {
                             assistantBox.innerHTML = `<p style="color:#c53030;">⚠️ ${escapeHtml(evt.message || 'Unknown error')}</p>`;
                         }
@@ -582,6 +587,26 @@
                 } catch { /* fall through */ }
             }
             return `<p>${escapeHtml(md).replace(/\n/g, '<br>')}</p>`;
+        }
+
+        // Run KaTeX auto-render on a message container after markdown rendering.
+        // Uses $...$ / $$...$$ delimiters matching the system prompt instructions.
+        function renderMath(el) {
+            if (!el || typeof window.renderMathInElement !== 'function') return;
+            try {
+                window.renderMathInElement(el, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '\\[', right: '\\]', display: true },
+                        { left: '$',  right: '$',  display: false },
+                        { left: '\\(', right: '\\)', display: false }
+                    ],
+                    throwOnError: false,
+                    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+                });
+            } catch (e) {
+                console.warn('KaTeX render failed:', e);
+            }
         }
 
         // ---------------------------------------------------------------- input UX
