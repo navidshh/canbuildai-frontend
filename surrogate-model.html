@@ -397,7 +397,7 @@
                         </select>
                     </div>
 
-                    <!-- Live system summary + animated layout diagram.
+                    <!-- Live system summary + NECB reference schematic(s).
                          Populated and updated by renderHvacSummary() in app.js. -->
                     <div class="hvac-summary-wrap" id="hvacSummaryWrap">
                         <div class="hvac-summary-card" id="hvacSummaryCard">
@@ -415,7 +415,11 @@
                                 <p class="hvac-summary-note" id="hvacSummaryNote"></p>
                             </details>
                         </div>
-                        <div class="hvac-diagram" id="hvacDiagram" aria-hidden="true"></div>
+                        <div class="hvac-schematics" id="hvacSchematics" hidden>
+                            <h5 class="hvac-schematics-title" id="hvacSchematicsTitle">NECB Reference Schematic</h5>
+                            <div class="hvac-schematics-images" id="hvacSchematicsImages"></div>
+                            <p class="hvac-schematics-citation">Schematics extracted from NRC / NECB National Energy Code for Buildings guide.</p>
+                        </div>
                     </div>
                 </section>
 

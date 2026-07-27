@@ -1041,12 +1041,10 @@ header h1 {
 }
 
 /* ============================================================
-   HVAC system summary + animated layout diagram
+   HVAC system summary + NECB reference schematic gallery
    ============================================================ */
 .hvac-summary-wrap {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 20px;
+    display: block;
     margin-top: 20px;
     padding: 18px;
     background: linear-gradient(135deg, #f8f9ff 0%, #eef3ff 100%);
@@ -1113,91 +1111,68 @@ header h1 {
     font-size: 12px;
 }
 
-.hvac-diagram {
-    background: #fff;
-    border: 1px solid #c8d3f1;
-    border-radius: 8px;
-    overflow: hidden;
-    min-height: 260px;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: center;
+.hvac-schematics {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed #c8d3f1;
 }
 
-.hvac-diagram svg {
-    width: 100%;
-    height: auto;
-    max-height: 320px;
-    display: block;
-}
-
-.hvac-diagram-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 14px;
-    padding: 8px 12px;
-    border-top: 1px solid #eef1f8;
-    font-size: 11px;
-    color: #4a5b76;
-    background: #f8fafd;
-}
-.hvac-diagram-legend span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-}
-.hvac-diagram-legend i {
-    display: inline-block;
-    width: 14px;
-    height: 4px;
-    border-radius: 2px;
-}
-
-/* Mode-based visibility (toggled via classes added to .hvac-diagram) */
-.hvac-diagram .hp-unit,
-.hvac-diagram .dist-vrf-vis,
-.hvac-diagram .dist-baseboard-vis,
-.hvac-diagram .dist-pthp-vis,
-.hvac-diagram .sys-necb-1,
-.hvac-diagram .sys-necb-3,
-.hvac-diagram .sys-necb-4,
-.hvac-diagram .sys-necb-6,
-.hvac-diagram .sys-necb-mixed,
-.hvac-diagram .backup-gas,
-.hvac-diagram .backup-elec,
-.hvac-diagram .empty-state {
+.hvac-schematics[hidden] {
     display: none;
 }
 
-/* Heat-pump mode */
-.hvac-diagram.mode-hp .hp-unit { display: inline; }
-.hvac-diagram.mode-hp.dist-vrf .dist-vrf-vis { display: inline; }
-.hvac-diagram.mode-hp.dist-baseboard .dist-baseboard-vis { display: inline; }
-.hvac-diagram.mode-hp.dist-pthp .dist-pthp-vis { display: inline; }
+.hvac-schematics-title {
+    margin: 0 0 10px 0;
+    color: #2a5298;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
 
-/* NECB sub-system layouts (selected via archetype).
-   Mixed mode (apartments = Sys 1 + Sys 4) uses a dedicated combined schematic. */
-.hvac-diagram.mode-necb.necb-sys-1:not(.necb-mixed) .sys-necb-1 { display: inline; }
-.hvac-diagram.mode-necb.necb-sys-3 .sys-necb-3 { display: inline; }
-.hvac-diagram.mode-necb.necb-sys-4:not(.necb-mixed) .sys-necb-4 { display: inline; }
-.hvac-diagram.mode-necb.necb-sys-6:not(.necb-mixed) .sys-necb-6 { display: inline; }
-.hvac-diagram.mode-necb.necb-mixed .sys-necb-mixed { display: inline; }
+.hvac-schematics-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-start;
+}
 
-/* Backup heater appears in HP mode + matching fuel */
-.hvac-diagram.mode-hp.fuel-gas  .backup-gas  { display: inline; }
-.hvac-diagram.mode-hp.fuel-elec .backup-elec { display: inline; }
+.hvac-schematic-figure {
+    flex: 1 1 320px;
+    min-width: 0;
+    margin: 0;
+    background: #fff;
+    border: 1px solid #c8d3f1;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 1px 3px rgba(42, 82, 152, 0.06);
+}
 
-/* Empty / not-yet-configured */
-.hvac-diagram.mode-empty .empty-state { display: inline; }
+.hvac-schematic-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
 
-/* Stack on narrow screens */
+.hvac-schematic-figure figcaption {
+    margin-top: 6px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4a5b85;
+}
+
+.hvac-schematics-citation {
+    margin: 10px 0 0 0;
+    font-size: 10.5px;
+    font-style: italic;
+    color: #6a7891;
+    text-align: right;
+}
+
+/* Stack schematics on narrow screens */
 @media (max-width: 760px) {
-    .hvac-summary-wrap {
-        grid-template-columns: 1fr;
-    }
-    .hvac-diagram {
-        min-height: 180px;
+    .hvac-schematic-figure {
+        flex: 1 1 100%;
     }
 }
