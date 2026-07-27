@@ -364,8 +364,9 @@ const NECB_SYSTEM_INFO = {
 };
 
 // Static PNG schematic assets shipped in the frontend repo root. Each entry
-// maps an NECB system number to the reference schematic extracted from the
-// NRC / NECB National Energy Code for Buildings guide.
+// maps an NECB system number to the reference schematic adapted from the
+// National Energy Code of Canada for Buildings (NECB) 2020, published by the
+// National Research Council of Canada.
 const NECB_SCHEMATIC_IMAGES = {
     1: { src: 'necb-system-1.png', caption: 'NECB System 1 - PTAC + baseboards' },
     3: { src: 'necb-system-3.png', caption: 'NECB System 3 - PSZ-AC rooftop' },
