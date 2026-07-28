@@ -448,6 +448,93 @@ function updateHvacSchematics(isNECB, necbMapping, isHP) {
     wrap.hidden = false;
 }
 
+// ---------------------------------------------------------------------------
+// Enable/disable the Boiler and Furnace Efficiency dropdowns based on the
+// currently-selected HVAC family, primary heating fuel and building type.
+// When a dropdown is disabled it's forced back to the "NECB_Default" option
+// so the backend receives a valid default even though the user can't edit it.
+// ---------------------------------------------------------------------------
+function updateEfficiencyFieldStates(isNECB, fuel, buildingType) {
+    const boiler  = document.getElementById('boiler_eff');
+    const furnace = document.getElementById('furnace_eff');
+
+    const setDisabled = (sel, disabled, reason) => {
+        if (!sel) return;
+        if (disabled) {
+            sel.value = 'NECB_Default';
+            sel.disabled = true;
+            sel.required = false;
+            sel.title = reason || '';
+            // Also grey out the containing form-group label for a visual cue.
+            const group = sel.closest('.form-group');
+            if (group) group.classList.add('is-disabled');
+        } else {
+            sel.disabled = false;
+            sel.required = true;
+            sel.title = '';
+            const group = sel.closest('.form-group');
+            if (group) group.classList.remove('is-disabled');
+        }
+    };
+
+    if (isNECB && fuel === 'Electricity') {
+        // No combustion equipment → both efficiencies are irrelevant.
+        setDisabled(boiler,  true, 'Electricity is the primary heating fuel — no boiler is modelled.');
+        setDisabled(furnace, true, 'Electricity is the primary heating fuel — no furnace is modelled.');
+        return;
+    }
+
+    if (isNECB && fuel === 'NaturalGas') {
+        // Natural gas → both are relevant, except Medium Office is HW
+        // everywhere (System 6 with a boiler-only heating loop and no
+        // furnace).
+        setDisabled(boiler, false);
+        if (buildingType === 'MediumOffice') {
+            setDisabled(furnace, true,
+                'Medium Office uses NECB System 6 with a boiler-only hot-water loop — no furnace is modelled.');
+        } else {
+            setDisabled(furnace, false);
+        }
+        return;
+    }
+
+    // Any other combination (heat pump families, no fuel picked, no family
+    // picked): leave both editable. The backend accepts NECB_Default when
+    // the user doesn't change them.
+    setDisabled(boiler,  false);
+    setDisabled(furnace, false);
+}
+
+// ---------------------------------------------------------------------------
+// Rewrite the generic "HW or electric" phrasing in the NECB system copy
+// into fuel-specific language so the summary card reads naturally for the
+// user's selected primary heating fuel.
+// ---------------------------------------------------------------------------
+function specializeForFuel(text, fuel) {
+    if (!text) return text;
+    const bb = fuel === 'NaturalGas' ? 'hot water'
+              : fuel === 'Electricity' ? 'electric'
+              : null;
+    if (!bb) return text;
+
+    return text
+        // Baseboards
+        .replace(/HW\s*(?:\/|or)\s*electric perimeter baseboards/gi,
+                 `${bb} perimeter baseboards`)
+        .replace(/HW\s*(?:\/|or)\s*electric baseboards/gi,
+                 `${bb} baseboards`)
+        // Central heat / reheat coil
+        .replace(/HW\s*(?:\/|or)\s*electric central heat/gi,
+                 `${bb} central heat`)
+        .replace(/HW\s*(?:\/|or)\s*electric reheat coil/gi,
+                 `${bb} reheat coil`)
+        // Rooftop / MAU heating source lists
+        .replace(/gas\s*\/\s*electric\s*\/\s*hot-water heating/gi,
+                 fuel === 'NaturalGas' ? 'natural gas heating' : 'electric heating')
+        .replace(/gas\s*\/\s*electric heating/gi,
+                 fuel === 'NaturalGas' ? 'natural gas heating' : 'electric heating');
+}
+
 function renderHvacSummary() {
     const familySel   = document.getElementById('ecm_system_family');
     const typeSel     = document.getElementById('ecm_system_type');
@@ -466,6 +553,15 @@ function renderHvacSummary() {
     const isHP         = family === 'CCASHP' || family === 'ASHP';
     const isNECB       = family === 'NECB_Default';
 
+    // ---- Enable/disable Boiler + Furnace Efficiency dropdowns ------------
+    // NECB Default + Electricity: no combustion equipment is modelled, so
+    // both dropdowns are locked to NECB_Default and disabled.
+    // NECB Default + Natural Gas: both dropdowns are unlocked, except that
+    // MediumOffice is HW everywhere (System 6 with a boiler-only heating
+    // loop and no furnace), so the furnace dropdown stays locked to NECB
+    // default for that archetype.
+    updateEfficiencyFieldStates(isNECB, fuel, buildingType);
+
     // ---- NECB default → actual NECB system number (from building type) ----
     const necbMapping = (isNECB && buildingType) ? NECB_DEFAULT_FOR_BUILDING[buildingType] : null;
     const primarySys  = necbMapping ? NECB_SYSTEM_INFO[necbMapping.primary]   : null;
@@ -483,12 +579,13 @@ function renderHvacSummary() {
                           : fuel === 'Electricity'  ? ' - electrically fuelled'
                           : '';
             primary = `${primarySys.label} (dwelling units) + ${secondarySys.label} (corridors / common areas)${fuelTag}. `
-                    + `Suites: ${primarySys.primary}. Corridors: ${secondarySys.primary}.`;
+                    + `Suites: ${specializeForFuel(primarySys.primary, fuel)}. `
+                    + `Corridors: ${specializeForFuel(secondarySys.primary, fuel)}.`;
         } else if (primarySys) {
             const fuelTag = fuel === 'NaturalGas'   ? ' - natural gas fuelled'
                           : fuel === 'Electricity'  ? ' - electrically fuelled'
                           : '';
-            primary = `${primarySys.label}${fuelTag}. ${primarySys.primary}.`;
+            primary = `${primarySys.label}${fuelTag}. ${specializeForFuel(primarySys.primary, fuel)}.`;
         } else if (fuel === 'NaturalGas') {
             primary = 'Natural Gas boiler / furnace (NECB default - select a building archetype to see the exact system)';
         } else if (fuel === 'Electricity') {
@@ -507,10 +604,10 @@ function renderHvacSummary() {
     let distribution = '-';
     if (isHP && type)              distribution = typeLabels[type] || type;
     else if (isNECB && primarySys && secondarySys) {
-        distribution = `Dwelling units: ${primarySys.distribution}. `
-                     + `Common areas: ${secondarySys.distribution}.`;
+        distribution = `Dwelling units: ${specializeForFuel(primarySys.distribution, fuel)}. `
+                     + `Common areas: ${specializeForFuel(secondarySys.distribution, fuel)}.`;
     }
-    else if (isNECB && primarySys) distribution = primarySys.distribution;
+    else if (isNECB && primarySys) distribution = specializeForFuel(primarySys.distribution, fuel);
     else if (isNECB)               distribution = 'NECB default zoning (depends on building archetype)';
 
     // ---- Backup heating + derived fuel value ----

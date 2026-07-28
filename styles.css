@@ -1043,6 +1043,15 @@ header h1 {
 /* ============================================================
    HVAC system summary + NECB reference schematic gallery
    ============================================================ */
+.form-group.is-disabled label {
+    opacity: 0.55;
+}
+.form-group.is-disabled select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background-color: #f4f4f6;
+}
+
 .hvac-summary-wrap {
     display: block;
     margin-top: 20px;
