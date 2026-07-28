@@ -565,7 +565,7 @@
 
         let currentArchetype = options.archetype || 'MidRise';
         let yawDeg = Number.isFinite(options.rotationDeg) ? options.rotationDeg : 0;
-        let colorMode = options.colorMode || 'thermal_zone';   // or 'surface_type'
+        let colorMode = options.colorMode || 'surface_type';   // or 'thermal_zone'
         let currentIsOsm = false;    // whether the current mesh came from OSM JSON
 
         // --- Scene setup ----------------------------------------------------

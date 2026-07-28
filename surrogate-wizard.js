@@ -349,7 +349,7 @@
         }
         // Refresh the legend (zones differ per archetype).
         const modeSelect = $('#viewerColorMode');
-        updateViewerLegend((modeSelect && modeSelect.value) || 'thermal_zone');
+        updateViewerLegend((modeSelect && modeSelect.value) || 'surface_type');
 
         // Footprint readout
         updateFootprintReadout(archetypeId);
@@ -387,7 +387,7 @@
         if (empty) empty.remove();
 
         const modeSelect = $('#viewerColorMode');
-        const initialMode = (modeSelect && modeSelect.value) || 'thermal_zone';
+        const initialMode = (modeSelect && modeSelect.value) || 'surface_type';
 
         try {
             buildingViewer = window.SurrogateGeometry.createBuildingViewer({

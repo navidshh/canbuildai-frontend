@@ -192,9 +192,16 @@ def parse_building(path: Path) -> dict:
                 z = 0.0
             stories[h] = {"name": name, "nominal_z": z}
         elif obj_type == "ThermalZone":
+            # OS:ThermalZone schema: 0 handle, 1 name, 2 multiplier, ...
             h = _get(fields, 0)
             name = _get(fields, 1)
-            zones[h] = name
+            try:
+                mult = int(_get(fields, 2) or 1)
+                if mult < 1:
+                    mult = 1
+            except ValueError:
+                mult = 1
+            zones[h] = {"name": name, "multiplier": mult}
         elif obj_type == "Space":
             # OS 3.9 OS:Space schema:
             #  0 handle, 1 name, 2 space_type, 3 default_construction_set,
@@ -248,52 +255,165 @@ def parse_building(path: Path) -> dict:
     def resolve_space(space_h: str):
         sp = spaces.get(space_h)
         if not sp:
-            return None, None, None, [0.0, 0.0, 0.0]
-        zone_name = zones.get(sp["zone_handle"], sp["zone_handle"])
+            return None, None, None, [0.0, 0.0, 0.0], 1
+        zone = zones.get(sp["zone_handle"])
+        zone_name = zone["name"] if zone else sp["zone_handle"]
+        multiplier = zone["multiplier"] if zone else 1
         story = stories.get(sp["story_handle"])
         story_name = story["name"] if story else None
-        return sp["name"], zone_name, story_name, sp["origin"]
+        return sp["name"], zone_name, story_name, sp["origin"], multiplier
+
+    # Precompute per-story physical floor heights and placement so we can
+    # vertically duplicate multiplied floors. DOE prototypes use two
+    # inconsistent conventions:
+    #   * MidRise: Story 2 nominal_z is the FIRST copy of the multiplied set.
+    #   * LargeOffice: Story 2 nominal_z is a MIDDLE copy of the multiplied set.
+    #
+    # To handle both robustly we stack every story contiguously from the
+    # bottom of the OSM's Z range, using a uniform physical floor height
+    # derived from bbox_height / total_physical_floor_count. This produces
+    # the correct visual — one storey band per physical floor, no gaps —
+    # even when the OSM's story origins don't sit where you'd expect.
+    stories_by_z = sorted(
+        (v for v in stories.values()),
+        key=lambda s: s["nominal_z"],
+    )
+
+    # First pass: per-story max multiplier + Z range of any surface in it
+    # (to work out the drawn story height when we can't infer it from
+    # bbox math).
+    story_max_mult = {}
+    for sp in spaces.values():
+        story = stories.get(sp["story_handle"])
+        zone = zones.get(sp["zone_handle"])
+        if not story or not zone:
+            continue
+        cur = story_max_mult.get(story["name"], 1)
+        story_max_mult[story["name"]] = max(cur, zone["multiplier"])
+
+    # Physical floor count = sum of story multipliers
+    total_phys_floors = sum(
+        story_max_mult.get(s["name"], 1) for s in stories_by_z
+    ) or 1
+
+    # Full Z extent of the raw OSM geometry (before duplication).
+    # Compute from raw surfaces + their space origins so we don't need a
+    # duplication pass first.
+    raw_z_lo = float("inf")
+    raw_z_hi = float("-inf")
+    for s in surfaces_raw:
+        sp = spaces.get(s["space_handle"])
+        origin_z = sp["origin"][2] if sp else 0.0
+        for v in s["vertices"]:
+            z = v[2] + origin_z
+            if z < raw_z_lo:
+                raw_z_lo = z
+            if z > raw_z_hi:
+                raw_z_hi = z
+    if raw_z_lo == float("inf"):
+        raw_z_lo, raw_z_hi = 0.0, 3.05
+
+    # Uniform physical floor height (approximate).
+    uniform_h = (raw_z_hi - raw_z_lo) / total_phys_floors
+    if uniform_h <= 0.1:
+        uniform_h = 3.05
+
+    # Compute per-story placement: target bottom-Z where the FIRST copy of
+    # that story's surfaces should sit, plus the physical floor height.
+    story_placement = {}
+    stack_z = raw_z_lo
+    for story in stories_by_z:
+        mult = story_max_mult.get(story["name"], 1)
+        story_placement[story["name"]] = {
+            "target_bottom_z": stack_z,
+            "phys_h": uniform_h,
+            "multiplier": mult,
+        }
+        stack_z += mult * uniform_h
+
+    # For each STORY, compute the drawn bottom Z (lowest vertex among any
+    # surface of any space on that story). We shift the whole story
+    # together so plena stacked above occupied spaces stay above them
+    # after re-stacking.
+    story_drawn_bottom = {}
+    for s in surfaces_raw:
+        sp = spaces.get(s["space_handle"])
+        if not sp:
+            continue
+        story = stories.get(sp["story_handle"])
+        story_name = story["name"] if story else None
+        if story_name is None:
+            continue
+        origin_z = sp["origin"][2]
+        for v in s["vertices"]:
+            z = v[2] + origin_z
+            cur = story_drawn_bottom.get(story_name, float("inf"))
+            if z < cur:
+                story_drawn_bottom[story_name] = z
 
     surfaces_out = []
+    # Track handle -> (base_verts, mult, phys_h, z_shift_to_target) so
+    # subsurfaces can be duplicated the same way as their parent.
+    parent_dupe_meta = {}
     xs, ys, zs = [], [], []
     for s in surfaces_raw:
-        space_name, zone_name, story_name, origin = resolve_space(s["space_handle"])
+        space_name, zone_name, story_name, origin, mult = resolve_space(s["space_handle"])
         # Apply space origin to vertices (OSM convention: surface verts are
         # in the space's local coordinate system).
-        verts = [
+        base_verts = [
             [v[0] + origin[0], v[1] + origin[1], v[2] + origin[2]]
             for v in s["vertices"]
         ]
-        for v in verts:
-            xs.append(v[0]); ys.append(v[1]); zs.append(v[2])
-        surfaces_out.append({
-            "name": s["name"],
-            "type": s["type"],
-            "boundary": s["boundary"],
-            "space": space_name,
-            "zone": zone_name,
-            "story": story_name,
-            "vertices": verts,
-        })
 
-    # Subsurfaces: coordinates are also in the parent surface's space.
-    # We look up the parent's space to translate.
+        placement = story_placement.get(story_name, {
+            "target_bottom_z": raw_z_lo,
+            "phys_h": uniform_h,
+        })
+        phys_h = placement["phys_h"]
+        drawn_bottom = story_drawn_bottom.get(story_name, raw_z_lo)
+        z_shift = placement["target_bottom_z"] - drawn_bottom
+
+        parent_dupe_meta[s["handle"]] = (base_verts, mult, phys_h, z_shift)
+
+        for k in range(mult):
+            dz = z_shift + k * phys_h
+            verts = [[v[0], v[1], v[2] + dz] for v in base_verts]
+            for v in verts:
+                xs.append(v[0]); ys.append(v[1]); zs.append(v[2])
+            surfaces_out.append({
+                "name": s["name"] if k == 0 else f"{s['name']}#{k+1}",
+                "type": s["type"],
+                "boundary": s["boundary"],
+                "space": space_name,
+                "zone": zone_name,
+                "story": story_name,
+                "vertices": verts,
+            })
+
+    # Subsurfaces: duplicate the same way their parent surface was.
     subsurfaces_out = []
     for ss in subsurfaces_raw:
         parent = surface_by_handle.get(ss["parent_handle"])
         if parent is None:
             continue
-        _, _, _, origin = resolve_space(parent["space_handle"])
-        verts = [
+        meta = parent_dupe_meta.get(parent["handle"])
+        if meta is None:
+            continue
+        _base_parent_verts, mult, phys_h, z_shift = meta
+        _, _, _, origin, _ = resolve_space(parent["space_handle"])
+        base_verts = [
             [v[0] + origin[0], v[1] + origin[1], v[2] + origin[2]]
             for v in ss["vertices"]
         ]
-        subsurfaces_out.append({
-            "name": ss["name"],
-            "type": ss["type"],
-            "parent": parent["name"],
-            "vertices": verts,
-        })
+        for k in range(mult):
+            dz = z_shift + k * phys_h
+            verts = [[v[0], v[1], v[2] + dz] for v in base_verts]
+            subsurfaces_out.append({
+                "name": ss["name"] if k == 0 else f"{ss['name']}#{k+1}",
+                "type": ss["type"],
+                "parent": parent["name"] if k == 0 else f"{parent['name']}#{k+1}",
+                "vertices": verts,
+            })
 
     # Ordered zone list. Some BTAP-generated OSMs have ugly auto-generated
     # ThermalZone names (e.g. "ALL_ST=Office enclosed <= 25 m2_FL=Building
