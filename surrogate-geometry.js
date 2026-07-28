@@ -62,19 +62,18 @@
         0x00897b, 0xe53935, 0xc0ca33, 0x1e88e5, 0xffb300
     ];
 
-    function colorForZone(zoneName, zoneList) {
-        // Try exact index from the JSON's zone list.
-        if (zoneList) {
-            for (let i = 0; i < zoneList.length; i++) {
-                if (zoneList[i].name === zoneName) {
+    function colorForSpaceType(name, list) {
+        if (list) {
+            for (let i = 0; i < list.length; i++) {
+                if (list[i].name === name) {
                     return THERMAL_ZONE_PALETTE[i % THERMAL_ZONE_PALETTE.length];
                 }
             }
         }
         // Fallback: hash the name to pick a stable colour.
         let h = 0;
-        for (let i = 0; i < (zoneName || '').length; i++) {
-            h = (h * 31 + zoneName.charCodeAt(i)) >>> 0;
+        for (let i = 0; i < (name || '').length; i++) {
+            h = (h * 31 + name.charCodeAt(i)) >>> 0;
         }
         return THERMAL_ZONE_PALETTE[h % THERMAL_ZONE_PALETTE.length];
     }
@@ -372,7 +371,7 @@
      * the parametric renderer's convention (-Z = North).
      */
     function buildFromOsm(data, opts, THREE) {
-        const colorMode = opts.colorMode || 'thermal_zone';
+        const colorMode = opts.colorMode || 'space_type';
         const group = new THREE.Group();
         group.name = `osm_${data.archetype}`;
 
@@ -410,9 +409,10 @@
                 const op = surface.type === 'Wall' ? 0.75 : 1.0;
                 return [c, op];
             }
-            // thermal_zone (uses friendly display name derived at parse time)
-            const zn = surface.zone_display || surface.zone;
-            const c = colorForZone(zn, data.zones);
+            // space_type: colour by SpaceType bucket (Corridor, Dwelling Unit,
+            // Office, Plenum, Attic, ...).
+            const st = surface.space_type || 'Unassigned';
+            const c = colorForSpaceType(st, data.space_types);
             return [c, 0.9];
         }
 
@@ -565,7 +565,7 @@
 
         let currentArchetype = options.archetype || 'MidRise';
         let yawDeg = Number.isFinite(options.rotationDeg) ? options.rotationDeg : 0;
-        let colorMode = options.colorMode || 'surface_type';   // or 'thermal_zone'
+        let colorMode = options.colorMode || 'surface_type';   // or 'space_type'
         let currentIsOsm = false;    // whether the current mesh came from OSM JSON
 
         // --- Scene setup ----------------------------------------------------
@@ -699,7 +699,7 @@
         }
 
         function setColorMode(mode) {
-            if (mode !== 'surface_type' && mode !== 'thermal_zone') return;
+            if (mode !== 'surface_type' && mode !== 'space_type') return;
             if (mode === colorMode) return;
             colorMode = mode;
             // Only meaningful for the OSM path; parametric renderer already

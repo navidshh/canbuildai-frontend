@@ -443,26 +443,23 @@
             return;
         }
 
-        // thermal_zone: fetch the current OSM JSON and list its zones
+        // space_type: fetch the current OSM JSON and list its SpaceType buckets
+        // (Corridor, Dwelling Unit, Office, Plenum, Attic, ...).
         const archetype = buildingViewer && buildingViewer.getDimensions
             ? buildingViewer.getDimensions().archetype
             : 'MidRise';
         if (!window.SurrogateGeometry.loadOsmGeometry) return;
         window.SurrogateGeometry.loadOsmGeometry(archetype).then((data) => {
-            if (!data || !data.zones) return;
+            if (!data || !data.space_types) return;
             const palette = window.SurrogateGeometry.THERMAL_ZONE_PALETTE || [];
-            data.zones.forEach((z, i) => {
+            data.space_types.forEach((st, i) => {
                 const hex = '#' + (palette[i % palette.length] || 0x888888)
                     .toString(16).padStart(6, '0');
                 const chip = document.createElement('span');
                 chip.className = 'chip';
                 chip.style.setProperty('--chip-color', hex);
-                // Trim OSM-generated suffixes for readability.
-                const short = z.name
-                    .replace(/^Thermal Zone: /, '')
-                    .replace(/\s*ZN\s*$/i, '');
-                chip.textContent = short;
-                chip.title = z.name;
+                chip.textContent = st.name;
+                chip.title = st.name;
                 el.appendChild(chip);
             });
         });

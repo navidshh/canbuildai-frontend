@@ -166,6 +166,54 @@ def _get(fields: list[str], idx: int, default: str = "") -> str:
     return fields[idx] if idx < len(fields) else default
 
 
+# ---- SpaceType label cleanup ------------------------------------------
+# BTAP-generated SpaceType names look like:
+#   "Space Function Corridor/Transition area other-sch-G"
+#   "Space Function Dwelling units general"
+#   "Space Function Office enclosed <= 25 m2"
+#   "Space Function - undefined -"
+# We collapse these to short, human-readable labels so the legend and
+# colouring buckets stay small.
+_SPACE_TYPE_ALIASES = [
+    (r"dwelling",         "Dwelling Unit"),
+    (r"corridor",         "Corridor"),
+    (r"office\s*(open|open plan)", "Office - Open Plan"),
+    (r"office\s*enclosed", "Office - Enclosed"),
+    (r"office",           "Office"),
+    (r"electrical.*mechanical|mechanical.*electrical",
+                          "Electrical / Mechanical"),
+    (r"plenum",           "Plenum"),
+    (r"attic",            "Attic"),
+    (r"lobby|reception",  "Lobby"),
+    (r"restroom|washroom|toilet", "Washroom"),
+    (r"stair",            "Stairwell"),
+    (r"elevator|lift",    "Elevator"),
+    (r"storage",          "Storage"),
+    (r"kitchen",          "Kitchen"),
+    (r"dining",           "Dining"),
+    (r"conference|meeting", "Conference Room"),
+    (r"classroom",        "Classroom"),
+    (r"retail|store",     "Retail"),
+    (r"undefined|unassigned", "Unassigned"),
+]
+
+
+def _clean_space_type(raw: str) -> str:
+    if not raw:
+        return "Unassigned"
+    s = raw
+    # Strip common BTAP prefixes/suffixes
+    s = re.sub(r"^Space\s+Function\s+", "", s, flags=re.IGNORECASE)
+    s = re.sub(r"[-\s]*sch[-\s]?[A-Z0-9].*$", "", s, flags=re.IGNORECASE)
+    s = re.sub(r"<=?\s*\d+\s*m\d?", "", s)
+    s = re.sub(r"\s+", " ", s).strip(" -_/")
+    low = s.lower()
+    for pat, label in _SPACE_TYPE_ALIASES:
+        if re.search(pat, low):
+            return label
+    return s or "Unassigned"
+
+
 def parse_building(path: Path) -> dict:
     """Parse one OSM file into the geometry JSON structure."""
     # First pass: collect every relevant object indexed by handle where
@@ -176,6 +224,7 @@ def parse_building(path: Path) -> dict:
     spaces = {}             # handle -> {name, story_handle, thermal_zone_handle}
     zones = {}              # handle -> name
     stories = {}            # handle -> {name, nominal_z}
+    space_types = {}        # handle -> friendly SpaceType name
     building_name = None
 
     for obj_type, fields in parse_osm(path):
@@ -202,6 +251,12 @@ def parse_building(path: Path) -> dict:
             except ValueError:
                 mult = 1
             zones[h] = {"name": name, "multiplier": mult}
+        elif obj_type == "SpaceType":
+            # OS:SpaceType schema: 0 handle, 1 name (rest are references to
+            # constructions/loads/schedules — we only need the label).
+            h = _get(fields, 0)
+            name = _get(fields, 1)
+            space_types[h] = _clean_space_type(name)
         elif obj_type == "Space":
             # OS 3.9 OS:Space schema:
             #  0 handle, 1 name, 2 space_type, 3 default_construction_set,
@@ -210,6 +265,7 @@ def parse_building(path: Path) -> dict:
             #  9 building_story_handle, 10 thermal_zone_handle, ...
             h = _get(fields, 0)
             name = _get(fields, 1)
+            space_type_h = _get(fields, 2)
             try:
                 x0 = float(_get(fields, 6) or 0)
                 y0 = float(_get(fields, 7) or 0)
@@ -220,6 +276,7 @@ def parse_building(path: Path) -> dict:
             zone_h = _get(fields, 10)
             spaces[h] = {
                 "name": name,
+                "space_type_handle": space_type_h,
                 "story_handle": story_h,
                 "zone_handle": zone_h,
                 "origin": [x0, y0, z0],
@@ -255,13 +312,25 @@ def parse_building(path: Path) -> dict:
     def resolve_space(space_h: str):
         sp = spaces.get(space_h)
         if not sp:
-            return None, None, None, [0.0, 0.0, 0.0], 1
+            return None, None, None, [0.0, 0.0, 0.0], 1, "Unassigned"
         zone = zones.get(sp["zone_handle"])
         zone_name = zone["name"] if zone else sp["zone_handle"]
         multiplier = zone["multiplier"] if zone else 1
         story = stories.get(sp["story_handle"])
         story_name = story["name"] if story else None
-        return sp["name"], zone_name, story_name, sp["origin"], multiplier
+        space_type = space_types.get(sp.get("space_type_handle"), "Unassigned")
+        # Some prototype spaces (plenums, attics) don't reference a SpaceType
+        # or reference a "- undefined -" one. Fall back to the space's own
+        # name to figure out what it actually is.
+        low_name = (sp.get("name") or "").lower()
+        if space_type in ("Unassigned", "Undefined"):
+            if "plenum" in low_name:
+                space_type = "Plenum"
+            elif "attic" in low_name:
+                space_type = "Attic"
+            elif "basement" in low_name:
+                space_type = "Basement"
+        return sp["name"], zone_name, story_name, sp["origin"], multiplier, space_type
 
     # Precompute per-story physical floor heights and placement so we can
     # vertically duplicate multiplied floors. DOE prototypes use two
@@ -357,7 +426,7 @@ def parse_building(path: Path) -> dict:
     parent_dupe_meta = {}
     xs, ys, zs = [], [], []
     for s in surfaces_raw:
-        space_name, zone_name, story_name, origin, mult = resolve_space(s["space_handle"])
+        space_name, zone_name, story_name, origin, mult, space_type = resolve_space(s["space_handle"])
         # Apply space origin to vertices (OSM convention: surface verts are
         # in the space's local coordinate system).
         base_verts = [
@@ -385,6 +454,7 @@ def parse_building(path: Path) -> dict:
                 "type": s["type"],
                 "boundary": s["boundary"],
                 "space": space_name,
+                "space_type": space_type,
                 "zone": zone_name,
                 "story": story_name,
                 "vertices": verts,
@@ -400,7 +470,7 @@ def parse_building(path: Path) -> dict:
         if meta is None:
             continue
         _base_parent_verts, mult, phys_h, z_shift = meta
-        _, _, _, origin, _ = resolve_space(parent["space_handle"])
+        _, _, _, origin, _, _ = resolve_space(parent["space_handle"])
         base_verts = [
             [v[0] + origin[0], v[1] + origin[1], v[2] + origin[2]]
             for v in ss["vertices"]
@@ -415,34 +485,16 @@ def parse_building(path: Path) -> dict:
                 "vertices": verts,
             })
 
-    # Ordered zone list. Some BTAP-generated OSMs have ugly auto-generated
-    # ThermalZone names (e.g. "ALL_ST=Office enclosed <= 25 m2_FL=Building
-    # Story 1_SCH=A 4"). In those cases the containing Space name (like
-    # "Perimeter_ZN_1" or "Core_ZN") is what modelers recognise, so we
-    # colour and legend by the space name and stash the raw zone name on
-    # each surface for reference.
-    #
-    # For coloring purposes we use `zone_display` on surfaces, which is
-    # `zone` unless it matches the BTAP auto-generated pattern, in which
-    # case we fall back to the containing Space name.
-    def friendly_zone_name(zone_raw: str, space_name: str | None) -> str:
-        if not zone_raw:
-            return space_name or "(unassigned)"
-        if zone_raw.startswith("ALL_ST=") or zone_raw.startswith("BTAP") \
-                or "SCH=" in zone_raw:
-            return space_name or zone_raw
-        return zone_raw
-
+    # Ordered SpaceType list (this is what the user picks when they choose
+    # "Colour by Space Type" — buckets like "Corridor", "Dwelling Unit",
+    # "Office - Open Plan", "Plenum", "Attic").
+    space_types_ordered = []
+    seen_types = set()
     for s in surfaces_out:
-        s["zone_display"] = friendly_zone_name(s["zone"], s["space"])
-
-    zone_names_ordered = []
-    seen = set()
-    for s in surfaces_out:
-        z = s["zone_display"]
-        if z and z not in seen:
-            seen.add(z)
-            zone_names_ordered.append(z)
+        st = s.get("space_type") or "Unassigned"
+        if st not in seen_types:
+            seen_types.add(st)
+            space_types_ordered.append(st)
 
     stories_ordered = sorted(
         ({"name": v["name"], "nominal_z": v["nominal_z"]} for v in stories.values()),
@@ -463,9 +515,9 @@ def parse_building(path: Path) -> dict:
         "name": building_name or archetype,
         "bbox": bbox,
         "stories": stories_ordered,
-        "zones": [
-            {"name": z, "color_index": i}
-            for i, z in enumerate(zone_names_ordered)
+        "space_types": [
+            {"name": st, "color_index": i}
+            for i, st in enumerate(space_types_ordered)
         ],
         "surfaces": surfaces_out,
         "subsurfaces": subsurfaces_out,
@@ -491,12 +543,12 @@ def main():
             encoding="utf-8",
         )
         n_surf = len(data["surfaces"])
-        n_zones = len(data["zones"])
+        n_types = len(data["space_types"])
         n_stories = len(data["stories"])
         size_kb = out_path.stat().st_size / 1024
         bbox = data["bbox"]
         dims = f"{bbox['size'][0]:.1f}x{bbox['size'][1]:.1f}x{bbox['size'][2]:.1f} m" if bbox else "n/a"
-        print(f"     surfaces={n_surf}  zones={n_zones}  stories={n_stories}"
+        print(f"     surfaces={n_surf}  space_types={n_types}  stories={n_stories}"
               f"  bbox={dims}  ({size_kb:.0f} KB)")
         total += 1
     print(f"\n{total} files written.")
