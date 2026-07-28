@@ -374,15 +374,46 @@ const NECB_SCHEMATIC_IMAGES = {
     6: { src: 'necb-system-6.png', caption: 'NECB System 6 - Built-up VAV with reheat' }
 };
 
-// Show the NECB reference schematic(s) below the "What the model will
-// simulate" summary card. Only rendered when the user picked NECB Default
-// AND we have a building-archetype mapping to a known system number.
-function updateHvacSchematics(isNECB, necbMapping) {
+// Heat-pump reference schematic (shared by CCASHP and ASHP families).
+const HEAT_PUMP_SCHEMATIC = {
+    src: 'HeatPump.png',
+    caption: 'Air-source heat pump - refrigerant cycle schematic'
+};
+
+const NECB_CITATION_HTML =
+    'Adapted from the <em>National Energy Code of Canada for Buildings (NECB) 2020</em>, '
+    + 'National Research Council of Canada.';
+
+const HEAT_PUMP_CITATION_HTML =
+    'Adapted from Natural Resources Canada, '
+    + '<em>Air-Source Heat Pump Sizing and Selection Guide</em> (CanmetENERGY, 2020).';
+
+// Show the reference schematic(s) below the "What the model will simulate"
+// summary card. Rendered for NECB Default (per-archetype NECB system) and for
+// the two heat-pump families (Cold Climate Air Source HP and Air Source HP).
+function updateHvacSchematics(isNECB, necbMapping, isHP) {
     const wrap    = document.getElementById('hvacSchematics');
     const gallery = document.getElementById('hvacSchematicsImages');
     const title   = document.getElementById('hvacSchematicsTitle');
+    const cite    = document.getElementById('hvacSchematicsCitation');
     if (!wrap || !gallery) return;
 
+    // ---- Heat pump families ----------------------------------------------
+    if (isHP) {
+        if (title) title.textContent = 'Heat Pump Reference Schematic';
+        gallery.innerHTML = `
+            <figure class="hvac-schematic-figure">
+                <img src="${HEAT_PUMP_SCHEMATIC.src}"
+                     alt="${HEAT_PUMP_SCHEMATIC.caption}" loading="lazy">
+                <figcaption>${HEAT_PUMP_SCHEMATIC.caption}</figcaption>
+            </figure>
+        `;
+        if (cite) cite.innerHTML = HEAT_PUMP_CITATION_HTML;
+        wrap.hidden = false;
+        return;
+    }
+
+    // ---- NECB Default ----------------------------------------------------
     if (!isNECB || !necbMapping) {
         wrap.hidden = true;
         gallery.innerHTML = '';
@@ -413,6 +444,7 @@ function updateHvacSchematics(isNECB, necbMapping) {
         </figure>
     `).join('');
 
+    if (cite) cite.innerHTML = NECB_CITATION_HTML;
     wrap.hidden = false;
 }
 
@@ -540,7 +572,7 @@ function renderHvacSummary() {
     set('hvacSummaryNote',         note);
 
     // ---- Update the NECB reference schematic(s) shown below the card ----
-    updateHvacSchematics(isNECB, necbMapping);
+    updateHvacSchematics(isNECB, necbMapping, isHP);
 
     // ---- Reframe the "Primary Heating Fuel" label when in heat-pump mode ----
     const fuelLabel = document.getElementById('primaryHeatingFuelLabel');
