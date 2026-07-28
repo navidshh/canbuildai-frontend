@@ -347,6 +347,9 @@
         if (buildingViewer) {
             buildingViewer.setArchetype(archetypeId);
         }
+        // Refresh the legend (zones differ per archetype).
+        const modeSelect = $('#viewerColorMode');
+        updateViewerLegend((modeSelect && modeSelect.value) || 'thermal_zone');
 
         // Footprint readout
         updateFootprintReadout(archetypeId);
@@ -383,18 +386,86 @@
         const empty = container.querySelector('.viewer-empty-state');
         if (empty) empty.remove();
 
+        const modeSelect = $('#viewerColorMode');
+        const initialMode = (modeSelect && modeSelect.value) || 'thermal_zone';
+
         try {
             buildingViewer = window.SurrogateGeometry.createBuildingViewer({
                 container,
                 archetype: 'MidRise',
-                rotationDeg: 0
+                rotationDeg: 0,
+                colorMode: initialMode
             });
         } catch (err) {
             console.error('Failed to init 3D viewer:', err);
             container.innerHTML =
                 '<div class="viewer-empty-state">3D viewer could not start. ' +
                 'Refresh to retry.</div>';
+            return;
         }
+
+        // Color-mode dropdown → viewer + legend refresh
+        if (modeSelect) {
+            modeSelect.addEventListener('change', () => {
+                const mode = modeSelect.value;
+                if (buildingViewer) buildingViewer.setColorMode(mode);
+                updateViewerLegend(mode);
+            });
+        }
+
+        // Redraw legend whenever the archetype changes (fires after
+        // setArchetype finishes fetching the OSM JSON).
+        updateViewerLegend(initialMode);
+    }
+
+    // Populates #viewerLegend with chips describing the current colour mode.
+    function updateViewerLegend(mode) {
+        const el = $('#viewerLegend');
+        if (!el) return;
+        el.innerHTML = '';
+
+        if (mode === 'surface_type') {
+            const entries = [
+                ['Wall',        '#d0d5db'],
+                ['RoofCeiling', '#f7c26a'],
+                ['Floor',       '#7a6d5c'],
+                ['FixedWindow', '#66b7ff'],
+                ['Door',        '#8b5a3c'],
+                ['Skylight',    '#a9dfff']
+            ];
+            entries.forEach(([label, color]) => {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.style.setProperty('--chip-color', color);
+                chip.textContent = label;
+                el.appendChild(chip);
+            });
+            return;
+        }
+
+        // thermal_zone: fetch the current OSM JSON and list its zones
+        const archetype = buildingViewer && buildingViewer.getDimensions
+            ? buildingViewer.getDimensions().archetype
+            : 'MidRise';
+        if (!window.SurrogateGeometry.loadOsmGeometry) return;
+        window.SurrogateGeometry.loadOsmGeometry(archetype).then((data) => {
+            if (!data || !data.zones) return;
+            const palette = window.SurrogateGeometry.THERMAL_ZONE_PALETTE || [];
+            data.zones.forEach((z, i) => {
+                const hex = '#' + (palette[i % palette.length] || 0x888888)
+                    .toString(16).padStart(6, '0');
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.style.setProperty('--chip-color', hex);
+                // Trim OSM-generated suffixes for readability.
+                const short = z.name
+                    .replace(/^Thermal Zone: /, '')
+                    .replace(/\s*ZN\s*$/i, '');
+                chip.textContent = short;
+                chip.title = z.name;
+                el.appendChild(chip);
+            });
+        });
     }
 
     // =======================================================================

@@ -146,7 +146,16 @@
 
                         <!-- 3D viewer (spans both columns) -->
                         <div class="site-card viewer-card">
-                            <h3>🧊 Geometry &amp; Thermal Zones</h3>
+                            <div class="viewer-header">
+                                <h3>🧊 Geometry &amp; Thermal Zones</h3>
+                                <label class="viewer-color-mode">
+                                    Color by:
+                                    <select id="viewerColorMode">
+                                        <option value="thermal_zone" selected>Thermal Zone</option>
+                                        <option value="surface_type">Surface Type</option>
+                                    </select>
+                                </label>
+                            </div>
                             <div id="buildingViewer" aria-label="3D viewer of the selected building archetype with colour-coded thermal zones">
                                 <div class="viewer-empty-state">Loading 3D viewer…</div>
                             </div>
@@ -155,13 +164,7 @@
                                 <span>🖲️ Scroll to zoom</span>
                                 <span>↪️ Right-click drag to pan</span>
                             </div>
-                            <div class="zone-legend" aria-label="Thermal zone colour legend">
-                                <span class="chip" style="--chip-color:#9aa7b4">Core</span>
-                                <span class="chip" style="--chip-color:#4f86c6">North perimeter</span>
-                                <span class="chip" style="--chip-color:#e2553a">South perimeter</span>
-                                <span class="chip" style="--chip-color:#f2c14e">East perimeter</span>
-                                <span class="chip" style="--chip-color:#4caf66">West perimeter</span>
-                            </div>
+                            <div id="viewerLegend" class="zone-legend" aria-label="Colour legend"></div>
                             <div id="footprintReadout" class="city-readout" style="margin-top:10px;"></div>
                         </div>
                     </div>

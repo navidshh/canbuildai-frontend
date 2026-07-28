@@ -20,6 +20,65 @@
 (function (global) {
     'use strict';
 
+    // ------------------------------------------------------------------
+    // OSM-based geometry (real DOE prototype models)
+    // ------------------------------------------------------------------
+    // The wizard ships pre-parsed JSON files under /geometry/<Archetype>.json,
+    // built by frontend/parse_osm.py from the ASHRAE 90.1 / DOE reference OSMs.
+    // The viewer loads them lazily and falls back to the parametric "boxes"
+    // renderer below if a fetch fails.
+    const OSM_GEOMETRY_URL = 'geometry/';   // relative to page URL
+    const _osmCache = Object.create(null);  // archetype -> Promise<data|null>
+
+    function loadOsmGeometry(archetype) {
+        if (_osmCache[archetype]) return _osmCache[archetype];
+        const url = `${OSM_GEOMETRY_URL}${archetype}.json`;
+        _osmCache[archetype] = fetch(url, { credentials: 'omit' })
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null);
+        return _osmCache[archetype];
+    }
+
+    // Surface-type palette (colour by OS:Surface.Type). Matches typical
+    // OpenStudio visualisation conventions.
+    const SURFACE_TYPE_COLORS = {
+        Wall:         0xd0d5db,  // light grey (opaque walls)
+        RoofCeiling:  0xf7c26a,  // warm amber (roof/ceiling)
+        Floor:        0x7a6d5c,  // brown (floor slabs)
+        // SubSurface types
+        FixedWindow:  0x66b7ff,  // sky blue
+        OperableWindow: 0x4aa1ea,
+        Door:         0x8b5a3c,  // brown door
+        GlassDoor:    0x9ad0ff,
+        Skylight:     0xa9dfff,
+        OverheadDoor: 0x7c5636
+    };
+
+    // Palette used to colour ThermalZones (cycles through this list).
+    const THERMAL_ZONE_PALETTE = [
+        0x4f86c6, 0xe2553a, 0xf2c14e, 0x4caf66, 0x9c6ade,
+        0xef7fbf, 0x5ac8fa, 0xff9800, 0x8bc34a, 0x795548,
+        0x00acc1, 0xd81b60, 0x7cb342, 0xff5722, 0x3949ab,
+        0x00897b, 0xe53935, 0xc0ca33, 0x1e88e5, 0xffb300
+    ];
+
+    function colorForZone(zoneName, zoneList) {
+        // Try exact index from the JSON's zone list.
+        if (zoneList) {
+            for (let i = 0; i < zoneList.length; i++) {
+                if (zoneList[i].name === zoneName) {
+                    return THERMAL_ZONE_PALETTE[i % THERMAL_ZONE_PALETTE.length];
+                }
+            }
+        }
+        // Fallback: hash the name to pick a stable colour.
+        let h = 0;
+        for (let i = 0; i < (zoneName || '').length; i++) {
+            h = (h * 31 + zoneName.charCodeAt(i)) >>> 0;
+        }
+        return THERMAL_ZONE_PALETTE[h % THERMAL_ZONE_PALETTE.length];
+    }
+
     // --- Canonical NECB / DOE-prototype building dimensions ------------------
     // Source: ASHRAE 90.1 Prototype Building Models / U.S. DOE Commercial
     // Reference Buildings — these are the official prototypes the NECB
@@ -274,6 +333,147 @@
         return { group: building, dims };
     }
 
+    // ------------------------------------------------------------------
+    // OSM builder: real geometry from ASHRAE/DOE prototype .osm files.
+    // ------------------------------------------------------------------
+
+    /**
+     * Fan-triangulate a planar polygon (vertices are [x,y,z]).
+     * Assumes the polygon is convex (walls, floors, roofs in DOE prototypes
+     * are all convex rectangles). Returns a THREE.BufferGeometry.
+     */
+    function polygonToGeometry(vertices, THREE) {
+        const n = vertices.length;
+        if (n < 3) return null;
+        // Positions for a triangle fan v0-vi-vi+1 for i in [1..n-2]
+        const triCount = n - 2;
+        const positions = new Float32Array(triCount * 3 * 3);
+        let o = 0;
+        const v0 = vertices[0];
+        for (let i = 1; i < n - 1; i++) {
+            const va = vertices[i];
+            const vb = vertices[i + 1];
+            positions[o++] = v0[0]; positions[o++] = v0[1]; positions[o++] = v0[2];
+            positions[o++] = va[0]; positions[o++] = va[1]; positions[o++] = va[2];
+            positions[o++] = vb[0]; positions[o++] = vb[1]; positions[o++] = vb[2];
+        }
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geom.computeVertexNormals();
+        return geom;
+    }
+
+    /**
+     * Build a Three.js Group from an OSM-derived geometry JSON. Each surface
+     * becomes one mesh with its colour driven by `colorMode`.
+     *
+     * OSM stores Z as vertical. Three.js uses Y as vertical. We remap
+     * (X, Y, Z) -> (X, Z, -Y) so the north-facing +Z axis (compass) matches
+     * the parametric renderer's convention (-Z = North).
+     */
+    function buildFromOsm(data, opts, THREE) {
+        const colorMode = opts.colorMode || 'thermal_zone';
+        const group = new THREE.Group();
+        group.name = `osm_${data.archetype}`;
+
+        // Centre in X/Y (world XZ) so the building sits above the ground plane
+        // at origin regardless of the OSM's absolute coordinates.
+        const bb = data.bbox;
+        const cx = bb ? (bb.min[0] + bb.max[0]) / 2 : 0;
+        const cy = bb ? (bb.min[1] + bb.max[1]) / 2 : 0;
+        const minZ = bb ? bb.min[2] : 0;
+
+        // Colour cache so opaque walls in the same zone share a material.
+        const matCache = new Map();
+        function getMat(hex, opacity) {
+            const key = `${hex}_${opacity}`;
+            let m = matCache.get(key);
+            if (!m) {
+                m = new THREE.MeshStandardMaterial({
+                    color: hex,
+                    roughness: 0.7,
+                    metalness: 0.05,
+                    transparent: opacity < 1,
+                    opacity: opacity,
+                    side: THREE.DoubleSide,
+                    flatShading: false
+                });
+                matCache.set(key, m);
+            }
+            return m;
+        }
+
+        function pickColorAndOpacity(surface) {
+            if (colorMode === 'surface_type') {
+                const c = SURFACE_TYPE_COLORS[surface.type] || 0xcccccc;
+                // Walls slightly translucent so zones inside are hinted at.
+                const op = surface.type === 'Wall' ? 0.75 : 1.0;
+                return [c, op];
+            }
+            // thermal_zone (uses friendly display name derived at parse time)
+            const zn = surface.zone_display || surface.zone;
+            const c = colorForZone(zn, data.zones);
+            return [c, 0.9];
+        }
+
+        function remap(v) {
+            // OSM (X east, Y north, Z up) -> Three.js (X east, Y up, Z south)
+            return [v[0] - cx, v[2] - minZ, -(v[1] - cy)];
+        }
+
+        for (const s of data.surfaces) {
+            if (!s.vertices || s.vertices.length < 3) continue;
+            const verts = s.vertices.map(remap);
+            const geom = polygonToGeometry(verts, THREE);
+            if (!geom) continue;
+            const [c, op] = pickColorAndOpacity(s);
+            const mat = getMat(c, op);
+            const mesh = new THREE.Mesh(geom, mat);
+            mesh.name = s.name;
+            mesh.userData = {
+                surfaceType: s.type,
+                zone: s.zone,
+                story: s.story,
+                boundary: s.boundary
+            };
+            group.add(mesh);
+        }
+
+        // Subsurfaces (windows, doors, skylights) — always coloured by type
+        // and offset outward slightly to avoid z-fighting with the parent wall.
+        for (const ss of data.subsurfaces) {
+            if (!ss.vertices || ss.vertices.length < 3) continue;
+            const verts = ss.vertices.map(remap);
+            const geom = polygonToGeometry(verts, THREE);
+            if (!geom) continue;
+            const c = SURFACE_TYPE_COLORS[ss.type] || 0x66b7ff;
+            const mat = getMat(c, 0.85);
+            const mesh = new THREE.Mesh(geom, mat);
+            mesh.name = ss.name;
+            mesh.userData = { subSurfaceType: ss.type, parent: ss.parent };
+            // Nudge the mesh very slightly along its face normal so it sits
+            // in front of the parent surface (prevents z-fighting).
+            geom.computeVertexNormals();
+            const n = geom.attributes.normal;
+            if (n && n.count > 0) {
+                const nx = n.getX(0), ny = n.getY(0), nz = n.getZ(0);
+                mesh.position.set(nx * 0.02, ny * 0.02, nz * 0.02);
+            }
+            group.add(mesh);
+        }
+
+        // Derive dims from bbox so camera framing works the same as the
+        // parametric path.
+        const dims = bb ? {
+            width: bb.size[0],
+            depth: bb.size[1],
+            floorHeight: bb.size[2] / Math.max(data.stories.length, 1),
+            stories: data.stories.length || 1
+        } : { width: 40, depth: 20, floorHeight: 3, stories: 1 };
+
+        return { group, dims };
+    }
+
     /**
      * Configure camera + controls to nicely frame a building of the given
      * dimensions. Keeps the user's current orbit angle if controls exist.
@@ -365,6 +565,8 @@
 
         let currentArchetype = options.archetype || 'MidRise';
         let yawDeg = Number.isFinite(options.rotationDeg) ? options.rotationDeg : 0;
+        let colorMode = options.colorMode || 'thermal_zone';   // or 'surface_type'
+        let currentIsOsm = false;    // whether the current mesh came from OSM JSON
 
         // --- Scene setup ----------------------------------------------------
         const scene = new THREE.Scene();
@@ -416,6 +618,40 @@
         scene.add(buildingGroup);
         frameBuilding(camera, controls, dims);
 
+        // Try to swap in the higher-fidelity OSM geometry as soon as it loads.
+        // Runs on every archetype change too (see setArchetype).
+        function tryLoadOsm(archetype) {
+            loadOsmGeometry(archetype).then((data) => {
+                if (!data || currentArchetype !== archetype) return;
+                disposeBuildingGroup();
+                const built = buildFromOsm(data, { colorMode }, THREE);
+                buildingGroup = built.group;
+                dims = built.dims;
+                currentIsOsm = true;
+                buildingGroup.rotation.y = THREE.MathUtils.degToRad(yawDeg);
+                scene.add(buildingGroup);
+                frameBuilding(camera, controls, dims);
+            });
+        }
+
+        function disposeBuildingGroup() {
+            scene.remove(buildingGroup);
+            buildingGroup.traverse((obj) => {
+                if (obj.isMesh) {
+                    if (obj.geometry) obj.geometry.dispose();
+                    if (obj.material) {
+                        if (Array.isArray(obj.material)) {
+                            obj.material.forEach((m) => m.dispose());
+                        } else {
+                            obj.material.dispose();
+                        }
+                    }
+                }
+            });
+        }
+
+        tryLoadOsm(currentArchetype);
+
         // --- Animation loop -------------------------------------------------
         let running = true;
         function animate() {
@@ -447,26 +683,38 @@
             currentArchetype = archetype;
 
             // Tear down old meshes to free GPU memory.
-            scene.remove(buildingGroup);
-            buildingGroup.traverse((obj) => {
-                if (obj.isMesh) {
-                    if (obj.geometry) obj.geometry.dispose();
-                    if (obj.material) {
-                        if (Array.isArray(obj.material)) {
-                            obj.material.forEach((m) => m.dispose());
-                        } else {
-                            obj.material.dispose();
-                        }
-                    }
-                }
-            });
+            disposeBuildingGroup();
 
+            // Show parametric placeholder while we fetch OSM JSON.
             const rebuilt = buildBuilding(currentArchetype, THREE);
             buildingGroup = rebuilt.group;
             dims = rebuilt.dims;
+            currentIsOsm = false;
             buildingGroup.rotation.y = THREE.MathUtils.degToRad(yawDeg);
             scene.add(buildingGroup);
             frameBuilding(camera, controls, dims);
+
+            // Swap in the OSM version once it's fetched (or use cached).
+            tryLoadOsm(currentArchetype);
+        }
+
+        function setColorMode(mode) {
+            if (mode !== 'surface_type' && mode !== 'thermal_zone') return;
+            if (mode === colorMode) return;
+            colorMode = mode;
+            // Only meaningful for the OSM path; parametric renderer already
+            // uses fixed perimeter-direction colours.
+            if (!currentIsOsm) return;
+            loadOsmGeometry(currentArchetype).then((data) => {
+                if (!data || !currentIsOsm) return;
+                disposeBuildingGroup();
+                const built = buildFromOsm(data, { colorMode }, THREE);
+                buildingGroup = built.group;
+                dims = built.dims;
+                buildingGroup.rotation.y = THREE.MathUtils.degToRad(yawDeg);
+                scene.add(buildingGroup);
+                frameBuilding(camera, controls, dims);
+            });
         }
 
         function setRotation(degrees) {
@@ -506,6 +754,7 @@
         return {
             setArchetype,
             setRotation,
+            setColorMode,
             getDimensions,
             dispose
         };
@@ -517,6 +766,9 @@
         createBuildingViewer,
         ARCHETYPE_DIMENSIONS,
         ZONE_COLORS,
-        getArchetypeDimensions
+        SURFACE_TYPE_COLORS,
+        THERMAL_ZONE_PALETTE,
+        getArchetypeDimensions,
+        loadOsmGeometry
     };
 })(window);
