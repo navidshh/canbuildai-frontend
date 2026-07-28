@@ -454,7 +454,7 @@ function updateHvacSchematics(isNECB, necbMapping, isHP) {
 // When a dropdown is disabled it's forced back to the "NECB_Default" option
 // so the backend receives a valid default even though the user can't edit it.
 // ---------------------------------------------------------------------------
-function updateEfficiencyFieldStates(isNECB, fuel, buildingType) {
+function updateEfficiencyFieldStates(isNECB, isHP, fuel, buildingType) {
     const boiler  = document.getElementById('boiler_eff');
     const furnace = document.getElementById('furnace_eff');
 
@@ -498,9 +498,23 @@ function updateEfficiencyFieldStates(isNECB, fuel, buildingType) {
         return;
     }
 
-    // Any other combination (heat pump families, no fuel picked, no family
-    // picked): leave both editable. The backend accepts NECB_Default when
-    // the user doesn't change them.
+    if (isHP && fuel === 'Electricity') {
+        // Heat pump + electric backup → no combustion equipment.
+        setDisabled(boiler,  true, 'Electricity is the supplementary backup — no boiler is modelled.');
+        setDisabled(furnace, true, 'Electricity is the supplementary backup — no furnace is modelled.');
+        return;
+    }
+
+    if (isHP && fuel === 'NaturalGas') {
+        // Heat pump + natural-gas backup loop: both efficiencies apply for
+        // every archetype (no MediumOffice exception here).
+        setDisabled(boiler,  false);
+        setDisabled(furnace, false);
+        return;
+    }
+
+    // No family / fuel picked yet: leave both editable. The backend accepts
+    // NECB_Default when the user doesn't change them.
     setDisabled(boiler,  false);
     setDisabled(furnace, false);
 }
@@ -554,13 +568,16 @@ function renderHvacSummary() {
     const isNECB       = family === 'NECB_Default';
 
     // ---- Enable/disable Boiler + Furnace Efficiency dropdowns ------------
-    // NECB Default + Electricity: no combustion equipment is modelled, so
-    // both dropdowns are locked to NECB_Default and disabled.
-    // NECB Default + Natural Gas: both dropdowns are unlocked, except that
-    // MediumOffice is HW everywhere (System 6 with a boiler-only heating
-    // loop and no furnace), so the furnace dropdown stays locked to NECB
-    // default for that archetype.
-    updateEfficiencyFieldStates(isNECB, fuel, buildingType);
+    // Both NECB Default and the Heat-Pump families follow the same rule:
+    //   • Electricity → both dropdowns locked to NECB_Default (no
+    //     combustion equipment is modelled).
+    //   • Natural Gas → both dropdowns unlocked.
+    // The only archetype-specific exception is NECB Default + Natural Gas
+    // for MediumOffice, where the model is HW everywhere (System 6 with a
+    // boiler-only loop and no furnace) so the furnace dropdown stays
+    // locked. For Heat Pump families the natural-gas backup loop applies
+    // to every archetype, including MediumOffice.
+    updateEfficiencyFieldStates(isNECB, isHP, fuel, buildingType);
 
     // ---- NECB default → actual NECB system number (from building type) ----
     const necbMapping = (isNECB && buildingType) ? NECB_DEFAULT_FOR_BUILDING[buildingType] : null;
