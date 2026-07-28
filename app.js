@@ -551,12 +551,25 @@ function renderHvacSummary() {
     }
 
     // ---- Service hot water ----
-    const shwLabels = {
-        'NECB_Default':                                        'NECB Default',
-        'Natural Gas Direct Vent with Electric Ignition':      'Natural Gas Direct Vent',
-        'Natural Gas Power Vent with Electric Ignition':       'Natural Gas Power Vent'
+    // For every SHW option the OpenStudio prototype builds a single central
+    // storage-tank water heater feeding one hot-water loop, with a
+    // circulation pump and one water-use fixture per SHW-consuming space.
+    // Only the water-heater fuel / venting type varies with this dropdown.
+    const shwBase = 'A single central storage-tank water heater feeding '
+                  + 'one hot-water loop, with a circulation pump and one '
+                  + 'water-use fixture per SHW-consuming space';
+    const shwSuffix = {
+        'NECB_Default': '',
+        'Natural Gas Direct Vent with Electric Ignition':
+            ' (natural gas direct vent with electric ignition)',
+        'Natural Gas Power Vent with Electric Ignition':
+            ' (natural gas power vent with electric ignition)'
     };
-    const shwDisplay = shw ? (shwLabels[shw] || shw) : '-';
+    let shwDisplay = '-';
+    if (shw) {
+        const suffix = shw in shwSuffix ? shwSuffix[shw] : ` (${shw})`;
+        shwDisplay = `${shwBase}${suffix}.`;
+    }
 
     // ---- Write to the DOM ----
     const set = (id, val) => {
