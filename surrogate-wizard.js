@@ -90,7 +90,7 @@
         { id: 'LowRise',      icon: '🏘️', name: 'Low Rise',      meta: '~3 stories'  },
         { id: 'LargeOffice',  icon: '🏢', name: 'Large Office',  meta: '~12 stories' },
         { id: 'MediumOffice', icon: '🏤', name: 'Medium Office', meta: '3 stories'   },
-        { id: 'SmallOffice',  icon: '🏪', name: 'Small Office',  meta: '1 story'     }
+        { id: 'SmallOffice',  icon: '<svg viewBox="0 0 64 64" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:-0.1em"><rect x="6" y="22" width="52" height="34" fill="#d3d9e0" stroke="#4a5568" stroke-width="1.5"/><polygon points="4,22 32,10 60,22" fill="#7a8699" stroke="#4a5568" stroke-width="1.5"/><rect x="12" y="30" width="9" height="8" fill="#78b7ff"/><rect x="24" y="30" width="9" height="8" fill="#78b7ff"/><rect x="36" y="30" width="9" height="8" fill="#78b7ff"/><rect x="48" y="30" width="6" height="8" fill="#78b7ff"/><rect x="27" y="44" width="10" height="12" fill="#3d4a5c"/><rect x="30" y="49" width="1.5" height="1.5" fill="#f5c451"/></svg>', name: 'Small Office',  meta: '1 story'     }
     ];
 
     // ---- State -------------------------------------------------------------
