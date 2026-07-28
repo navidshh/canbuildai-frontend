@@ -90,7 +90,7 @@
         { id: 'LowRise',      icon: '🏘️', name: 'Low Rise',      meta: '~3 stories'  },
         { id: 'LargeOffice',  icon: '🏢', name: 'Large Office',  meta: '~12 stories' },
         { id: 'MediumOffice', icon: '🏤', name: 'Medium Office', meta: '3 stories'   },
-        { id: 'SmallOffice',  icon: '�', name: 'Small Office',  meta: '1 story'     }
+        { id: 'SmallOffice',  icon: '🏪', name: 'Small Office',  meta: '1 story'     }
     ];
 
     // ---- State -------------------------------------------------------------
