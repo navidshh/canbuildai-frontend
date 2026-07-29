@@ -323,7 +323,7 @@ const NECB_DEFAULT_FOR_BUILDING = {
     MediumOffice:  { primary: 6, secondary: null,
                      note: 'Medium Office (3 storeys) crosses the NECB ≥3-storey threshold for "General Area" zones, so the simulator assigns System 6 — a built-up multi-zone VAV air handler (one per storey), CHW cooling, HW/electric central heat, VAV reheat terminals (closest to ASHRAE 90.1 System 7).' },
     LargeOffice:   { primary: 6, secondary: null,
-                     note: 'Large Office (≥3 storeys) → NECB assigns System 6 — a built-up multi-zone VAV air handler (one per storey), CHW cooling, HW/electric central heat, VAV reheat terminals (closest to ASHRAE 90.1 System 7).' },
+                     note: 'Large Office (≥3 storeys) → office floors use System 6 (built-up multi-zone VAV with reheat, closest to ASHRAE 90.1 System 7); the electrical/mechanical wildcard space uses System 4 (PSZ single-zone CAV make-up air unit, no reheat) per NECB zoning for that space.' },
     LowRise:       { primary: 1, secondary: 4,
                      note: 'Low-Rise Apartment: dwelling units use System 1 (PTAC + HW/electric baseboards). Corridors use System 4 — an optional central single-zone CAV make-up air unit (no reheat) + HW/electric baseboards.' },
     MidRise:       { primary: 1, secondary: 4,
@@ -627,6 +627,45 @@ function renderHvacSummary() {
     else if (isNECB && primarySys) distribution = specializeForFuel(primarySys.distribution, fuel);
     else if (isNECB)               distribution = 'NECB default zoning (depends on building archetype)';
 
+    // Special case: LargeOffice under NECB Default runs a mixed Sys 6 (office
+    // floors) + Sys 4 (electrical / mechanical wildcard space) layout, and the
+    // heating fuel changes both the central coil and the baseboards. Override
+    // the default primary / distribution strings with fuel-specific wording
+    // that matches what BTAP actually simulates. The strings contain <strong>
+    // / <em> tags so they render as bold / italic in the summary card.
+    if (isNECB && buildingType === 'LargeOffice' && primarySys) {
+        if (fuel === 'NaturalGas') {
+            primary =
+                '<strong>System 6 — Built-up VAV with reheat</strong> <em>(office floors)</em> + ' +
+                '<strong>System 4 — PSZ single-zone constant-volume make-up air unit</strong> ' +
+                '<em>(electrical/mechanical wildcard space)</em> — natural gas fuelled. ' +
+                'Built-up multi-zone VAV air handler (one per storey) with CHW cooling, ' +
+                'hot-water central heat, and VAV reheat terminals for the office spaces; ' +
+                'a separate single-zone CAV MAU with DX cooling and a ' +
+                '<strong>direct-fired gas heating coil</strong> for the electrical/mechanical room.';
+            distribution =
+                'VAV terminal per zone + hot-water reheat coil + hot-water perimeter baseboards ' +
+                '<em>(Sys 6 — office floors)</em>; single-duct CV diffuser from the MAU + ' +
+                'hot-water baseboards <em>(Sys 4 — electrical/mechanical room)</em>.';
+        } else if (fuel === 'Electricity') {
+            primary =
+                '<strong>System 6 — Built-up VAV with reheat</strong> <em>(office floors)</em> + ' +
+                '<strong>System 4 — PSZ single-zone constant-volume make-up air unit</strong> ' +
+                '<em>(electrical/mechanical wildcard space)</em> — electricity fuelled. ' +
+                'Built-up multi-zone VAV air handler (one per storey) with CHW cooling, ' +
+                '<strong>electric-resistance central heating coil</strong>, and VAV terminals with ' +
+                '<strong>electric-resistance reheat coils</strong> for the office spaces; ' +
+                'a separate single-zone CAV MAU with DX cooling and an ' +
+                '<strong>electric-resistance heating coil</strong> for the electrical/mechanical room.';
+            distribution =
+                'VAV terminal per zone + electric reheat coil + ' +
+                '<strong>electric-resistance perimeter baseboards</strong> ' +
+                '<em>(Sys 6 — office floors)</em>; single-duct CV diffuser from the MAU + ' +
+                '<strong>electric-resistance baseboards</strong> ' +
+                '<em>(Sys 4 — electrical/mechanical room)</em>.';
+        }
+    }
+
     // ---- Backup heating + derived fuel value ----
     let backup       = '-';
     let derivedFuel  = '-';
@@ -690,8 +729,15 @@ function renderHvacSummary() {
         const el = document.getElementById(id);
         if (el) el.textContent = val;
     };
-    set('hvacSummaryPrimary',      primary);
-    set('hvacSummaryDistribution', distribution);
+    // Primary heating + distribution may contain <strong> / <em> tags for the
+    // LargeOffice mixed Sys 6 + Sys 4 override. All values inside those two
+    // strings are hard-coded (no user input), so innerHTML is safe here.
+    const setHtml = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = val;
+    };
+    setHtml('hvacSummaryPrimary',      primary);
+    setHtml('hvacSummaryDistribution', distribution);
     set('hvacSummaryBackup',       backup);
     set('hvacSummarySHW',          shwDisplay);
     set('hvacSummaryEcm',          (ecmHidden && ecmHidden.value) || '-');
