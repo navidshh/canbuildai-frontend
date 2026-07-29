@@ -585,6 +585,37 @@ function renderHvacSummary() {
     const secondarySys = (necbMapping && necbMapping.secondary)
                             ? NECB_SYSTEM_INFO[necbMapping.secondary] : null;
 
+    // ---- Gate: NECB Default needs a primary heating fuel before we can
+    // describe what the model will simulate. Until the user picks a fuel,
+    // blank the summary card (show a prompt) and hide the schematic/diagram.
+    if (isNECB && !fuel) {
+        const setText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+        };
+        setText('hvacSummaryPrimary',      'Select a primary heating fuel to see what the model will simulate.');
+        setText('hvacSummaryDistribution', '—');
+        setText('hvacSummaryBackup',       '—');
+        setText('hvacSummarySHW',          '—');
+        setText('hvacSummaryEcm',          (ecmHidden && ecmHidden.value) || '—');
+        setText('hvacSummaryFuel',         '—');
+        setText('hvacSummaryNote',         '');
+
+        // Hide the reference schematic(s) and the animated diagram.
+        updateHvacSchematics(false, null, false);
+        const diagram = document.getElementById('hvacDiagram');
+        if (diagram) diagram.className = 'hvac-diagram mode-empty';
+
+        // Keep the NECB fuel label wording (not the heat-pump variant).
+        const fuelLabelEl = document.getElementById('primaryHeatingFuelLabel');
+        if (fuelLabelEl) {
+            fuelLabelEl.innerHTML =
+                'Primary Heating Fuel ' +
+                '<span class="tooltip" data-tooltip="The main energy source for heating (boiler / furnace loop).">ℹ️</span>';
+        }
+        return;
+    }
+
     // ---- Primary heating ----
     let primary = '-';
     if (family === 'CCASHP')           primary = 'Cold Climate Air Source Heat Pump (electric refrigerant cycle)';
