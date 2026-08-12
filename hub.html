@@ -1,367 +1,689 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CanBEM-AI - AI Ecosystem Hub</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <title>CanBEM-AI - Building Intelligence Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
     <style>
-        .hub-container {
-            max-width: 1400px;
+        :root {
+            --canvas: #edf1ec;
+            --surface: #ffffff;
+            --surface-soft: #f6f8f5;
+            --ink: #18232b;
+            --muted: #65716f;
+            --line: #d9dfd9;
+            --brand: #1d5f9e;
+            --brand-soft: #e9f1f9;
+            --teal: #14766d;
+            --teal-soft: #e6f3f0;
+            --amber: #a86e11;
+            --amber-soft: #f8eedc;
+            --brick: #a34f46;
+            --brick-soft: #f8eae7;
+            --lime: #d2df18;
+            --shadow: 0 12px 32px rgba(24, 35, 43, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--ink);
+            font-family: "Source Sans 3", sans-serif;
+            background-color: var(--canvas);
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.58)),
+                linear-gradient(90deg, rgba(29, 95, 158, 0.045) 1px, transparent 1px),
+                linear-gradient(rgba(29, 95, 158, 0.045) 1px, transparent 1px);
+            background-size: auto, 32px 32px, 32px 32px;
+        }
+
+        button,
+        a {
+            font: inherit;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            border-bottom: 1px solid rgba(217, 223, 217, 0.92);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(14px);
+        }
+
+        .app-header-inner {
+            width: min(1220px, calc(100% - 40px));
+            min-height: 72px;
             margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hub-header {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
-            text-align: center;
-            margin-bottom: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hub-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        .hub-logo {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            max-height: 80px;
-            max-width: 250px;
-            height: auto;
-            width: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
-            z-index: 2;
-        }
-
-        .hub-header-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .hub-header h1 {
-            color: #2d3748;
-            font-size: 42px;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        .hub-header p {
-            color: #4a5568;
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-
-        .user-info {
-            position: absolute;
-            top: 20px;
-            right: 20px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            z-index: 2;
+            justify-content: space-between;
+            gap: 24px;
         }
 
-        .user-email {
-            color: white;
-            background: rgba(102, 126, 234, 0.9);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .btn-logout {
-            padding: 8px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-logout:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .modules-grid {
+        .brand {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 30px;
-            padding: 20px;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
         }
 
-        .module-card {
-            flex: 0 1 380px;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid transparent;
-            cursor: pointer;
-            position: relative;
+        .brand img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .brand-copy {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .brand-name {
+            font-family: "Manrope", sans-serif;
+            font-size: 17px;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .brand-context {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.3;
+        }
+
+        .account-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .account-email {
+            max-width: 260px;
             overflow: hidden;
-        }
-
-        .module-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .module-card:hover::before {
-            opacity: 1;
-        }
-
-        .module-card.active {
-            border-color: #667eea;
-            box-shadow: 0 15px 50px rgba(102, 126, 234, 0.3);
-        }
-
-        .module-card.active:hover {
-            transform: translateY(-8px) scale(1.02);
-        }
-
-        .module-card.inactive {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .module-card.inactive:hover {
-            transform: none;
-        }
-
-        .module-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-            display: block;
-            position: relative;
-            z-index: 1;
-        }
-
-        .module-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 12px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .module-description {
+            color: var(--muted);
             font-size: 14px;
-            color: #4a5568;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 1;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        .module-status {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
+        .icon-button {
+            min-height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--surface);
+            color: var(--ink);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
+        }
+
+        .icon-button:hover {
+            border-color: #b6c1ba;
+            background: var(--surface-soft);
+            transform: translateY(-1px);
+        }
+
+        .icon-button:focus-visible,
+        .tool-card:focus-visible {
+            outline: 3px solid rgba(29, 95, 158, 0.25);
+            outline-offset: 3px;
+        }
+
+        .icon-button svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        main {
+            width: min(1220px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 46px 0 64px;
+        }
+
+        .workspace-intro {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: end;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        .eyebrow {
+            color: var(--teal);
+            font-family: "Manrope", sans-serif;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: "Manrope", sans-serif;
+            letter-spacing: 0;
+        }
+
+        .workspace-intro h1 {
+            max-width: 760px;
+            font-size: clamp(30px, 4vw, 46px);
+            line-height: 1.08;
+        }
+
+        .workspace-intro p {
+            max-width: 700px;
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 17px;
+            line-height: 1.55;
+        }
+
+        .availability {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #bfd7d2;
+            border-radius: 6px;
+            background: var(--teal-soft);
+            color: #0b5e57;
+            font-weight: 600;
+            padding: 9px 12px;
+            white-space: nowrap;
+        }
+
+        .availability-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--teal);
+            box-shadow: 0 0 0 4px rgba(20, 118, 109, 0.12);
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 14px;
+        }
+
+        .section-heading h2 {
+            font-size: 19px;
+        }
+
+        .section-heading p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .tool-card {
+            min-height: 310px;
+            border: 1px solid var(--line);
+            border-top: 4px solid var(--card-accent);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            text-decoration: none;
+            transition: border-color 170ms ease, box-shadow 170ms ease, transform 170ms ease;
+        }
+
+        .tool-card:hover {
+            border-color: var(--card-accent);
+            box-shadow: 0 16px 38px rgba(24, 35, 43, 0.13);
+            transform: translateY(-4px);
+        }
+
+        .tool-card.design {
+            --card-accent: var(--brand);
+            --card-soft: var(--brand-soft);
+        }
+
+        .tool-card.retrofit {
+            --card-accent: var(--teal);
+            --card-soft: var(--teal-soft);
+        }
+
+        .tool-card.codes {
+            --card-accent: var(--brick);
+            --card-soft: var(--brick-soft);
+        }
+
+        .tool-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .tool-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 7px;
+            background: var(--card-soft);
+            color: var(--card-accent);
+            display: grid;
+            place-items: center;
+        }
+
+        .tool-icon svg {
+            width: 23px;
+            height: 23px;
+            stroke-width: 1.9;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #276749;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #2f855a;
+        }
+
+        .tool-category {
+            color: var(--card-accent);
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .tool-card h3 {
+            font-size: 21px;
+            line-height: 1.3;
+        }
+
+        .tool-description {
+            flex: 1;
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.55;
+        }
+
+        .tool-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--line);
+        }
+
+        .tool-output {
+            color: var(--muted);
             font-size: 12px;
             font-weight: 600;
-            position: relative;
-            z-index: 1;
         }
 
-        .module-status.active {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
+        .tool-action {
+            color: var(--card-accent);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: "Manrope", sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
         }
 
-        .module-status.coming-soon {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
+        .tool-action svg {
+            width: 16px;
+            height: 16px;
+            transition: transform 150ms ease;
         }
 
-        .module-badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
+        .tool-card:hover .tool-action svg {
+            transform: translateX(3px);
+        }
+
+        .roadmap-section {
+            margin-top: 38px;
+            padding-top: 28px;
+            border-top: 1px solid #cfd6cf;
+        }
+
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px 18px;
+        }
+
+        .roadmap-item {
+            min-height: 86px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.68);
+            display: grid;
+            grid-template-columns: 38px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+        }
+
+        .roadmap-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 6px;
+            background: var(--amber-soft);
+            color: var(--amber);
+            display: grid;
+            place-items: center;
+        }
+
+        .roadmap-icon svg {
+            width: 19px;
+            height: 19px;
+        }
+
+        .roadmap-copy h3 {
+            font-size: 14px;
+            line-height: 1.35;
+        }
+
+        .roadmap-copy p {
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .roadmap-status {
+            color: var(--amber);
             font-size: 11px;
             font-weight: 700;
-            z-index: 1;
+            white-space: nowrap;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
+        @media (max-width: 960px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tool-card {
+                min-height: 0;
+            }
+
+            .roadmap-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        @media (max-width: 768px) {
-            .modules-grid {
+        @media (max-width: 680px) {
+            .app-header-inner,
+            main {
+                width: min(100% - 28px, 1220px);
+            }
+
+            .app-header-inner {
+                min-height: 64px;
+            }
+
+            .brand img {
+                width: 42px;
+                height: 42px;
+            }
+
+            .brand-context,
+            .account-email,
+            .logout-label {
+                display: none;
+            }
+
+            .icon-button {
+                width: 40px;
+                height: 40px;
+                justify-content: center;
+                padding: 0;
+            }
+
+            main {
+                padding-top: 32px;
+            }
+
+            .workspace-intro {
+                grid-template-columns: 1fr;
+                align-items: start;
+                gap: 18px;
+            }
+
+            .workspace-intro h1 {
+                font-size: 32px;
+            }
+
+            .workspace-intro p {
+                font-size: 16px;
+            }
+
+            .availability {
+                justify-self: start;
+            }
+
+            .section-heading {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 3px;
+            }
+
+            .tool-card {
+                padding: 20px;
+            }
+
+            .tool-footer {
+                align-items: flex-start;
                 flex-direction: column;
             }
-            .module-card {
-                flex: 1 1 100%;
+
+            .roadmap-item {
+                grid-template-columns: 38px minmax(0, 1fr);
             }
-            
-            .hub-header h1 {
-                font-size: 28px;
+
+            .roadmap-status {
+                grid-column: 2;
             }
-            
-            .user-info {
-                position: static;
-                justify-content: center;
-                margin-top: 20px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
             }
         }
     </style>
 </head>
 <body>
-    <div class="hub-container">
-        <header class="hub-header">
-            <img src="Logo_New.png" alt="CanBEM-AI Logo" class="hub-logo" onerror="this.style.display='none'">
-            <div class="user-info">
-                <span id="user-email" class="user-email"></span>
-                <button onclick="handleLogout()" class="btn-logout">Logout</button>
-            </div>
-            <div class="hub-header-content">
-                <h1>CanBEM-AI</h1>
-                <p>Intelligent Building Energy Solutions for Canadian Infrastructure</p>
-                <div class="header-badges">
-                    <span class="badge">AI-Powered Analytics</span>
-                    <span class="badge">3 Active Modules</span>
-                    <span class="badge">Canadian Standards</span>
+    <header class="app-header">
+        <div class="app-header-inner">
+            <div class="brand" aria-label="CanBEM-AI workspace">
+                <img src="Logo_New.png" alt="">
+                <div class="brand-copy">
+                    <span class="brand-name">CanBEM-AI</span>
+                    <span class="brand-context">Building intelligence workspace</span>
                 </div>
             </div>
-        </header>
-
-        <div class="modules-grid">
-            <div class="module-card active" onclick="navigateToModule('surrogate-model.html')">
-                <div class="module-badge">ACTIVE</div>
-                <span class="module-icon">&#9889;</span>
-                <h3 class="module-title">Building Early Design Advisor</h3>
-                <p class="module-description">
-                    AI-powered tool for rapid prediction of building energy performance and cost analysis. 
-                    Fast, accurate energy forecasting and ROI analysis for early design decisions.
-                </p>
-                <span class="module-status active">Available Now</span>
-            </div>
-
-            <div class="module-card active" onclick="navigateToModule('retrofit-planner.html')">
-                <div class="module-badge">ACTIVE</div>
-                <span class="module-icon">&#127959;</span>
-                <h3 class="module-title">Retrofit Planner</h3>
-                <p class="module-description">
-                    Commercial building retrofit analysis. Upload building data CSV with column options explorer, and get predictions for energy use intensity and GHG emissions.
-                </p>
-                <span class="module-status active">Available Now</span>
-            </div>
-
-            <div class="module-card inactive">
-                <span class="module-icon">&#128200;</span>
-                <h3 class="module-title">Electrical Load Shaping & Demand Optimization</h3>
-                <p class="module-description">
-                    Generates hourly electricity demand profiles using time-domain surrogate models and transfer learning to extend predictions across locations and climate zones. Supports peak shaving, load shifting, and demand response calibration.
-                </p>
-                <span class="module-status coming-soon">Coming Soon</span>
-            </div>
-
-            <div class="module-card inactive">
-                <span class="module-icon">&#127777;</span>
-                <h3 class="module-title">Indoor Comfort & Overheating Risk Assessor</h3>
-                <p class="module-description">
-                    Evaluates the risk of indoor overheating under current and future climate scenarios using advanced thermal comfort modeling. Helps ensure occupant wellbeing and compliance with building safety standards.
-                </p>
-                <span class="module-status coming-soon">Coming Soon</span>
-            </div>
-
-            <div class="module-card inactive">
-                <span class="module-icon">&#127960;</span>
-                <h3 class="module-title">Regional Building Performance Benchmarking</h3>
-                <p class="module-description">
-                    Delivers regionally calibrated energy performance benchmarks tailored to Canadian housing archetypes and climate clusters. Enables accurate residential and neighbourhood-scale energy analysis using cluster-based surrogate models.
-                </p>
-                <span class="module-status coming-soon">Coming Soon</span>
-            </div>
-
-            <div class="module-card inactive">
-                <span class="module-icon">&#127968;</span>
-                <h3 class="module-title">Automated Residential Energy Model Generator</h3>
-                <p class="module-description">
-                    Instantly generates a ready-to-run HOT2000 energy model for any Canadian home using machine learning. By matching the dwelling to the closest representative profile from over 2 million EnerGuide audits, it replaces hours of manual input preparation with a fully parameterised simulation file delivered in under a second.
-                </p>
-                <span class="module-status coming-soon">Coming Soon</span>
-            </div>
-
-            <div class="module-card active" onclick="navigateToModule('code-assistant.html')">
-                <div class="module-badge">ACTIVE</div>
-                <span class="module-icon">&#129302;</span>
-                <h3 class="module-title">Building Energy Code & Standards Assistant</h3>
-                <p class="module-description">
-                    A conversational AI advisor grounded in the National Energy Code for Buildings (NECB) and related Canadian standards. Ask plain-language questions and receive code-referenced guidance on energy compliance, envelope performance, mechanical systems, and design best practices.
-                </p>
-                <span class="module-status active">Available Now</span>
-            </div>
-
-            <div class="module-card inactive">
-                <span class="module-icon">&#127919;</span>
-                <h3 class="module-title">Automated Multi-Module Workflow Engine</h3>
-                <p class="module-description">
-                    Coordinates and automates the full suite of CanBEM-AI tools through an intelligent orchestration layer. Validates outputs, chains analyses across modules, and manages end-to-end building performance workflows autonomously.
-                </p>
-                <span class="module-status coming-soon">Coming Soon</span>
+            <div class="account-actions">
+                <span class="account-email" id="user-email"></span>
+                <button class="icon-button" id="logoutButton" type="button" title="Log out">
+                    <i data-lucide="log-out" aria-hidden="true"></i>
+                    <span class="logout-label">Log out</span>
+                </button>
             </div>
         </div>
-    </div>
+    </header>
+
+    <main>
+        <section class="workspace-intro" aria-labelledby="workspaceTitle">
+            <div>
+                <p class="eyebrow">Your workspace</p>
+                <h1 id="workspaceTitle">Building performance decisions, in one place.</h1>
+                <p>Intelligent Building Energy Solutions for Canadian Infrastructure</p>
+            </div>
+            <div class="availability" aria-label="Three tools are currently available">
+                <span class="availability-dot" aria-hidden="true"></span>
+                3 tools available
+            </div>
+        </section>
+
+        <section aria-labelledby="availableToolsTitle">
+            <div class="section-heading">
+                <h2 id="availableToolsTitle">Available tools</h2>
+                <p>Start a new analysis or consultation</p>
+            </div>
+
+            <div class="tools-grid">
+                <a class="tool-card design" href="surrogate-model.html">
+                    <div class="tool-card-top">
+                        <span class="tool-icon"><i data-lucide="building-2" aria-hidden="true"></i></span>
+                        <span class="status">Available</span>
+                    </div>
+                    <p class="tool-category">New construction</p>
+                    <h3>Early Design Tool</h3>
+                    <p class="tool-description">Compare design alternatives with rapid energy, emissions, and cost predictions during early planning.</p>
+                    <div class="tool-footer">
+                        <span class="tool-output">Energy + cost analysis</span>
+                        <span class="tool-action">Open advisor <i data-lucide="arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+
+                <a class="tool-card retrofit" href="retrofit-planner.html">
+                    <div class="tool-card-top">
+                        <span class="tool-icon"><i data-lucide="refresh-cw" aria-hidden="true"></i></span>
+                        <span class="status">Available</span>
+                    </div>
+                    <p class="tool-category">Existing buildings</p>
+                    <h3>Retrofit Planner</h3>
+                    <p class="tool-description">Configure an existing commercial building through a guided workflow and estimate energy use and GHG emissions.</p>
+                    <div class="tool-footer">
+                        <span class="tool-output">EUI + GHG predictions</span>
+                        <span class="tool-action">Open planner <i data-lucide="arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+
+                <a class="tool-card codes" href="code-assistant.html">
+                    <div class="tool-card-top">
+                        <span class="tool-icon"><i data-lucide="book-open-check" aria-hidden="true"></i></span>
+                        <span class="status">Available</span>
+                    </div>
+                    <p class="tool-category">Codes &amp; standards</p>
+                    <h3>Building Energy Code Assistant</h3>
+                    <p class="tool-description">Ask plain-language questions and receive cited guidance grounded in NECB and related Canadian standards.</p>
+                    <div class="tool-footer">
+                        <span class="tool-output">Referenced guidance</span>
+                        <span class="tool-action">Ask a question <i data-lucide="arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section class="roadmap-section" aria-labelledby="roadmapTitle">
+            <div class="section-heading">
+                <h2 id="roadmapTitle">On the roadmap</h2>
+                <p>Additional capabilities under development</p>
+            </div>
+
+            <div class="roadmap-grid">
+                <article class="roadmap-item">
+                    <span class="roadmap-icon"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i></span>
+                    <div class="roadmap-copy">
+                        <h3>Electrical Load Shaping &amp; Demand Optimization</h3>
+                        <p>Hourly demand profiles, peak shaving, and load shifting.</p>
+                    </div>
+                    <span class="roadmap-status">In development</span>
+                </article>
+
+                <article class="roadmap-item">
+                    <span class="roadmap-icon"><i data-lucide="thermometer-sun" aria-hidden="true"></i></span>
+                    <div class="roadmap-copy">
+                        <h3>Indoor Comfort &amp; Overheating Risk</h3>
+                        <p>Thermal comfort assessment across future climate scenarios.</p>
+                    </div>
+                    <span class="roadmap-status">In development</span>
+                </article>
+
+                <article class="roadmap-item">
+                    <span class="roadmap-icon"><i data-lucide="map-pinned" aria-hidden="true"></i></span>
+                    <div class="roadmap-copy">
+                        <h3>Regional Performance Benchmarking</h3>
+                        <p>Climate-calibrated benchmarks for Canadian archetypes.</p>
+                    </div>
+                    <span class="roadmap-status">In development</span>
+                </article>
+
+                <article class="roadmap-item">
+                    <span class="roadmap-icon"><i data-lucide="house-plus" aria-hidden="true"></i></span>
+                    <div class="roadmap-copy">
+                        <h3>Residential Energy Model Generator</h3>
+                        <p>Ready-to-run HOT2000 model generation from audit profiles.</p>
+                    </div>
+                    <span class="roadmap-status">In development</span>
+                </article>
+
+                <article class="roadmap-item">
+                    <span class="roadmap-icon"><i data-lucide="workflow" aria-hidden="true"></i></span>
+                    <div class="roadmap-copy">
+                        <h3>Multi-Module Workflow Engine</h3>
+                        <p>Connected analysis, validation, and cross-module automation.</p>
+                    </div>
+                    <span class="roadmap-status">In development</span>
+                </article>
+            </div>
+        </section>
+
+    </main>
 
     <script>
-        const poolData = {
-            UserPoolId: 'ca-central-1_NHVo7D7Kw',
-            ClientId: '1bba66drbfqk7rgnq0h13mf56l'
-        };
-
         function checkAuthentication() {
             const accessToken = sessionStorage.getItem('accessToken');
             const idToken = sessionStorage.getItem('idToken');
             const userEmail = sessionStorage.getItem('userEmail');
-            
+
             if (!accessToken || !idToken) {
                 window.location.href = 'auth.html';
                 return false;
             }
-            
-            if (userEmail) {
-                document.getElementById('user-email').textContent = userEmail;
-            }
-            
+
+            document.getElementById('user-email').textContent = userEmail || 'Signed in';
             return true;
         }
 
@@ -372,13 +694,12 @@
             window.location.href = 'auth.html';
         }
 
-        function navigateToModule(moduleUrl) {
-            if (moduleUrl) {
-                window.location.href = moduleUrl;
-            }
-        }
-
+        document.getElementById('logoutButton').addEventListener('click', handleLogout);
         checkAuthentication();
+
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
     </script>
 </body>
 </html>
