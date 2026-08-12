@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CanBuildAI: Building Early Design Advisor</title>
+    <title>CanBEM-AI: Building Early Design Advisor</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="surrogate-wizard.css">
     <!-- Leaflet (city map on Step 1) -->
@@ -21,7 +21,7 @@
 <body>
     <div class="container">
         <header>
-            <img src="Logo.jpg" alt="CanBuildAI Logo" class="company-logo" onerror="this.style.display='none'">
+            <img src="Logo_New.png" alt="CanBEM-AI Logo" class="company-logo" onerror="this.style.display='none'">
             <div class="header-content">
                 <img src="building-icon.svg" alt="Building Design" class="building-icon" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect x=%2210%22 y=%2220%22 width=%2244%22 height=%2240%22 fill=%22%232a5298%22 stroke=%22%23667eea%22 stroke-width=%222%22/%3E%3Crect x=%2216%22 y=%2226%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2228%22 y=%2226%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2240%22 y=%2226%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2216%22 y=%2238%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2228%22 y=%2238%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2240%22 y=%2238%22 width=%228%22 height=%228%22 fill=%22%23667eea%22/%3E%3Crect x=%2224%22 y=%2250%22 width=%2216%22 height=%2210%22 fill=%22%23f8f9ff%22/%3E%3C/svg%3E'">
                 <h1>Building Early Design Advisor</h1>
@@ -146,16 +146,7 @@
 
                         <!-- 3D viewer (spans both columns) -->
                         <div class="site-card viewer-card">
-                            <div class="viewer-header">
-                                <h3>🧊 Geometry &amp; Thermal Zones</h3>
-                                <label class="viewer-color-mode">
-                                    Color by:
-                                    <select id="viewerColorMode">
-                                        <option value="surface_type" selected>Surface Type</option>
-                                        <option value="space_type">Space Type</option>
-                                    </select>
-                                </label>
-                            </div>
+                            <h3>🧊 Geometry &amp; Thermal Zones</h3>
                             <div id="buildingViewer" aria-label="3D viewer of the selected building archetype with colour-coded thermal zones">
                                 <div class="viewer-empty-state">Loading 3D viewer…</div>
                             </div>
@@ -164,7 +155,13 @@
                                 <span>🖲️ Scroll to zoom</span>
                                 <span>↪️ Right-click drag to pan</span>
                             </div>
-                            <div id="viewerLegend" class="zone-legend" aria-label="Colour legend"></div>
+                            <div class="zone-legend" aria-label="Thermal zone colour legend">
+                                <span class="chip" style="--chip-color:#9aa7b4">Core</span>
+                                <span class="chip" style="--chip-color:#4f86c6">North perimeter</span>
+                                <span class="chip" style="--chip-color:#e2553a">South perimeter</span>
+                                <span class="chip" style="--chip-color:#f2c14e">East perimeter</span>
+                                <span class="chip" style="--chip-color:#4caf66">West perimeter</span>
+                            </div>
                             <div id="footprintReadout" class="city-readout" style="margin-top:10px;"></div>
                         </div>
                     </div>
@@ -268,7 +265,7 @@
 
                     <div class="form-group">
                         <label for="fdwr_set">
-                            Fenestration and Door to Wall Ratio (FDWR)
+                            Fenestration to Wall Ratio (FDWR)
                             <span class="tooltip" data-tooltip="Percentage of wall area that is windows. Range: 0.1 to 0.69">ℹ️</span>
                         </label>
                         <select id="fdwr_set" name="fdwr_set" required>
@@ -400,7 +397,7 @@
                         </select>
                     </div>
 
-                    <!-- Live system summary + NECB reference schematic(s).
+                    <!-- Live system summary + animated layout diagram.
                          Populated and updated by renderHvacSummary() in app.js. -->
                     <div class="hvac-summary-wrap" id="hvacSummaryWrap">
                         <div class="hvac-summary-card" id="hvacSummaryCard">
@@ -418,11 +415,7 @@
                                 <p class="hvac-summary-note" id="hvacSummaryNote"></p>
                             </details>
                         </div>
-                        <div class="hvac-schematics" id="hvacSchematics" hidden>
-                            <h5 class="hvac-schematics-title" id="hvacSchematicsTitle">NECB Reference Schematic</h5>
-                            <div class="hvac-schematics-images" id="hvacSchematicsImages"></div>
-                            <p class="hvac-schematics-citation" id="hvacSchematicsCitation">Adapted from the <em>National Energy Code of Canada for Buildings (NECB) 2020</em>, National Research Council of Canada.</p>
-                        </div>
+                        <div class="hvac-diagram" id="hvacDiagram" aria-hidden="true"></div>
                     </div>
                 </section>
 

@@ -90,7 +90,7 @@
         { id: 'LowRise',      icon: '🏘️', name: 'Low Rise',      meta: '~3 stories'  },
         { id: 'LargeOffice',  icon: '🏢', name: 'Large Office',  meta: '~12 stories' },
         { id: 'MediumOffice', icon: '🏤', name: 'Medium Office', meta: '3 stories'   },
-        { id: 'SmallOffice',  icon: '<svg viewBox="0 0 64 64" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:-0.1em"><rect x="6" y="22" width="52" height="34" fill="#d3d9e0" stroke="#4a5568" stroke-width="1.5"/><polygon points="4,22 32,10 60,22" fill="#7a8699" stroke="#4a5568" stroke-width="1.5"/><rect x="12" y="30" width="9" height="8" fill="#78b7ff"/><rect x="24" y="30" width="9" height="8" fill="#78b7ff"/><rect x="36" y="30" width="9" height="8" fill="#78b7ff"/><rect x="48" y="30" width="6" height="8" fill="#78b7ff"/><rect x="27" y="44" width="10" height="12" fill="#3d4a5c"/><rect x="30" y="49" width="1.5" height="1.5" fill="#f5c451"/></svg>', name: 'Small Office',  meta: '1 story'     }
+        { id: 'SmallOffice',  icon: '🏚️', name: 'Small Office',  meta: '1 story'     }
     ];
 
     // ---- State -------------------------------------------------------------
@@ -347,9 +347,6 @@
         if (buildingViewer) {
             buildingViewer.setArchetype(archetypeId);
         }
-        // Refresh the legend (zones differ per archetype).
-        const modeSelect = $('#viewerColorMode');
-        updateViewerLegend((modeSelect && modeSelect.value) || 'surface_type');
 
         // Footprint readout
         updateFootprintReadout(archetypeId);
@@ -386,83 +383,18 @@
         const empty = container.querySelector('.viewer-empty-state');
         if (empty) empty.remove();
 
-        const modeSelect = $('#viewerColorMode');
-        const initialMode = (modeSelect && modeSelect.value) || 'surface_type';
-
         try {
             buildingViewer = window.SurrogateGeometry.createBuildingViewer({
                 container,
                 archetype: 'MidRise',
-                rotationDeg: 0,
-                colorMode: initialMode
+                rotationDeg: 0
             });
         } catch (err) {
             console.error('Failed to init 3D viewer:', err);
             container.innerHTML =
                 '<div class="viewer-empty-state">3D viewer could not start. ' +
                 'Refresh to retry.</div>';
-            return;
         }
-
-        // Color-mode dropdown → viewer + legend refresh
-        if (modeSelect) {
-            modeSelect.addEventListener('change', () => {
-                const mode = modeSelect.value;
-                if (buildingViewer) buildingViewer.setColorMode(mode);
-                updateViewerLegend(mode);
-            });
-        }
-
-        // Redraw legend whenever the archetype changes (fires after
-        // setArchetype finishes fetching the OSM JSON).
-        updateViewerLegend(initialMode);
-    }
-
-    // Populates #viewerLegend with chips describing the current colour mode.
-    function updateViewerLegend(mode) {
-        const el = $('#viewerLegend');
-        if (!el) return;
-        el.innerHTML = '';
-
-        if (mode === 'surface_type') {
-            const entries = [
-                ['Wall',        '#d0d5db'],
-                ['RoofCeiling', '#f7c26a'],
-                ['Floor',       '#7a6d5c'],
-                ['FixedWindow', '#66b7ff'],
-                ['Door',        '#8b5a3c'],
-                ['Skylight',    '#a9dfff']
-            ];
-            entries.forEach(([label, color]) => {
-                const chip = document.createElement('span');
-                chip.className = 'chip';
-                chip.style.setProperty('--chip-color', color);
-                chip.textContent = label;
-                el.appendChild(chip);
-            });
-            return;
-        }
-
-        // space_type: fetch the current OSM JSON and list its SpaceType buckets
-        // (Corridor, Dwelling Unit, Office, Plenum, Attic, ...).
-        const archetype = buildingViewer && buildingViewer.getDimensions
-            ? buildingViewer.getDimensions().archetype
-            : 'MidRise';
-        if (!window.SurrogateGeometry.loadOsmGeometry) return;
-        window.SurrogateGeometry.loadOsmGeometry(archetype).then((data) => {
-            if (!data || !data.space_types) return;
-            const palette = window.SurrogateGeometry.THERMAL_ZONE_PALETTE || [];
-            data.space_types.forEach((st, i) => {
-                const hex = '#' + (palette[i % palette.length] || 0x888888)
-                    .toString(16).padStart(6, '0');
-                const chip = document.createElement('span');
-                chip.className = 'chip';
-                chip.style.setProperty('--chip-color', hex);
-                chip.textContent = st.name;
-                chip.title = st.name;
-                el.appendChild(chip);
-            });
-        });
     }
 
     // =======================================================================
