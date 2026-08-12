@@ -6,27 +6,39 @@
     <title>CanBEM-AI: Retrofit Planner</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="retrofit-wizard.css?v=20260812-2">
+    <link rel="stylesheet" href="module-shell.css?v=20260812-1">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script src="module-shell.js?v=20260812-1" defer></script>
     <script src="retrofit-wizard.js?v=20260812-2" defer></script>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <img src="Logo_New.png" alt="CanBEM-AI Logo" class="company-logo" onerror="this.style.display='none'">
-            <div class="header-content">
-                <h1>Retrofit Planner</h1>
-                <p class="tagline">AI-Powered Building Retrofit Analysis for Commercial Buildings</p>
-                <div class="header-badges">
-                    <span class="badge">Building Data</span>
-                    <span class="badge">Energy Analysis</span>
-                    <span class="badge">GHG Emissions</span>
+<body class="module-workspace">
+    <div class="container module-page">
+        <header class="module-app-header">
+            <div class="module-header-inner">
+                <div class="module-identity">
+                    <a class="module-brand" href="hub.html" aria-label="CanBEM-AI workspace">
+                        <img src="Logo_New.png" alt="">
+                        <span class="module-brand-name">CanBEM-AI</span>
+                    </a>
+                    <span class="module-divider" aria-hidden="true"></span>
+                    <div class="module-title-block">
+                        <span class="module-category">Existing buildings</span>
+                        <h1>Retrofit Planner</h1>
+                    </div>
                 </div>
-            </div>
-            <div class="retrofit-header-actions">
-                <span id="user-email"></span>
-                <button id="backToHubBtn" class="btn btn-secondary">Back to Hub</button>
-                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                <div class="retrofit-header-actions module-account-actions">
+                    <span id="user-email" class="module-user-email"></span>
+                    <button id="backToHubBtn" class="btn btn-secondary" title="Back to workspace">
+                        <i data-lucide="layout-grid" aria-hidden="true"></i>
+                        <span class="module-action-label">Workspace</span>
+                    </button>
+                    <button id="logoutBtn" class="btn btn-secondary" title="Log out">
+                        <i data-lucide="log-out" aria-hidden="true"></i>
+                        <span class="module-action-label">Log out</span>
+                    </button>
+                </div>
             </div>
         </header>
 
