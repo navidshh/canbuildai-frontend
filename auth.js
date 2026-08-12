@@ -9,12 +9,13 @@ let currentUser = null;
 
 // Switch between login and signup tabs
 function switchTab(tab) {
-    const loginTab = document.querySelector('.auth-tab:nth-child(1)');
-    const signupTab = document.querySelector('.auth-tab:nth-child(2)');
+    const loginTab = document.getElementById('login-tab');
+    const signupTab = document.getElementById('signup-tab');
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
+    const showLogin = tab === 'login';
     
-    if (tab === 'login') {
+    if (showLogin) {
         loginTab.classList.add('active');
         signupTab.classList.remove('active');
         loginForm.classList.add('active');
@@ -25,6 +26,11 @@ function switchTab(tab) {
         signupForm.classList.add('active');
         loginForm.classList.remove('active');
     }
+
+    loginTab.setAttribute('aria-selected', String(showLogin));
+    signupTab.setAttribute('aria-selected', String(!showLogin));
+    loginTab.tabIndex = showLogin ? 0 : -1;
+    signupTab.tabIndex = showLogin ? -1 : 0;
     
     hideMessages();
 }
@@ -92,7 +98,7 @@ async function handleLogin(event) {
             sessionStorage.setItem('tempEmail', email);
             showNewPasswordForm();
             loginBtn.disabled = false;
-            loginBtn.textContent = 'Sign In';
+            loginBtn.textContent = 'Sign in';
             return;
         }
         
@@ -107,13 +113,13 @@ async function handleLogin(event) {
     } catch (error) {
         console.error('Login failed:', error);
         loginBtn.disabled = false;
-        loginBtn.textContent = 'Sign In';
+        loginBtn.textContent = 'Sign in';
         
         // Check for common approval-related errors
         if (error.message && (error.message.includes('not confirmed') || error.message.includes('UserNotConfirmedException'))) {
-            showError('⏳ Your account is pending admin approval. Please wait for approval before logging in.');
+            showError('Your account is pending admin approval. Please wait for approval before logging in.');
         } else if (error.message && (error.message.includes('disabled') || error.message.includes('User is disabled'))) {
-            showError('⏳ Your account is pending admin approval. An administrator will enable your account shortly.');
+            showError('Your account is pending admin approval. An administrator will enable your account shortly.');
         } else {
             showError(error.message || 'Login failed. Please check your credentials.');
         }
@@ -280,7 +286,7 @@ function handleVerification() {
         }
         
         console.log('Verification successful:', result);
-        showSuccess('✅ Email verified successfully! Your account is now pending admin approval. You will be notified once approved and can then log in.');
+        showSuccess('Email verified successfully. Your account is now pending admin approval. You will be notified once approved and can then log in.');
         
         // Hide verification box
         document.getElementById('verification-box').classList.remove('active');
@@ -289,12 +295,11 @@ function handleVerification() {
         setTimeout(() => {
             document.getElementById('signup-form').innerHTML = `
                 <div style="text-align: center; padding: 40px 20px;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
-                    <h3 style="color: #2d3748; margin-bottom: 15px;">Account Created Successfully!</h3>
-                    <p style="color: #718096; margin-bottom: 20px;">
+                    <h3 style="color: #18232b; margin-bottom: 15px;">Account created successfully</h3>
+                    <p style="color: #65716f; margin-bottom: 20px;">
                         Your account has been verified and is now <strong>pending admin approval</strong>.
                     </p>
-                    <p style="color: #718096; margin-bottom: 30px;">
+                    <p style="color: #65716f; margin-bottom: 30px;">
                         An administrator will review your account shortly. You'll receive an email notification once approved.
                     </p>
                     <button onclick="switchTab('login')" class="auth-button">
@@ -305,6 +310,15 @@ function handleVerification() {
         }, 2000);
     });
 }
+
+document.querySelector('.auth-tabs')?.addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+
+    event.preventDefault();
+    const nextTab = event.key === 'ArrowRight' ? 'signup' : 'login';
+    switchTab(nextTab);
+    document.getElementById(`${nextTab}-tab`).focus();
+});
 
 // Check if user is already logged in
 function checkAuth() {
