@@ -1,0 +1,540 @@
+/* Guided Retrofit Planner */
+
+.retrofit-shell {
+    --retrofit-ink: #183153;
+    --retrofit-muted: #667085;
+    --retrofit-line: #d7deea;
+    --retrofit-blue: #2a5298;
+    --retrofit-teal: #087f7a;
+    --retrofit-amber: #b45309;
+}
+
+.retrofit-header-actions {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.retrofit-header-actions #user-email {
+    color: #253858;
+    font-size: 14px;
+    margin-right: 5px;
+}
+
+.retrofit-header-actions .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.retrofit-intro {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--retrofit-line);
+}
+
+.retrofit-intro h2 {
+    color: var(--retrofit-ink);
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+.retrofit-intro p {
+    color: var(--retrofit-muted);
+    line-height: 1.6;
+    max-width: 720px;
+}
+
+.schema-status {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    border: 1px solid #b8d8d5;
+    border-radius: 6px;
+    background: #edf8f7;
+    color: #096b67;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.schema-status.is-loading {
+    border-color: #f2d39b;
+    background: #fff8e8;
+    color: var(--retrofit-amber);
+}
+
+.schema-status.is-error {
+    border-color: #fecaca;
+    background: #fff1f2;
+    color: #b42318;
+}
+
+.retrofit-progress {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin: 0 0 30px;
+    position: relative;
+}
+
+.retrofit-progress::before,
+.retrofit-progress::after {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: 8.5%;
+    height: 3px;
+    border-radius: 3px;
+}
+
+.retrofit-progress::before {
+    right: 8.5%;
+    background: #dbe2ed;
+}
+
+.retrofit-progress::after {
+    width: var(--retrofit-progress, 0%);
+    max-width: 83%;
+    background: linear-gradient(90deg, var(--retrofit-teal), var(--retrofit-blue));
+    transition: width 240ms ease;
+}
+
+.retrofit-step-marker {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--retrofit-muted);
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 0 4px;
+    position: relative;
+    z-index: 1;
+}
+
+.retrofit-step-marker .step-number {
+    width: 36px;
+    height: 36px;
+    border: 2px solid #c6cfdd;
+    border-radius: 50%;
+    background: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    transition: all 180ms ease;
+}
+
+.retrofit-step-marker .step-label {
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.25;
+    text-align: center;
+}
+
+.retrofit-step-marker.is-active .step-number {
+    border-color: var(--retrofit-blue);
+    color: var(--retrofit-blue);
+    box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.13);
+}
+
+.retrofit-step-marker.is-active .step-label,
+.retrofit-step-marker.is-complete .step-label {
+    color: var(--retrofit-ink);
+}
+
+.retrofit-step-marker.is-complete {
+    cursor: pointer;
+}
+
+.retrofit-step-marker.is-complete .step-number {
+    border-color: var(--retrofit-teal);
+    background: var(--retrofit-teal);
+    color: #fff;
+}
+
+.retrofit-step-marker.is-complete:hover .step-number {
+    transform: translateY(-2px);
+}
+
+.retrofit-step {
+    display: none;
+    animation: retrofitStepIn 180ms ease both;
+}
+
+.retrofit-step.is-active {
+    display: block;
+}
+
+@keyframes retrofitStepIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.retrofit-step-heading {
+    margin-bottom: 22px;
+}
+
+.retrofit-step-heading h3 {
+    color: var(--retrofit-ink);
+    font-size: 22px;
+    margin-bottom: 5px;
+}
+
+.retrofit-step-heading p {
+    color: var(--retrofit-muted);
+    line-height: 1.55;
+}
+
+.retrofit-field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 22px;
+}
+
+.retrofit-field {
+    min-width: 0;
+}
+
+.retrofit-field label {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    color: #253858;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+
+.retrofit-field .field-kind {
+    color: #8a94a6;
+    font-size: 11px;
+    font-weight: 650;
+    text-transform: uppercase;
+}
+
+.retrofit-field select,
+.retrofit-field input {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid #c8d2e1;
+    border-radius: 6px;
+    background: #fff;
+    color: #172b4d;
+    font-size: 15px;
+    padding: 10px 12px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.retrofit-field select:focus,
+.retrofit-field input:focus {
+    outline: none;
+    border-color: var(--retrofit-blue);
+    box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.13);
+}
+
+.retrofit-field small {
+    display: block;
+    min-height: 17px;
+    margin-top: 5px;
+    color: #7b8495;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.retrofit-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--retrofit-line);
+}
+
+.retrofit-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.retrofit-step-count {
+    color: var(--retrofit-muted);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.review-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.review-group {
+    border-top: 3px solid var(--retrofit-teal);
+    background: #f8fafc;
+    padding: 16px;
+}
+
+.review-group h4 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--retrofit-ink);
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.btn-link {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--retrofit-blue);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    padding: 2px 0;
+}
+
+.btn-link:hover,
+.btn-link:focus-visible {
+    color: var(--retrofit-teal);
+    text-decoration: underline;
+}
+
+.review-list {
+    display: grid;
+    grid-template-columns: minmax(120px, 0.9fr) minmax(0, 1.1fr);
+    gap: 8px 12px;
+    font-size: 13px;
+}
+
+.review-list dt {
+    color: var(--retrofit-muted);
+}
+
+.review-list dd {
+    color: #253858;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.batch-import {
+    margin-top: 22px;
+    border: 1px solid var(--retrofit-line);
+    border-radius: 6px;
+    background: #fbfcfe;
+}
+
+.batch-import summary {
+    cursor: pointer;
+    color: var(--retrofit-blue);
+    font-weight: 750;
+    padding: 14px 16px;
+}
+
+.batch-import-body {
+    padding: 0 16px 16px;
+}
+
+.upload-zone {
+    border: 2px dashed #9cacbf;
+    border-radius: 6px;
+    padding: 24px;
+    text-align: center;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 150ms ease, background 150ms ease;
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over,
+.upload-zone:focus-visible {
+    border-color: var(--retrofit-teal);
+    background: #f0f9f8;
+    outline: none;
+}
+
+.upload-icon {
+    color: var(--retrofit-teal);
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.file-info {
+    display: none;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-left: 4px solid var(--retrofit-teal);
+    background: #edf8f7;
+    color: #28504d;
+}
+
+.progress-container {
+    display: none;
+    margin: 24px 0;
+    padding: 18px;
+    border: 1px solid var(--retrofit-line);
+    background: #f8fafc;
+}
+
+.progress-bar {
+    height: 24px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #dfe5ee;
+}
+
+.progress-fill {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, var(--retrofit-teal), var(--retrofit-blue));
+    color: #fff;
+    font-size: 12px;
+    font-weight: 750;
+    transition: width 220ms ease;
+}
+
+.results-container {
+    display: none;
+    margin-top: 30px;
+    padding-top: 28px;
+    border-top: 1px solid var(--retrofit-line);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+}
+
+.stat-card {
+    border-left: 4px solid var(--retrofit-teal);
+    background: #f7f9fc;
+    padding: 18px;
+}
+
+.stat-value {
+    color: var(--retrofit-ink);
+    font-size: 30px;
+    font-weight: 800;
+    margin: 8px 0;
+}
+
+.stat-label {
+    color: var(--retrofit-muted);
+    font-size: 13px;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+.results-table th,
+.results-table td {
+    border-bottom: 1px solid #e0e5ed;
+    padding: 12px;
+    text-align: left;
+}
+
+.results-table th {
+    background: var(--retrofit-ink);
+    color: #fff;
+    font-size: 13px;
+}
+
+.results-table tbody tr:hover {
+    background: #f5f8fb;
+}
+
+.btn-run {
+    background: var(--retrofit-teal);
+    color: #fff;
+}
+
+.btn-run:hover {
+    background: #066b67;
+}
+
+.btn-download {
+    background: #287a4b;
+    color: #fff;
+}
+
+@media (max-width: 900px) {
+    .retrofit-field-grid,
+    .review-groups {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 680px) {
+    .retrofit-header-actions {
+        top: 20px;
+        right: 16px;
+        gap: 8px;
+    }
+
+    .retrofit-header-actions #user-email {
+        display: none;
+    }
+
+    .retrofit-header-actions .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .retrofit-intro {
+        flex-direction: column;
+    }
+
+    .retrofit-progress {
+        grid-template-columns: repeat(3, 1fr);
+        row-gap: 14px;
+    }
+
+    .retrofit-progress::before,
+    .retrofit-progress::after {
+        display: none;
+    }
+
+    .retrofit-step-marker .step-label {
+        font-size: 11px;
+    }
+
+    .retrofit-nav {
+        align-items: flex-end;
+    }
+
+    .retrofit-nav-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .retrofit-nav .btn {
+        min-width: 112px;
+        padding: 12px 18px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
