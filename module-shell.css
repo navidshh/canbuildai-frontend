@@ -110,6 +110,10 @@ body.module-workspace::before {
     white-space: nowrap;
 }
 
+.module-brand-name .trademark {
+    font-size: 7px;
+}
+
 .module-divider {
     width: 1px;
     height: 34px;
