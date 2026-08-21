@@ -90,6 +90,14 @@ header::before {
     z-index: 1;
 }
 
+.trademark {
+    margin-left: 0.15em;
+    font-size: 0.35em;
+    font-weight: 700;
+    line-height: 0;
+    vertical-align: super;
+}
+
 .building-icon {
     max-height: 70px;
     max-width: 70px;
