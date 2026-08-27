@@ -396,6 +396,67 @@ const HEAT_PUMP_CITATION_HTML =
 const COLD_CLIMATE_HEAT_PUMP_CITATION_HTML =
     'Natural Resources Canada, Canmet Energy Ottawa, Housing and Building Group generated file.';
 
+const ERV_SELECTION_HELP = {
+    NECB_Default_All: {
+        title: 'NECB Default (All)',
+        text: 'A standard NECB energy-recovery unit is added to every suitable ventilation system. "All" overrides the city-based NECB placement check, but the equipment uses NECB default performance. It transfers heat and moisture between outgoing and incoming air to reduce heating and cooling energy.'
+    },
+    'Plate-All': {
+        title: 'Plate Heat Exchanger (All)',
+        text: 'A plate heat exchanger is added to every suitable ventilation system. Incoming and outgoing air remain physically separated while heat and some moisture are recovered.'
+    },
+    'Plate-Existing': {
+        title: 'Plate Heat Exchanger (Existing Only)',
+        text: 'Energy-recovery units already required by NECB for the selected city\'s climate and the building\'s ventilation systems are changed to plate heat exchangers. No new units are added.'
+    },
+    'Rotary-All': {
+        title: 'Rotary Heat Exchanger (All)',
+        text: 'A rotary heat exchanger is added to every suitable ventilation system. Its rotating wheel recovers both heat and moisture from outgoing air.'
+    },
+    'Rotary-Existing': {
+        title: 'Rotary Heat Exchanger (Existing Only)',
+        text: 'Energy-recovery units already required by NECB for the selected city\'s climate and the building\'s ventilation systems are changed to rotary heat exchangers. No new units are added.'
+    }
+};
+
+const ECONOMIZER_SELECTION_HELP = {
+    NECB_Default: {
+        title: 'NECB Default',
+        text: 'NECB determines which ventilation systems receive an economizer from each system\'s airflow and cooling size. These values may change with the selected city. Qualifying systems use NECB\'s default economizer control to reduce mechanical cooling with suitable outdoor air.'
+    },
+    DifferentialDryBulb: {
+        title: 'Differential Dry Bulb',
+        text: 'Outdoor-air temperature is compared with return-air temperature. When outdoor air is cooler and suitable, additional outdoor air is used to reduce mechanical cooling. This setting is applied to all suitable ventilation systems.'
+    },
+    DifferentialEnthalpy: {
+        title: 'Differential Enthalpy',
+        text: 'Outdoor-air temperature and moisture are compared with return-air conditions. Additional outdoor air is used when it can reduce mechanical cooling without introducing excessive heat or moisture. This setting is applied to all suitable ventilation systems.'
+    }
+};
+
+function renderVentilationGuidance() {
+    const render = (selectId, titleId, textId, guidance) => {
+        const select = document.getElementById(selectId);
+        const title = document.getElementById(titleId);
+        const text = document.getElementById(textId);
+        if (!select || !title || !text) return;
+
+        const selection = guidance[select.value];
+        title.textContent = selection ? selection.title : 'Select an option';
+        text.textContent = selection
+            ? selection.text
+            : 'Choose an option above to see how it will be applied to the building ventilation systems.';
+    };
+
+    render('erv_package', 'ervGuidanceTitle', 'ervGuidanceText', ERV_SELECTION_HELP);
+    render(
+        'airloop_economizer_type',
+        'economizerGuidanceTitle',
+        'economizerGuidanceText',
+        ECONOMIZER_SELECTION_HELP
+    );
+}
+
 // Show the reference schematic(s) below the "What the model will simulate"
 // summary card. Rendered for NECB Default (per-archetype NECB system) and for
 // the two heat-pump families (Cold Climate Air Source HP and Air Source HP).
@@ -819,6 +880,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Render the initial summary (schematics update lazily inside).
     renderHvacSummary();
+    renderVentilationGuidance();
+
+    ['erv_package', 'airloop_economizer_type'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', renderVentilationGuidance);
+    });
 
     // Re-render the summary whenever any contributing field changes.
     // `building_type` is included so the NECB-default summary updates with
@@ -842,6 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (sel) sel.dispatchEvent(new Event('change'));
                 });
                 renderHvacSummary();
+                renderVentilationGuidance();
             }, 0);
         });
     }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CanBEM-AI: Early Design Tool</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20260827-1">
     <link rel="stylesheet" href="surrogate-wizard.css">
     <link rel="stylesheet" href="module-shell.css?v=20260812-1">
     <!-- Leaflet (city map on Step 1) -->
@@ -131,12 +131,12 @@
                             <!-- Rotation: slider drives the hidden select. -->
                             <div class="form-group" style="margin-top: 16px;">
                                 <label for="rotation_slider">
-                                    Building Rotation
+                                    Building Orientation
                                     <span class="tooltip" data-tooltip="Building orientation. 0° = North-facing, 90° = East-facing">ℹ️</span>
                                 </label>
                                 <div class="rotation-row">
                                     <input type="range" id="rotation_slider" min="0" max="359" step="1" value="0"
-                                           aria-label="Building rotation in degrees" />
+                                           aria-label="Building orientation in degrees" />
                                     <div class="value" id="rotation_value">0°</div>
                                 </div>
                                 <select id="rotation_degrees" name="rotation_degrees" class="visually-hidden" required
@@ -437,13 +437,13 @@
                     <div class="form-group">
                         <label for="dcv_type">
                             Demand Control Ventilation (DCV) Strategy
-                            <span class="tooltip" data-tooltip="Controls ventilation based on occupancy or CO2 levels">ℹ️</span>
+                            <span class="tooltip" data-tooltip="Controls ventilation based on occupancy or CO₂ levels">ℹ️</span>
                         </label>
                         <select id="dcv_type" name="dcv_type" required>
                             <option value="">Select DCV Strategy...</option>
                             <option value="No_DCV" selected>No DCV</option>
                             <option value="Occupancy_based_DCV">Occupancy-Based DCV</option>
-                            <option value="CO2_based_DCV">CO2-Based DCV</option>
+                            <option value="CO2_based_DCV">CO₂-Based DCV</option>
                         </select>
                     </div>
 
@@ -460,6 +460,14 @@
                             <option value="Rotary-All">Rotary Heat Exchanger (All)</option>
                             <option value="Rotary-Existing">Rotary Heat Exchanger (Existing Only)</option>
                         </select>
+                        <aside class="ventilation-guidance" aria-live="polite">
+                            <div class="ventilation-guidance-heading">
+                                <span class="ventilation-guidance-icon" aria-hidden="true">i</span>
+                                <h3 id="ervGuidanceTitle">NECB Default (All)</h3>
+                            </div>
+                            <p id="ervGuidanceText"></p>
+                            <p class="ventilation-guidance-context">The selected city matters when NECB determines where energy recovery is required. Its climate data is combined with the ventilation characteristics associated with the building type. Colder cities will generally require energy recovery on more systems.</p>
+                        </aside>
                     </div>
 
                     <div class="form-group">
@@ -473,6 +481,14 @@
                             <option value="DifferentialDryBulb">Differential Dry Bulb</option>
                             <option value="DifferentialEnthalpy">Differential Enthalpy</option>
                         </select>
+                        <aside class="ventilation-guidance" aria-live="polite">
+                            <div class="ventilation-guidance-heading">
+                                <span class="ventilation-guidance-icon" aria-hidden="true">i</span>
+                                <h3 id="economizerGuidanceTitle">NECB Default</h3>
+                            </div>
+                            <p id="economizerGuidanceText"></p>
+                            <p class="ventilation-guidance-context">The selected city can affect calculated cooling loads and airflow, so it can indirectly affect which systems qualify for an economizer. NECB does not choose the economizer control type from the city alone.</p>
+                        </aside>
                     </div>
 
                     <div class="form-group">
@@ -720,7 +736,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=20260827-1"></script>
     <!-- Parametric building geometry (must come after Three.js, before wizard) -->
     <script src="surrogate-geometry.js"></script>
     <!-- Wizard glue: step navigation, map wiring, viewer wiring -->

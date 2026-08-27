@@ -1187,6 +1187,58 @@ header h1 {
     text-align: right;
 }
 
+.ventilation-guidance {
+    margin-top: 12px;
+    padding: 15px 16px;
+    color: #1f2a44;
+    background: linear-gradient(135deg, #f8f9ff 0%, #eef3ff 100%);
+    border: 1px solid #c8d3f1;
+    border-radius: 8px;
+}
+
+.ventilation-guidance-heading {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 8px;
+}
+
+.ventilation-guidance-icon {
+    width: 21px;
+    height: 21px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    background: #2a5298;
+    border-radius: 50%;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.ventilation-guidance h3 {
+    margin: 0;
+    color: #2a5298;
+    font-size: 14px;
+    letter-spacing: 0;
+}
+
+.ventilation-guidance p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.ventilation-guidance .ventilation-guidance-context {
+    margin-top: 10px;
+    padding-top: 10px;
+    color: #5f6f8f;
+    border-top: 1px dashed #c8d3f1;
+    font-size: 12px;
+}
+
 /* Stack schematics on narrow screens */
 @media (max-width: 760px) {
     .hvac-schematic-figure {
