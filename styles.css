@@ -1196,6 +1196,10 @@ header h1 {
     border-radius: 8px;
 }
 
+.ventilation-guidance[hidden] {
+    display: none;
+}
+
 .ventilation-guidance-heading {
     display: flex;
     align-items: center;

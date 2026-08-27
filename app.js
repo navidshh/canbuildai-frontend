@@ -435,22 +435,25 @@ const ECONOMIZER_SELECTION_HELP = {
 };
 
 function renderVentilationGuidance() {
-    const render = (selectId, titleId, textId, guidance) => {
+    const render = (selectId, panelId, titleId, textId, guidance) => {
         const select = document.getElementById(selectId);
+        const panel = document.getElementById(panelId);
         const title = document.getElementById(titleId);
         const text = document.getElementById(textId);
-        if (!select || !title || !text) return;
+        if (!select || !panel || !title || !text) return;
 
         const selection = guidance[select.value];
+        panel.hidden = !selection;
         title.textContent = selection ? selection.title : 'Select an option';
         text.textContent = selection
             ? selection.text
             : 'Choose an option above to see how it will be applied to the building ventilation systems.';
     };
 
-    render('erv_package', 'ervGuidanceTitle', 'ervGuidanceText', ERV_SELECTION_HELP);
+    render('erv_package', 'ervGuidance', 'ervGuidanceTitle', 'ervGuidanceText', ERV_SELECTION_HELP);
     render(
         'airloop_economizer_type',
+        'economizerGuidance',
         'economizerGuidanceTitle',
         'economizerGuidanceText',
         ECONOMIZER_SELECTION_HELP

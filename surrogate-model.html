@@ -454,13 +454,13 @@
                         </label>
                         <select id="erv_package" name="erv_package" required>
                             <option value="">Select ERV Strategy...</option>
-                            <option value="NECB_Default_All" selected>NECB Default (All)</option>
+                            <option value="NECB_Default_All">NECB Default (All)</option>
                             <option value="Plate-All">Plate Heat Exchanger (All)</option>
                             <option value="Plate-Existing">Plate Heat Exchanger (Existing Only)</option>
                             <option value="Rotary-All">Rotary Heat Exchanger (All)</option>
                             <option value="Rotary-Existing">Rotary Heat Exchanger (Existing Only)</option>
                         </select>
-                        <aside class="ventilation-guidance" aria-live="polite">
+                        <aside class="ventilation-guidance" id="ervGuidance" aria-live="polite" hidden>
                             <div class="ventilation-guidance-heading">
                                 <span class="ventilation-guidance-icon" aria-hidden="true">i</span>
                                 <h3 id="ervGuidanceTitle">NECB Default (All)</h3>
@@ -477,11 +477,11 @@
                         </label>
                         <select id="airloop_economizer_type" name="airloop_economizer_type" required>
                             <option value="">Select Economizer Type...</option>
-                            <option value="NECB_Default" selected>NECB Default</option>
+                            <option value="NECB_Default">NECB Default</option>
                             <option value="DifferentialDryBulb">Differential Dry Bulb</option>
                             <option value="DifferentialEnthalpy">Differential Enthalpy</option>
                         </select>
-                        <aside class="ventilation-guidance" aria-live="polite">
+                        <aside class="ventilation-guidance" id="economizerGuidance" aria-live="polite" hidden>
                             <div class="ventilation-guidance-heading">
                                 <span class="ventilation-guidance-icon" aria-hidden="true">i</span>
                                 <h3 id="economizerGuidanceTitle">NECB Default</h3>
