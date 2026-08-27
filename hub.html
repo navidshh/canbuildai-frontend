@@ -241,7 +241,7 @@
 
         .tools-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 18px;
         }
 
@@ -279,6 +279,11 @@
         .tool-card.codes {
             --card-accent: var(--brick);
             --card-soft: var(--brick-soft);
+        }
+
+        .tool-card.residential {
+            --card-accent: #7a5b24;
+            --card-soft: #f7eedb;
         }
 
         .tool-card-top {
@@ -563,9 +568,9 @@
                 <h1 id="workspaceTitle">Building performance guidance, in one place</h1>
                 <p>Intelligent Building Energy Solutions for Canadian Infrastructure</p>
             </div>
-            <div class="availability" aria-label="Three tools are currently available">
+            <div class="availability" aria-label="Four tools are currently available">
                 <span class="availability-dot" aria-hidden="true"></span>
-                3 tools available
+                4 tools available
             </div>
         </section>
 
@@ -617,6 +622,20 @@
                         <span class="tool-action">Ask a question <i data-lucide="arrow-right" aria-hidden="true"></i></span>
                     </div>
                 </a>
+
+                <a class="tool-card residential" href="https://48u1s1snk6.execute-api.ca-central-1.amazonaws.com/" target="_blank" rel="noopener noreferrer">
+                    <div class="tool-card-top">
+                        <span class="tool-icon"><i data-lucide="house-plus" aria-hidden="true"></i></span>
+                        <span class="status">Available</span>
+                    </div>
+                    <p class="tool-category">Residential buildings</p>
+                    <h3>Residential Energy Model Generator</h3>
+                    <p class="tool-description">Match audit characteristics to a representative residential model, review energy performance, and download a ready-to-run HOT2000 file.</p>
+                    <div class="tool-footer">
+                        <span class="tool-output">HOT2000 model + results</span>
+                        <span class="tool-action">Open generator <i data-lucide="external-link" aria-hidden="true"></i></span>
+                    </div>
+                </a>
             </div>
         </section>
 
@@ -650,15 +669,6 @@
                     <div class="roadmap-copy">
                         <h3>Urban Scale Performance Benchmarking</h3>
                         <p>Climate-calibrated benchmarks for Canadian archetypes.</p>
-                    </div>
-                    <span class="roadmap-status">In development</span>
-                </article>
-
-                <article class="roadmap-item">
-                    <span class="roadmap-icon"><i data-lucide="house-plus" aria-hidden="true"></i></span>
-                    <div class="roadmap-copy">
-                        <h3>Residential Energy Model Generator</h3>
-                        <p>Ready-to-run HOT2000 model generation from audit profiles.</p>
                     </div>
                     <span class="roadmap-status">In development</span>
                 </article>
