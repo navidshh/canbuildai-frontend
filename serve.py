@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-Simple HTTP server that serves index.html for all paths.
-This fixes the issue where query parameters cause directory listing.
-"""
+"""Simple no-cache HTTP server for the static frontend."""
 import http.server
 import socketserver
 from urllib.parse import urlparse
@@ -21,9 +18,10 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         # Parse the URL
         parsed_path = urlparse(self.path)
         
-        # If the path is root or has query parameters, serve index.html
-        if parsed_path.path == '/' or parsed_path.query:
+        if parsed_path.path == '/':
             self.path = '/index.html'
+        else:
+            self.path = parsed_path.path
         
         return http.server.SimpleHTTPRequestHandler.do_GET(self)
 

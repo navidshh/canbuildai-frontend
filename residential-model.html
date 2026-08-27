@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanBEM-AI: Residential Energy Model Generator</title>
+    <link rel="stylesheet" href="module-shell.css?v=20260827-1">
+    <link rel="stylesheet" href="residential-model.css?v=20260827-1">
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script src="module-shell.js?v=20260812-1" defer></script>
+    <script src="residential-model.js?v=20260827-1" defer></script>
+</head>
+<body class="module-workspace">
+    <div class="container module-page">
+        <header class="module-app-header">
+            <div class="module-header-inner">
+                <div class="module-identity">
+                    <a class="module-brand" href="hub.html" aria-label="CanBEM-AI workspace">
+                        <img src="Logo_New.png" alt="">
+                        <span class="module-brand-name">CanBEM-AI<sup class="trademark" aria-label="trademark">TM</sup></span>
+                    </a>
+                    <span class="module-divider" aria-hidden="true"></span>
+                    <div class="module-title-block">
+                        <span class="module-category">Residential buildings</span>
+                        <h1>Residential Energy Model Generator</h1>
+                    </div>
+                </div>
+                <div class="module-account-actions">
+                    <span id="user-email" class="module-user-email"></span>
+                    <a href="hub.html" class="module-action" title="Back to workspace">
+                        <i data-lucide="layout-grid" aria-hidden="true"></i>
+                        <span class="module-action-label">Workspace</span>
+                    </a>
+                    <button type="button" id="logoutButton" class="module-action" title="Log out">
+                        <i data-lucide="log-out" aria-hidden="true"></i>
+                        <span class="module-action-label">Log out</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="content residential-shell">
+            <section id="inputView" aria-labelledby="residentialTitle">
+                <div class="residential-intro">
+                    <div>
+                        <p class="eyebrow">HOT2000 representative matching</p>
+                        <h2 id="residentialTitle">Find a representative residential model</h2>
+                        <p>Describe the home to identify the closest modelled building, review its energy performance, and download a ready-to-run HOT2000 file.</p>
+                    </div>
+                    <span class="input-count">11 required inputs</span>
+                </div>
+
+                <form id="residentialForm">
+                    <section class="input-section" aria-labelledby="locationHeading">
+                        <div class="section-heading">
+                            <span class="section-icon"><i data-lucide="map-pin" aria-hidden="true"></i></span>
+                            <div>
+                                <p class="section-step">01</p>
+                                <h3 id="locationHeading">Location</h3>
+                            </div>
+                        </div>
+                        <div class="field-grid">
+                            <div class="field-group">
+                                <label for="houseregion">Province or territory</label>
+                                <select id="houseregion" name="houseregion" required>
+                                    <option value="">Select province or territory</option>
+                                    <option>Alberta</option><option>British Columbia</option><option>Manitoba</option>
+                                    <option>New Brunswick</option><option>Newfoundland and Labrador</option>
+                                    <option>Northwest Territories</option><option>Nova Scotia</option><option>Nunavut</option>
+                                    <option>Ontario</option><option>Prince Edward Island</option><option>Quebec</option>
+                                    <option>Saskatchewan</option><option>Yukon</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label for="clientpcode">Postal code prefix</label>
+                                <input id="clientpcode" name="clientpcode" type="text" minlength="3" maxlength="3" placeholder="N1H" autocomplete="postal-code" required>
+                                <p class="field-help">First three characters</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="input-section" aria-labelledby="buildingHeading">
+                        <div class="section-heading">
+                            <span class="section-icon"><i data-lucide="house" aria-hidden="true"></i></span>
+                            <div>
+                                <p class="section-step">02</p>
+                                <h3 id="buildingHeading">Building form</h3>
+                            </div>
+                        </div>
+                        <div class="field-grid">
+                            <div class="field-group">
+                                <label for="typeofhouse">House type</label>
+                                <select id="typeofhouse" name="typeofhouse" data-other-field="typeofhouseOther" required>
+                                    <option value="">Select house type</option>
+                                    <option>Single Detached</option><option>Double/Semi-detached</option>
+                                    <option>Row house, end unit</option><option>Row house, middle unit</option><option>Other</option>
+                                </select>
+                                <input class="other-input" id="typeofhouseOther" type="text" placeholder="Enter house type" hidden>
+                            </div>
+                            <div class="field-group">
+                                <label for="storeys">Number of storeys</label>
+                                <select id="storeys" name="storeys" data-other-field="storeysOther" required>
+                                    <option value="">Select storeys</option>
+                                    <option>One storey</option><option>One and a half</option><option>Two storeys</option>
+                                    <option>Two and a half</option><option>Three storeys</option><option>Split level</option>
+                                    <option>Split entry/Raised base.</option><option>Split entry / Raised basement</option><option>Other</option>
+                                </select>
+                                <input class="other-input" id="storeysOther" type="text" placeholder="Enter storey type" hidden>
+                            </div>
+                            <div class="field-group">
+                                <label for="footprint">Footprint</label>
+                                <div class="input-unit"><input id="footprint" name="footprint" type="number" min="0.01" step="0.01" placeholder="79.5" required><span>m²</span></div>
+                                <p class="field-help">Foundations and exposed floors</p>
+                            </div>
+                            <div class="field-group">
+                                <label for="fndtype">Foundation type</label>
+                                <input id="fndtype" name="fndtype" type="text" placeholder="B1 or B1;B2" required>
+                                <p class="field-help">B basement, C crawl space, S slab, F exposed floor</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="input-section" aria-labelledby="systemsHeading">
+                        <div class="section-heading">
+                            <span class="section-icon"><i data-lucide="flame" aria-hidden="true"></i></span>
+                            <div>
+                                <p class="section-step">03</p>
+                                <h3 id="systemsHeading">Mechanical systems</h3>
+                            </div>
+                        </div>
+                        <div class="field-grid">
+                            <div class="field-group">
+                                <label for="furnacefuel">Heating fuel</label>
+                                <select id="furnacefuel" name="furnacefuel" data-other-field="furnacefuelOther" required>
+                                    <option value="">Select fuel</option><option>Natural Gas</option><option>Electricity</option>
+                                    <option>Oil</option><option>Propane</option><option>Mixed Wood</option><option>Hardwood</option>
+                                    <option>Wood Pellets</option><option>Softwood</option><option>Other</option>
+                                </select>
+                                <input class="other-input" id="furnacefuelOther" type="text" placeholder="Enter heating fuel" hidden>
+                            </div>
+                            <div class="field-group">
+                                <label for="furnacetype">Heating equipment</label>
+                                <select id="furnacetype" name="furnacetype" data-other-field="furnacetypeOther" required>
+                                    <option value="">Select equipment</option><option>Condensing furnace</option>
+                                    <option>Baseboard/Hydronic/Plenum(duct) htrs.</option><option>Furnace with continuous pilot</option>
+                                    <option>Induced draft fan furnace</option><option>Electric furnace</option>
+                                    <option>Furnace with flame retention head</option><option>Forced air furnace</option><option>Other</option>
+                                </select>
+                                <input class="other-input" id="furnacetypeOther" type="text" placeholder="Enter equipment type" hidden>
+                            </div>
+                            <div class="field-group">
+                                <label for="pdhwfuel">Water heating fuel</label>
+                                <select id="pdhwfuel" name="pdhwfuel" data-other-field="pdhwfuelOther" required>
+                                    <option value="">Select fuel</option><option>Natural Gas</option><option>Electricity</option>
+                                    <option>Oil</option><option>Propane</option><option>Solar</option><option>Mixed Wood</option>
+                                    <option>Hardwood</option><option>Wood Pellets</option><option>Softwood</option>
+                                    <option>Not applicable</option><option>Other</option>
+                                </select>
+                                <input class="other-input" id="pdhwfuelOther" type="text" placeholder="Enter water heating fuel" hidden>
+                            </div>
+                            <div class="field-group">
+                                <label for="pdhwtype">Water heating equipment</label>
+                                <select id="pdhwtype" name="pdhwtype" data-other-field="pdhwtypeOther" required>
+                                    <option value="">Select equipment</option><option>Conventional tank</option>
+                                    <option>Conventional tank (pilot)</option><option>Conserver tank</option>
+                                    <option>Induced draft fan</option><option>Instantaneous (condensing)</option>
+                                    <option>Induced draft fan (pilot)</option><option>Instantaneous</option>
+                                    <option>Direct vent (sealed)</option><option>Tankless coil</option><option>Other</option>
+                                </select>
+                                <input class="other-input" id="pdhwtypeOther" type="text" placeholder="Enter equipment type" hidden>
+                            </div>
+                            <div class="field-group field-span">
+                                <label for="aircondtype">Air conditioning</label>
+                                <select id="aircondtype" name="aircondtype" data-other-field="aircondtypeOther" required>
+                                    <option value="">Select system</option><option>Central split system</option>
+                                    <option>Central single package system</option><option>Ductless Mini- or Multi-split system</option>
+                                    <option>Compact Ducted Mini- or Multi-split system</option><option>Coils Only</option>
+                                    <option>Not installed</option><option>Other</option>
+                                </select>
+                                <input class="other-input" id="aircondtypeOther" type="text" placeholder="Enter air conditioning type" hidden>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="form-status" id="formStatus" role="alert" hidden></div>
+                    <div class="form-actions">
+                        <p>Results are based on the nearest representative, not a new simulation of the exact home.</p>
+                        <button class="run-button" id="runButton" type="submit">
+                            <i data-lucide="sparkles" aria-hidden="true"></i>
+                            <span>Generate representative model</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="resultsView" class="results-view" aria-labelledby="resultsTitle" hidden>
+                <div class="results-header">
+                    <div>
+                        <p class="eyebrow">Matched building profile</p>
+                        <h2 id="resultsTitle">Representative energy results</h2>
+                        <p>Your inputs were matched to the nearest building cluster and its precomputed HOT2000 results.</p>
+                    </div>
+                    <div class="result-actions">
+                        <button class="secondary-button" id="newModelButton" type="button"><i data-lucide="arrow-left" aria-hidden="true"></i> Edit inputs</button>
+                        <a class="run-button" id="downloadButton" href="#"><i data-lucide="download" aria-hidden="true"></i> Download HOT2000 file</a>
+                    </div>
+                </div>
+                <div class="results-lead">
+                    <div class="eui-panel">
+                        <p id="euiLabel">Energy use intensity</p>
+                        <strong id="euiValue">--</strong>
+                        <span id="euiUnit"></span>
+                        <span class="source-badge" id="euiSource"></span>
+                    </div>
+                    <div class="summary-grid" id="summaryMetrics"></div>
+                </div>
+                <div class="results-sections">
+                    <section class="metric-section"><h3>Building profile</h3><div class="metric-list" id="buildingMetrics"></div></section>
+                    <section class="metric-section"><h3>Annual energy</h3><div class="metric-list" id="energyMetrics"></div></section>
+                    <section class="metric-section"><h3>Heat loss</h3><div class="metric-list" id="heatLossMetrics"></div></section>
+                </div>
+                <aside class="result-notice">This estimate represents the selected cluster, not a new HOT2000 simulation of the exact building.</aside>
+            </section>
+        </main>
+
+        <footer class="module-footer">
+            <p>&copy; 2026 CanBEM-AI - Residential Energy Model Generator</p>
+        </footer>
+    </div>
+</body>
+</html>
