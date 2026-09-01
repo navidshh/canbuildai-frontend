@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CanBEM-AI: Residential Energy Model Generator</title>
     <link rel="stylesheet" href="module-shell.css?v=20260827-1">
-    <link rel="stylesheet" href="residential-model.css?v=20260827-1">
+    <link rel="stylesheet" href="residential-model.css?v=20260901-1">
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
     <script src="module-shell.js?v=20260812-1" defer></script>
-    <script src="residential-model.js?v=20260827-1" defer></script>
+    <script src="residential-model.js?v=20260901-1" defer></script>
 </head>
 <body class="module-workspace">
     <div class="container module-page">
@@ -112,11 +112,64 @@
                                 <div class="input-unit"><input id="footprint" name="footprint" type="number" min="0.01" step="0.01" placeholder="79.5" required><span>m²</span></div>
                                 <p class="field-help">Foundations and exposed floors</p>
                             </div>
-                            <div class="field-group">
-                                <label for="fndtype">Foundation type</label>
-                                <input id="fndtype" name="fndtype" type="text" placeholder="B1 or B1;B2" required>
-                                <p class="field-help">B basement, C crawl space, S slab, F exposed floor</p>
-                            </div>
+                            <fieldset class="field-group foundation-builder" aria-describedby="foundationHelp foundationError">
+                                <legend>Foundation components</legend>
+                                <p id="foundationHelp" class="field-help foundation-help">Choose the number of distinct sections in the home.</p>
+                                <input id="fndtype" name="fndtype" type="hidden">
+                                <div class="foundation-options">
+                                    <div class="foundation-option">
+                                        <div>
+                                            <label for="foundationBasements">Basement sections</label>
+                                            <p id="foundationBasementsHelp">Full or partial below-grade areas</p>
+                                        </div>
+                                        <select id="foundationBasements" data-foundation-kind="basement" aria-describedby="foundationBasementsHelp">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                                            <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                    <div class="foundation-option">
+                                        <div>
+                                            <label for="foundationCrawlspaces">Crawlspaces</label>
+                                            <p id="foundationCrawlspacesHelp">Low spaces beneath the home</p>
+                                        </div>
+                                        <select id="foundationCrawlspaces" data-foundation-kind="crawlspace" aria-describedby="foundationCrawlspacesHelp">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                                            <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                    <div class="foundation-option">
+                                        <div>
+                                            <label for="foundationSlabs">Slab-on-grade sections</label>
+                                            <p id="foundationSlabsHelp">Concrete floors resting on the ground</p>
+                                        </div>
+                                        <select id="foundationSlabs" data-foundation-kind="slab" aria-describedby="foundationSlabsHelp">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                                            <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                    <div class="foundation-option">
+                                        <div>
+                                            <label for="foundationFloors">Floors above crawlspace / exposed floors</label>
+                                            <p id="foundationFloorsHelp">Raised floor sections exposed below</p>
+                                        </div>
+                                        <select id="foundationFloors" data-foundation-kind="floor" aria-describedby="foundationFloorsHelp">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                                            <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                    <div class="foundation-option">
+                                        <div>
+                                            <label for="foundationPonyWalls">Pony-wall sections</label>
+                                            <p id="foundationPonyWallsHelp">Short foundation walls above grade</p>
+                                        </div>
+                                        <select id="foundationPonyWalls" data-foundation-kind="ponyWall" aria-describedby="foundationPonyWallsHelp">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                                            <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <p id="foundationError" class="foundation-error" role="alert" hidden>Choose at least one foundation component.</p>
+                            </fieldset>
                         </div>
                     </section>
 

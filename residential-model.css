@@ -144,6 +144,72 @@
     line-height: 1.4;
 }
 
+.foundation-builder {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.foundation-builder legend {
+    padding: 0;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.foundation-help {
+    margin-top: 7px;
+}
+
+.foundation-options {
+    margin-top: 10px;
+    border: 1px solid #bdc8c1;
+    border-radius: 5px;
+    background: var(--shell-surface-soft);
+}
+
+.foundation-option {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 62px;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--shell-line);
+}
+
+.foundation-option:last-child {
+    border-bottom: 0;
+}
+
+.foundation-option label {
+    margin: 0;
+    line-height: 1.25;
+}
+
+.foundation-option p {
+    margin: 2px 0 0;
+    color: var(--shell-muted);
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+.foundation-option select {
+    width: 62px;
+    min-height: 36px;
+    padding: 5px 8px;
+}
+
+.foundation-builder[aria-invalid="true"] .foundation-options {
+    border-color: #bc4b4b;
+}
+
+.foundation-error {
+    margin: 6px 0 0;
+    color: #8a2c2c;
+    font-size: 12px;
+}
+
 .other-input {
     margin-top: 8px;
 }

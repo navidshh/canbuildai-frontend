@@ -38,6 +38,44 @@ function configureOtherFields() {
     });
 }
 
+function configureFoundationBuilder() {
+    const components = [
+        { kind: 'basement', code: 'B' },
+        { kind: 'crawlspace', code: 'C' },
+        { kind: 'floor', code: 'F' },
+        { kind: 'slab', code: 'S' },
+        { kind: 'ponyWall', code: 'P' }
+    ];
+    const fieldset = document.querySelector('.foundation-builder');
+    const output = document.getElementById('fndtype');
+    const error = document.getElementById('foundationError');
+    const selects = components.map(({ kind }) => fieldset.querySelector(`[data-foundation-kind="${kind}"]`));
+    const validationControl = selects[0];
+    let showValidationError = false;
+
+    const update = () => {
+        const values = components.flatMap(({ code }, componentIndex) => {
+            const count = Number(selects[componentIndex].value);
+            return Array.from({ length: count }, (_, index) => `${code}${index + 1}`);
+        });
+        const isValid = values.length > 0;
+
+        output.value = values.join(';');
+        validationControl.setCustomValidity(isValid ? '' : 'Choose at least one foundation component.');
+        if (isValid) showValidationError = false;
+        fieldset.setAttribute('aria-invalid', String(!isValid && showValidationError));
+        error.hidden = isValid || !showValidationError;
+    };
+
+    validationControl.addEventListener('invalid', () => {
+        showValidationError = true;
+        fieldset.setAttribute('aria-invalid', 'true');
+        error.hidden = false;
+    });
+    selects.forEach((select) => select.addEventListener('change', update));
+    update();
+}
+
 function fieldValue(form, name) {
     const select = form.elements[name];
     if (select instanceof HTMLSelectElement && select.value === 'Other') {
@@ -130,6 +168,7 @@ function showInputView() {
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuthentication()) return;
     configureOtherFields();
+    configureFoundationBuilder();
     document.getElementById('logoutButton').addEventListener('click', handleLogout);
     document.getElementById('residentialForm').addEventListener('submit', submitModel);
     document.getElementById('newModelButton').addEventListener('click', showInputView);
